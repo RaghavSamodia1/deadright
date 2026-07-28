@@ -108,11 +108,28 @@ cd android && ./gradlew :app:assembleRelease
 Requires JDK 17 + Android SDK. The release build is self-contained (JS bundle and
 fonts embedded) and debug-signed for sideloading — not Play Store distribution.
 
+### iOS
+
+```bash
+npx pod-install ios          # needs CocoaPods
+npx expo run:ios             # or open ios/DeadRight.xcworkspace in Xcode
+```
+
+Requires **full Xcode** (Command Line Tools alone won't compile it). The native
+project is generated and committed: camera/photo permission strings, dark UI
+style, and the six fonts are registered in `Info.plist` via `UIAppFonts`.
+Deployment target iOS 15.1.
+
 ## Status
 
-Design system, UI, and backend are complete; the backend is validated locally but
-not yet deployed to a hosted Supabase project. Photo evidence capture is
-specified and stubbed but not implemented.
+| | |
+|---|---|
+| Design system, 38 screens, component library | ✅ complete |
+| Backend (schema, RLS, RPCs, edge function) | ✅ complete, validated on local Postgres |
+| Backend deployed to hosted Supabase | ⬜ needs a project — see DEPLOY.md |
+| Android APK | ✅ builds and runs |
+| iOS | ⚙️ project generated; needs Xcode to compile |
+| Photo evidence (camera + storage) | ✅ built |
 
 ## Repo layout
 

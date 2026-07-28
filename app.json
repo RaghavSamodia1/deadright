@@ -14,17 +14,45 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "co.deadright.app"
+      "bundleIdentifier": "co.deadright.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "DeadRight uses the camera so you can snap photo evidence when settling or disputing a bet.",
+        "NSPhotoLibraryUsageDescription": "DeadRight needs your photo library so you can attach evidence to a bet.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "co.deadright.app",
       "adaptiveIcon": {
         "backgroundColor": "#0E121A"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES"
+      ]
     },
     "plugins": [
-      "expo-font",
-      "expo-asset"
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Barlow-SemiBold.ttf",
+            "./assets/fonts/Barlow-Bold.ttf",
+            "./assets/fonts/Barlow-Black.ttf",
+            "./assets/fonts/Inter-Regular.ttf",
+            "./assets/fonts/Inter-Medium.ttf",
+            "./assets/fonts/SpaceMono-Bold.ttf"
+          ]
+        }
+      ],
+      "expo-asset",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "DeadRight needs your photo library so you can attach evidence to a bet.",
+          "cameraPermission": "DeadRight uses the camera so you can snap photo evidence when settling or disputing a bet."
+        }
+      ]
     ],
     "extra": {
       "note": "Cred Score + Cookie Jar; no real money — ledger only."

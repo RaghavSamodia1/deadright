@@ -1,3 +1,5 @@
+import * as FileSystem from 'expo-file-system';
+import { decode } from 'base64-arraybuffer';
 import { supabase } from '../lib/supabase';
 import type { Bet, BetSide, DisputeReason } from '../types/database';
 
@@ -70,12 +72,21 @@ export async function addEvidence(betId: string, note?: string, fileUri?: string
   let file_path: string | null = null;
 
   if (fileUri) {
-    const ext = fileUri.split('.').pop() ?? 'jpg';
+    const ext = (fileUri.split('.').pop() ?? 'jpg').toLowerCase();
     file_path = `${betId}/${Date.now()}.${ext}`;
-    const file = await fetch(fileUri).then((r) => r.blob());
+
+    // NB: `fetch(uri).blob()` is unreliable in React Native — it frequently
+    // uploads a 0-byte file. Read the local file as base64 and hand Supabase a
+    // real ArrayBuffer instead.
+    const base64 = await FileSystem.readAsStringAsync(fileUri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
     const { error: upError } = await supabase.storage
       .from('evidence')
-      .upload(file_path, file);
+      .upload(file_path, decode(base64), {
+        contentType: ext === 'png' ? 'image/png' : ext === 'heic' ? 'image/heic' : 'image/jpeg',
+        upsert: false,
+      });
     if (upError) throw upError;
   }
 
@@ -84,6 +95,29 @@ export async function addEvidence(betId: string, note?: string, fileUri?: string
     .insert({ bet_id: betId, user_id: uid, note: note ?? null, file_path })
     .select()
     .single();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * The evidence bucket is private, so images need a short-lived signed URL.
+ * Returns null for rows that are note-only (no file).
+ */
+export async function getEvidenceUrl(filePath: string | null, expiresInSec = 3600) {
+  if (!filePath) return null;
+  const { data, error } = await supabase.storage
+    .from('evidence')
+    .createSignedUrl(filePath, expiresInSec);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
+export async function listEvidence(betId: string) {
+  const { data, error } = await supabase
+    .from('bet_evidence')
+    .select('*, author:profiles!bet_evidence_user_id_fkey(handle, display_name)')
+    .eq('bet_id', betId)
+    .order('created_at', { ascending: false });
   if (error) throw error;
   return data;
 }

@@ -1,12 +1,31 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Image, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
-import { ScreenBackground, NavHeader, TimelineEvent, Button } from '../components';
+import { ScreenBackground, NavHeader, TimelineEvent, Button, ActionSheet } from '../components';
+import { takePhoto, pickFromLibrary, type PickedPhoto } from '../lib/evidence';
+import { addEvidence } from '../api/resolution';
+import { isBackendConfigured } from '../lib/supabase';
 
 // Dispute detail — group vote resolves a contested outcome (dispute_votes).
+// Evidence matters most here: the group votes on what it can actually see.
 export function DisputeDetailScreen({ navigation, route }: any) {
   const title = route?.params?.title ?? 'It snows in London before December';
+  const betId = route?.params?.betId ?? route?.params?.id;
   const [vote, setVote] = useState<'a' | 'b' | null>(null);
+  const [proof, setProof] = useState<string[]>([]);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const addProof = async (photo: PickedPhoto | null) => {
+    if (!photo) return;
+    setProof((p) => [...p, photo.uri]);
+    if (isBackendConfigured && betId) {
+      try {
+        await addEvidence(betId, 'dispute evidence', photo.uri);
+      } catch {
+        // Keep the local thumbnail; the upload can be retried on submit.
+      }
+    }
+  };
 
   // TODO: wire to src/api — getDispute(), castDisputeVote()
   const votesA = 4 + (vote === 'a' ? 1 : 0);
@@ -31,6 +50,29 @@ export function DisputeDetailScreen({ navigation, route }: any) {
         <View style={[styles.claim, { borderColor: colors.side.b }]}>
           <Text style={[styles.claimSide, { color: colors.side.b }]}>@deej · SIDE B</Text>
           <Text style={styles.claimText}>“That was sleet, not snow. Doesn’t count.”</Text>
+        </View>
+
+        {/* Evidence — the group votes on what it can see */}
+        <Text style={styles.q}>EVIDENCE</Text>
+        <View style={styles.proofRow}>
+          {proof.map((uri, i) => (
+            <Pressable
+              key={i}
+              onLongPress={() => setProof((p) => p.filter((_, idx) => idx !== i))}
+              accessibilityLabel="Evidence photo, long press to remove"
+            >
+              <Image source={{ uri }} style={styles.proofThumb} />
+            </Pressable>
+          ))}
+          <Pressable
+            onPress={() => setSheetOpen(true)}
+            style={styles.addProof}
+            accessibilityRole="button"
+            accessibilityLabel="Add photo evidence"
+          >
+            <Text style={styles.addProofIcon}>📷</Text>
+            <Text style={styles.addProofLabel}>Add proof</Text>
+          </Pressable>
         </View>
 
         {/* Tally */}
@@ -61,6 +103,16 @@ export function DisputeDetailScreen({ navigation, route }: any) {
           <TimelineEvent text="@deej raised the dispute" timestamp="1h ago" tone="dispute" isLast />
         </View>
       </ScrollView>
+
+      <ActionSheet
+        visible={sheetOpen}
+        onDismiss={() => setSheetOpen(false)}
+        title="Add proof"
+        options={[
+          { label: '📷  Take a photo', onPress: async () => addProof(await takePhoto()) },
+          { label: '🖼  Choose from library', onPress: async () => addProof(await pickFromLibrary()) },
+        ]}
+      />
     </ScreenBackground>
   );
 }
@@ -108,6 +160,31 @@ const styles = StyleSheet.create({
   tallyB: { backgroundColor: colors.side.b, borderRadius: 999 },
   tallyLabels: { flexDirection: 'row', justifyContent: 'space-between' },
   tallyNum: { fontFamily: 'Barlow-SemiBold', fontSize: 12 },
+  proofRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2], alignItems: 'center' },
+  proofThumb: {
+    width: 76,
+    height: 76,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+  },
+  addProof: {
+    width: 76,
+    height: 76,
+    borderRadius: radius.sm,
+    borderWidth: 1.5,
+    borderColor: colors.semantic.awaiting,
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  addProofIcon: { fontSize: 20 },
+  addProofLabel: {
+    fontFamily: 'Barlow-SemiBold',
+    fontSize: 9,
+    color: colors.semantic.awaiting,
+  },
   voteRow: { flexDirection: 'row', gap: spacing[3] },
   voteBtn: { flex: 1 },
   voted: {

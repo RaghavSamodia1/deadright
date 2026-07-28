@@ -1,0 +1,20 @@
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+.env
+.env.local
+.DS_Store
+*.orig.*
+
+# Native projects ARE committed: android/ carries the Kotlin 1.9.25 pin in
+# build.gradle and the embedded fonts in app/src/main/assets/fonts, which a
+# fresh `expo prebuild` would not reproduce. Ignore only build output.
+android/build/
+android/app/build/
+android/.gradle/
+android/.idea/
+android/local.properties
+ios/build/
+ios/Pods/

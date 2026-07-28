@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "DeadRight",
+    "slug": "deadright",
+    "scheme": "deadright",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0E121A",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#0E121A",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "co.deadright.app"
+    },
+    "android": {
+      "package": "co.deadright.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0E121A"
+      }
+    },
+    "plugins": [
+      "expo-font",
+      "expo-asset"
+    ],
+    "extra": {
+      "note": "Cred Score + Cookie Jar; no real money — ledger only."
+    }
+  }
+}

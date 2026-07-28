@@ -21,3 +21,7 @@ ios/Pods/
 
 # Local Claude Code tool permissions (machine-specific)
 .claude/
+
+# Build output / CLI state
+ios/build-device/
+supabase/.temp/

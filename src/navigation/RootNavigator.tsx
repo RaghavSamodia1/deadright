@@ -13,6 +13,7 @@ import {
   LedgerScreen,
   BetDetailScreen,
   ProfileScreen,
+  CredScreen,
   SearchScreen,
   AlertsScreen,
   FeedScreen,
@@ -86,6 +87,7 @@ export function RootNavigator() {
       <Stack.Screen name="Ledger" component={LedgerScreen} />
       <Stack.Screen name="BetDetail" component={BetDetailScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="Cred" component={CredScreen} />
       <Stack.Screen name="Search" component={SearchScreen} />
       <Stack.Screen name="Alerts" component={AlertsScreen} />
       <Stack.Screen name="AllBets" component={FeedScreen} />

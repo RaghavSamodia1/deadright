@@ -137,8 +137,8 @@ export function HomeScreen({ navigation }: any) {
           </BentoTile>
           <View style={styles.col}>
             <BentoTile
-              size="stat" tone="navy" value={`${profile.cred_score}`} label="Cred" caption="Profile →"
-              onPress={() => navigation.navigate('Profile')}
+              size="stat" tone="navy" value={`${profile.cred_score}`} label="Cred" caption="Details →"
+              onPress={() => navigation.navigate('Cred')}
             />
             <BentoTile
               size="stat" tone="flame"

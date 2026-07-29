@@ -10,6 +10,7 @@ export { HomeScreen } from './HomeScreen';           // V2-01 bento hub (route: 
 export { LedgerScreen } from './LedgerScreen';        // V2-03
 export { BetDetailScreen } from './BetDetailScreen';  // V2-04
 export { ProfileScreen } from './ProfileScreen';      // V2-05
+export { CredScreen } from './CredScreen';            // Cred score detail
 export { SearchScreen } from './SearchScreen';        // V2-06
 export { AlertsScreen } from './AlertsScreen';        // V2-07
 export { FeedScreen } from './FeedScreen';            // V2-08 (route: AllBets)

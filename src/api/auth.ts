@@ -124,3 +124,17 @@ function normalizePhone(phone: string): string {
   const trimmed = phone.replace(/[\s()-]/g, '');
   return trimmed.startsWith('+') ? trimmed : `+${trimmed}`;
 }
+
+/**
+ * Permanently delete your account. Runs in an edge function because removing
+ * an auth user needs the service role; the function derives the user from the
+ * caller's own JWT, so it can only ever delete you.
+ */
+export async function deleteAccount(): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('delete-account', {
+    method: 'POST',
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.detail ?? data.error);
+  await supabase.auth.signOut();
+}

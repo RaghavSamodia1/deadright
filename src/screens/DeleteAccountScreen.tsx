@@ -2,11 +2,23 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, TextInput, Button } from '../components';
+import { deleteAccount } from '../api/auth';
+import { useAction } from '../hooks/useQuery';
+import { isBackendConfigured } from '../lib/supabase';
 
 // Destructive, irreversible — requires typing DELETE to confirm.
 export function DeleteAccountScreen({ navigation }: any) {
   const [confirm, setConfirm] = useState('');
   const armed = confirm.trim().toUpperCase() === 'DELETE';
+  const { run: destroy, loading, error } = useAction(deleteAccount);
+
+  const submit = async () => {
+    if (!isBackendConfigured) return navigation.goBack();
+    const done = await destroy();
+    // On success the session clears and RootNavigator swaps to the auth stack
+    // by itself — no navigation call needed (and any we made would be dropped).
+    if (done !== null) setConfirm('');
+  };
 
   return (
     <ScreenBackground tone="base" glow={false}>
@@ -26,11 +38,19 @@ export function DeleteAccountScreen({ navigation }: any) {
             value={confirm}
             onChangeText={setConfirm}
             autoCapitalize="characters"
+            error={error ? error.message : undefined}
           />
         </View>
 
         <View style={styles.footer}>
-          <Button label="Delete my account" onPress={() => { /* TODO: deleteAccount() */ }} variant="destructive" disabled={!armed} fullWidth />
+          <Button
+            label="Delete my account"
+            onPress={submit}
+            variant="destructive"
+            disabled={!armed}
+            loading={loading}
+            fullWidth
+          />
           <Button label="Keep my account" onPress={() => navigation.goBack()} variant="ghost" fullWidth />
         </View>
       </View>

@@ -14,6 +14,7 @@ import {
   type BetCardData,
 } from '../components';
 import { createBet } from '../api/bets';
+import { addOptions } from '../api/ordinals';
 import { getMyGroups } from '../api/groups';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
@@ -51,6 +52,7 @@ export function CreateBetScreen({ navigation }: any) {
   // Empty means "no group" (a personal call) until the user picks one; the
   // first real group is selected once they load.
   const [group, setGroup] = useState<string>('');
+  const [rankOptions, setRankOptions] = useState<string[]>(['', '']);
 
   const MOCK_GROUPS = [
     { id: 'g1', emoji: '⚽', name: 'Sunday League', memberCount: 8, members: [{ initials: 'MC' }, { initials: 'PR' }, { initials: 'DJ' }] },
@@ -87,15 +89,29 @@ export function CreateBetScreen({ navigation }: any) {
     const bet = await publish({
       groupId: group || null,
       title: (sharpened || statement).trim(),
+      type: type === 'ordinal' ? 'ordinal' : 'prediction',
       stakeKind: stake === 'money' ? 'money' : 'dare',
       stakeAmountCents: stake === 'money' ? 1000 : undefined,
       dareForfeit: stake === 'money' ? undefined : STAKE_OPTS.find((s) => s.value === stake)?.label,
       deadline: new Date(Date.now() + DEADLINE_MS[deadline]),
     });
-    if (bet) navigation.replace('BetPlaced', { id: bet.id });
+    if (!bet) return;
+
+    // A ranking bet is meaningless without the things being ranked.
+    if (type === 'ordinal') {
+      const labels = rankOptions.map((o) => o.trim()).filter(Boolean);
+      if (labels.length >= 2) await addOptions(bet.id, labels);
+    }
+    navigation.replace('BetPlaced', { id: bet.id });
   };
 
-  const canNext = step === 0 ? statement.trim().length > 4 : true;
+  // A ranking bet needs at least two things to rank before it can go further.
+  const canNext =
+    step === 0
+      ? statement.trim().length > 4
+      : step === 1 && type === 'ordinal'
+        ? rankOptions.filter((o) => o.trim()).length >= 2
+        : true;
   const preview: BetCardData = {
     id: 'preview',
     title: sharpened || statement || 'Your call goes here…',
@@ -142,6 +158,34 @@ export function CreateBetScreen({ navigation }: any) {
           <>
             <Text style={styles.q}>How is it settled?</Text>
             <ChoiceChipGroup options={TYPE_OPTS} value={type} onChange={setType} />
+
+            {type === 'ordinal' && (
+              <>
+                <Text style={styles.hint}>
+                  List what's being ranked. Everyone predicts an order, and you score on
+                  how close you land — not just exact hits.
+                </Text>
+                {rankOptions.map((o, i) => (
+                  <TextInput
+                    key={i}
+                    placeholder={`Option ${i + 1}`}
+                    value={o}
+                    onChangeText={(v) =>
+                      setRankOptions((prev) => prev.map((x, idx) => (idx === i ? v : x)))
+                    }
+                    maxChars={60}
+                  />
+                ))}
+                {rankOptions.length < 8 && (
+                  <Text
+                    style={styles.addOption}
+                    onPress={() => setRankOptions((p) => [...p, ''])}
+                  >
+                    + Add another
+                  </Text>
+                )}
+              </>
+            )}
           </>
         )}
 
@@ -206,6 +250,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 13,
     color: colors.interactive.destructive,
+  },
+  addOption: {
+    fontFamily: 'Barlow-SemiBold',
+    fontSize: 14,
+    color: colors.text.link,
+    paddingVertical: 8,
   },
   hint: {
     fontFamily: 'Inter-Regular',

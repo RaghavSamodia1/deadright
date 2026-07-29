@@ -68,6 +68,7 @@ export function BetDetailScreen({ navigation, route }: any) {
   const myEntry = (raw?.participants ?? []).find((p: any) => p.user_id === raw?.uid);
   const canJoin = raw ? raw.status === 'active' || raw.status === 'live' : true;
   const canResolve = raw ? raw.status === 'awaiting' : false;
+  const isOrdinal = raw?.type === 'ordinal';
   // pending_agreement: someone proposed an outcome and the other side must
   // agree or dispute. Only participants who haven't agreed get the choice.
   const awaitingMyCall = !!raw && raw.status === 'pending_agreement' && !!myEntry && !myEntry.agreed;
@@ -164,6 +165,15 @@ export function BetDetailScreen({ navigation, route }: any) {
           <Button
             label="Resolve it"
             onPress={() => navigation.navigate('Resolution', { id: bet.id, title: bet.title })}
+            fullWidth
+            style={styles.cta}
+          />
+        ) : canJoin && isOrdinal ? (
+          // Ordinal bets are a predicted order, not a side — Kendall tau scores
+          // how close you land, so they need the ranker, not the A/B picker.
+          <Button
+            label={myEntry ? 'Change my ranking' : 'Rank them'}
+            onPress={() => navigation.navigate('RankPicker', { id: bet.id, title: bet.title })}
             fullWidth
             style={styles.cta}
           />

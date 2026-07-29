@@ -4,7 +4,9 @@ import type { Bet, BetEvent, BetParticipant, BetSide } from '../types/database';
 export interface CreateBetInput {
   groupId: string | null;
   title: string;
-  type?: 'prediction' | 'dare' | 'open';
+  // Mirrors the bet_type enum — 'ordinal' was missing, so ranking bets
+  // couldn't be created through this layer at all.
+  type?: 'prediction' | 'dare' | 'open' | 'ordinal';
   stakeKind?: 'money' | 'dare' | 'secret';
   stakeAmountCents?: number;
   dareForfeit?: string;

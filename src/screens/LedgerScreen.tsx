@@ -3,6 +3,8 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, BentoTile, ListRow } from '../components';
 import { getLedger, getLedgerSummary } from '../api/ledger';
+import { getMyGroups } from '../api/groups';
+import { getJar } from '../api/jar';
 import { useQuery } from '../hooks/useQuery';
 import { uidOrNull } from '../lib/supabase';
 
@@ -14,6 +16,8 @@ type Txn = {
   group: string;
   amount: number; // signed cents-as-dollars; + you're owed, − you owe
   when: string;
+  /** epoch ms, for the weekly chart */
+  at?: number;
 };
 
 export function LedgerScreen({ navigation }: any) {
@@ -36,9 +40,35 @@ export function LedgerScreen({ navigation }: any) {
     MOCK_TXNS,
   );
 
+  // Bucket the real entries into the last 7 weeks so the chart reflects
+  // actual activity rather than a decorative pattern.
+  const weekly = React.useMemo(() => {
+    const WEEK = 604_800_000;
+    const buckets = Array.from({ length: 7 }, () => 0);
+    for (const t of txns) {
+      const age = Date.now() - (t.at ?? 0);
+      const idx = 6 - Math.floor(age / WEEK);
+      if (idx >= 0 && idx < 7) buckets[idx] += t.amount;
+    }
+    const peak = Math.max(...buckets.map((b) => Math.abs(b)), 1);
+    return buckets.map((net) => ({ net, pct: 12 + (Math.abs(net) / peak) * 88 }));
+  }, [txns]);
+
+  // The jar tile mirrors your first group's pot — the jar is group-scoped, so
+  // there's no such thing as a personal total.
+  const { data: jar } = useQuery(
+    async () => {
+      const groups = await getMyGroups();
+      if (!groups.length) return { totalCents: 0 };
+      const { totalCents } = await getJar(groups[0].id);
+      return { totalCents };
+    },
+    { totalCents: 2350 },
+  );
+
   const netBalance = summary.lifetimeCents / 100;
   const pending = Math.round(summary.pendingCents / 100);
-  const jarTotal = 23.5;
+  const jarTotal = jar.totalCents / 100;
 
   const money = (n: number) => `${n >= 0 ? '+' : '−'}$${Math.abs(n).toFixed(2)}`;
 
@@ -70,14 +100,22 @@ export function LedgerScreen({ navigation }: any) {
         </View>
 
         {/* Row 2 — month chart */}
-        <BentoTile size="chart" tone="navy" label="This month">
+        <BentoTile size="chart" tone="navy" label="Last 7 weeks">
           <View style={styles.chart}>
-            {[40, 65, 30, 80, 55, 90, 45].map((h, i) => (
+            {weekly.map((w, i) => (
               <View
                 key={i}
                 style={[
                   styles.bar,
-                  { height: `${h}%`, backgroundColor: i === 5 ? colors.semantic.win : colors.border.strong },
+                  {
+                    height: `${w.pct}%`,
+                    backgroundColor:
+                      i === weekly.length - 1
+                        ? colors.semantic.win
+                        : w.net >= 0
+                          ? colors.border.strong
+                          : colors.semantic.loss,
+                  },
                 ]}
               />
             ))}
@@ -115,6 +153,7 @@ function toTxn(e: any, uid: string | null): Txn {
     group: e.bet?.title ?? (e.status === 'pending' ? 'Pending' : 'Settled'),
     amount: (incoming ? e.amount_cents : -e.amount_cents) / 100,
     when: relativeTime(e.created_at),
+    at: new Date(e.created_at).getTime(),
   };
 }
 

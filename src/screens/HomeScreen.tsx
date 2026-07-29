@@ -13,6 +13,7 @@ import { getFeed } from '../api/bets';
 import { getMyProfile } from '../api/profile';
 import { getLedgerSummary } from '../api/ledger';
 import { getMyGroups } from '../api/groups';
+import { getUnreadCount } from '../api/notifications';
 import { isBackendConfigured } from '../lib/supabase';
 import { Button, ListRow } from '../components';
 import { useQuery } from '../hooks/useQuery';
@@ -54,6 +55,9 @@ export function HomeScreen({ navigation }: any) {
 
   // Someone else calling a bet or joining a side should show up without a
   // navigate-away-and-back.
+  const { data: unread, refetch: refetchUnread } = useQuery(getUnreadCount, 0);
+  useRealtime('notifications', refetchUnread);
+
   useRealtime('bets', refetchFeed);
   useRealtime('bet_participants', refetchFeed);
   useRealtime('group_members', refetchGroups);
@@ -76,9 +80,19 @@ export function HomeScreen({ navigation }: any) {
         onAvatarPress={() => navigation.navigate('Profile')}
         rightActions={[
           {
-            icon: <Text style={styles.bell}>🔔</Text>,
+            icon: (
+              <View>
+                <Text style={styles.bell}>🔔</Text>
+                {unread > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{unread > 9 ? '9+' : unread}</Text>
+                  </View>
+                )}
+              </View>
+            ),
             onPress: () => navigation.navigate('Alerts'),
-            accessibilityLabel: 'Alerts',
+            accessibilityLabel:
+              unread > 0 ? `Alerts, ${unread} unread` : 'Alerts',
           },
         ]}
       />
@@ -216,6 +230,23 @@ const styles = StyleSheet.create({
     gap: spacing[3],
   },
   bell: { fontSize: 18 },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    backgroundColor: colors.semantic.disputed,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    fontFamily: 'Barlow-Bold',
+    fontSize: 9,
+    color: colors.text.primary,
+  },
   capTrack: {
     height: 8,
     borderRadius: 999,

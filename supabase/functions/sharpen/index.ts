@@ -35,7 +35,9 @@ const SHARPEN_SCHEMA = {
       description: "What kind of bet this reads as.",
     },
     suggested_deadline: {
-      type: ["string", "null"],
+      // Structured outputs accept `anyOf` but not union type arrays
+      // (`["string","null"]`), which the API rejects as an invalid schema.
+      anyOf: [{ type: "string" }, { type: "null" }],
       description:
         "ISO 8601 datetime if the text implies a deadline ('by Sunday', " +
         "'before the wedding'), else null. Resolve relative dates against `now` in the request.",
@@ -109,6 +111,11 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("sharpen failed:", err);
     // Client treats any non-200 as "fail silently" per spec — no scary errors.
-    return Response.json({ error: "sharpen_failed" }, { status: 502, headers: cors });
+    // `detail` is for operators reading the response during setup; the app
+    // ignores the body entirely and just falls back to the user's own wording.
+    return Response.json(
+      { error: "sharpen_failed", detail: (err as Error)?.message ?? String(err) },
+      { status: 502, headers: cors },
+    );
   }
 });

@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, Image, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, TimelineEvent, Button, ActionSheet } from '../components';
+import { getDispute, castDisputeVote } from '../api/resolution';
+import { useQuery, useAction } from '../hooks/useQuery';
+import { useRealtime } from '../hooks/useRealtime';
+import { uidOrNull } from '../lib/supabase';
 import { takePhoto, pickFromLibrary, type PickedPhoto } from '../lib/evidence';
 import { addEvidence } from '../api/resolution';
 import { isBackendConfigured } from '../lib/supabase';
@@ -9,9 +13,28 @@ import { isBackendConfigured } from '../lib/supabase';
 // Dispute detail — group vote resolves a contested outcome (dispute_votes).
 // Evidence matters most here: the group votes on what it can actually see.
 export function DisputeDetailScreen({ navigation, route }: any) {
-  const title = route?.params?.title ?? 'It snows in London before December';
   const betId = route?.params?.betId ?? route?.params?.id;
-  const [vote, setVote] = useState<'a' | 'b' | null>(null);
+  const [localVote, setLocalVote] = useState<'a' | 'b' | null>(null);
+
+  const { data: dispute, refetch } = useQuery<any>(
+    async () => {
+      if (!betId) return null;
+      const [d, uid] = await Promise.all([getDispute(betId), uidOrNull()]);
+      return d ? { ...d, uid } : null;
+    },
+    null,
+    [betId],
+  );
+
+  // Live: other members voting should move the bar while you watch.
+  useRealtime('dispute_votes', refetch);
+
+  const { run: castVote, loading: voting } = useAction(castDisputeVote);
+
+  const title = dispute?.bet?.title ?? route?.params?.title ?? 'Disputed bet';
+  const votes: any[] = dispute?.votes ?? [];
+  const myVote =
+    localVote ?? votes.find((v) => v.user_id === dispute?.uid)?.side ?? null;
   const [proof, setProof] = useState<string[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -27,11 +50,18 @@ export function DisputeDetailScreen({ navigation, route }: any) {
     }
   };
 
-  // TODO: wire to src/api — getDispute(), castDisputeVote()
-  const votesA = 4 + (vote === 'a' ? 1 : 0);
-  const votesB = 3 + (vote === 'b' ? 1 : 0);
+  const votesA = votes.filter((v) => v.side === 'a').length;
+  const votesB = votes.filter((v) => v.side === 'b').length;
   const total = votesA + votesB;
-  const pctA = Math.round((votesA / total) * 100);
+  const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
+
+  const submitVote = async (side: 'a' | 'b') => {
+    setLocalVote(side); // optimistic — the bar moves immediately
+    if (dispute?.id) {
+      await castVote(dispute.id, side);
+      refetch();
+    }
+  };
 
   return (
     <ScreenBackground tone="base" glow={false}>
@@ -44,12 +74,18 @@ export function DisputeDetailScreen({ navigation, route }: any) {
 
         {/* Claims */}
         <View style={[styles.claim, { borderColor: colors.side.a }]}>
-          <Text style={[styles.claimSide, { color: colors.side.a }]}>@marcus · SIDE A</Text>
-          <Text style={styles.claimText}>“It snowed on the 28th — I’ve got the Met Office screenshot.”</Text>
+          <Text style={[styles.claimSide, { color: colors.side.a }]}>PROPOSED OUTCOME</Text>
+          <Text style={styles.claimText}>
+            {dispute?.bet?.winning_side
+              ? `Side ${String(dispute.bet.winning_side).toUpperCase()} was proposed as the winner.`
+              : 'An outcome was proposed for this bet.'}
+          </Text>
         </View>
         <View style={[styles.claim, { borderColor: colors.side.b }]}>
           <Text style={[styles.claimSide, { color: colors.side.b }]}>@deej · SIDE B</Text>
-          <Text style={styles.claimText}>“That was sleet, not snow. Doesn’t count.”</Text>
+          <Text style={styles.claimText}>
+            {dispute?.detail ? `“${dispute.detail}”` : 'Someone contested the result.'}
+          </Text>
         </View>
 
         {/* Evidence — the group votes on what it can see */}
@@ -87,12 +123,18 @@ export function DisputeDetailScreen({ navigation, route }: any) {
         </View>
 
         {/* Vote buttons */}
-        {vote ? (
-          <Text style={styles.voted}>You voted Side {vote.toUpperCase()} ✓</Text>
+        {myVote ? (
+          <Text style={styles.voted}>You voted Side {String(myVote).toUpperCase()} ✓</Text>
         ) : (
           <View style={styles.voteRow}>
-            <Button label="Vote A" onPress={() => setVote('a')} style={styles.voteBtn} />
-            <Button label="Vote B" onPress={() => setVote('b')} variant="secondary" style={styles.voteBtn} />
+            <Button label="Vote A" onPress={() => submitVote('a')} loading={voting} style={styles.voteBtn} />
+            <Button
+              label="Vote B"
+              onPress={() => submitVote('b')}
+              loading={voting}
+              variant="secondary"
+              style={styles.voteBtn}
+            />
           </View>
         )}
 

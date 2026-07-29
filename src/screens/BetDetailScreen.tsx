@@ -9,12 +9,17 @@ import {
   StatsRow,
   TimelineEvent,
   Button,
+  BottomSheet,
+  ChoiceChipGroup,
+  TextInput,
   type BetCardData,
   type Stat,
   type TimelineTone,
 } from '../components';
 import { getBet } from '../api/bets';
-import { useQuery } from '../hooks/useQuery';
+import { agreeOutcome, raiseDispute } from '../api/resolution';
+import type { DisputeReason } from '../types/database';
+import { useQuery, useAction } from '../hooks/useQuery';
 import { useRealtime } from '../hooks/useRealtime';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
@@ -62,7 +67,16 @@ export function BetDetailScreen({ navigation, route }: any) {
   const events: any[] = raw?.events ?? [];
   const myEntry = (raw?.participants ?? []).find((p: any) => p.user_id === raw?.uid);
   const canJoin = raw ? raw.status === 'active' || raw.status === 'live' : true;
-  const canResolve = raw ? raw.status === 'awaiting' || raw.status === 'pending_agreement' : false;
+  const canResolve = raw ? raw.status === 'awaiting' : false;
+  // pending_agreement: someone proposed an outcome and the other side must
+  // agree or dispute. Only participants who haven't agreed get the choice.
+  const awaitingMyCall = !!raw && raw.status === 'pending_agreement' && !!myEntry && !myEntry.agreed;
+
+  const { run: agree, loading: agreeing } = useAction(agreeOutcome);
+  const { run: dispute, loading: disputing, error: disputeError } = useAction(raiseDispute);
+  const [disputeOpen, setDisputeOpen] = React.useState(false);
+  const [reason, setReason] = React.useState<DisputeReason>('didnt_happen');
+  const [detail, setDetail] = React.useState('');
 
   const hoursLeft = Math.round((bet.deadline.getTime() - Date.now()) / 3600_000);
   const stakeCents = raw?.stake_amount_cents ?? 0;
@@ -123,7 +137,30 @@ export function BetDetailScreen({ navigation, route }: any) {
 
         {error && <Text style={styles.error}>Couldn’t load this bet: {error.message}</Text>}
 
-        {canResolve ? (
+        {/* An outcome has been proposed — the other side either agrees or
+            contests it. Without this the state machine dead-ends. */}
+        {awaitingMyCall ? (
+          <View style={styles.decision}>
+            <Text style={styles.decisionTitle}>
+              An outcome was proposed. Do you agree?
+            </Text>
+            <Button
+              label="Agree — settle it"
+              onPress={async () => {
+                await agree(bet.id);
+                refetch();
+              }}
+              loading={agreeing}
+              fullWidth
+            />
+            <Button
+              label="Dispute it ⚖️"
+              onPress={() => setDisputeOpen(true)}
+              variant="destructive"
+              fullWidth
+            />
+          </View>
+        ) : canResolve ? (
           <Button
             label="Resolve it"
             onPress={() => navigation.navigate('Resolution', { id: bet.id, title: bet.title })}
@@ -142,6 +179,47 @@ export function BetDetailScreen({ navigation, route }: any) {
           />
         ) : null}
       </ScrollView>
+
+      <BottomSheet visible={disputeOpen} onDismiss={() => setDisputeOpen(false)}>
+        <Text style={styles.section}>RAISE A DISPUTE</Text>
+        <Text style={styles.disputeBlurb}>
+          This goes to a group vote. Say what you think actually happened.
+        </Text>
+        <ChoiceChipGroup
+          options={[
+            { value: 'didnt_happen' as DisputeReason, label: "Didn't happen" },
+            { value: 'deadline_issue' as DisputeReason, label: 'Deadline' },
+            { value: 'stake_unclear' as DisputeReason, label: 'Stake unclear' },
+            { value: 'other' as DisputeReason, label: 'Other' },
+          ]}
+          value={reason}
+          onChange={setReason}
+        />
+        <TextInput
+          label="What happened?"
+          placeholder="That was sleet, not snow…"
+          value={detail}
+          onChangeText={setDetail}
+          multiline
+          maxChars={140}
+          error={disputeError ? disputeError.message : undefined}
+        />
+        <Button
+          label="Send to the group"
+          onPress={async () => {
+            const raised = await dispute(bet.id, reason, detail || undefined);
+            if (raised) {
+              setDisputeOpen(false);
+              refetch();
+              navigation.navigate('DisputeDetail', { betId: bet.id, title: bet.title });
+            }
+          }}
+          loading={disputing}
+          variant="destructive"
+          fullWidth
+          style={styles.cta}
+        />
+      </BottomSheet>
     </ScreenBackground>
   );
 }
@@ -209,4 +287,26 @@ const styles = StyleSheet.create({
     color: colors.interactive.destructive,
   },
   cta: { marginTop: spacing[2] },
+  decision: {
+    gap: spacing[2],
+    backgroundColor: colors.semantic.awaitingDim,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.semantic.awaiting,
+    padding: spacing[4],
+    marginTop: spacing[2],
+  },
+  decisionTitle: {
+    fontFamily: 'Barlow-Bold',
+    fontSize: 15,
+    color: colors.text.primary,
+    marginBottom: spacing[1],
+  },
+  disputeBlurb: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.text.secondary,
+    marginBottom: spacing[3],
+  },
 });

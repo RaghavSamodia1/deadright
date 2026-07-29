@@ -1,12 +1,43 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, Avatar, TextInput, Button } from '../components';
+import { getMyProfile, updateProfile } from '../api/profile';
+import { useQuery, useAction } from '../hooks/useQuery';
+import { isBackendConfigured } from '../lib/supabase';
 
 export function ProfileEditScreen({ navigation }: any) {
-  const [name, setName] = useState('Raghav S');
-  const [handle, setHandle] = useState('raghav');
-  const [bio, setBio] = useState('Calls it before kickoff.');
+  const { data: profile } = useQuery(getMyProfile, {
+    display_name: '',
+    handle: '',
+    bio: '',
+  } as any);
+
+  const [name, setName] = useState('');
+  const [handle, setHandle] = useState('');
+  const [bio, setBio] = useState('');
+  const [loaded, setLoaded] = useState(false);
+
+  // Seed the fields once the profile lands, without clobbering edits in flight.
+  useEffect(() => {
+    if (loaded || !profile?.handle) return;
+    setName(profile.display_name ?? '');
+    setHandle(profile.handle ?? '');
+    setBio(profile.bio ?? '');
+    setLoaded(true);
+  }, [profile, loaded]);
+
+  const { run: save, loading, error } = useAction(updateProfile);
+
+  const submit = async () => {
+    if (!isBackendConfigured) return navigation.goBack();
+    const saved = await save({
+      display_name: name.trim(),
+      handle: handle.trim().toLowerCase(),
+      bio: bio.trim() || null,
+    } as any);
+    if (saved) navigation.goBack();
+  };
 
   return (
     <ScreenBackground tone="base" glow={false}>
@@ -15,7 +46,11 @@ export function ProfileEditScreen({ navigation }: any) {
         title="Edit profile"
         onBack={() => navigation.goBack()}
         rightActions={[
-          { icon: <Text style={styles.save}>Save</Text>, onPress: () => navigation.goBack(), accessibilityLabel: 'Save' },
+          {
+            icon: <Text style={styles.save}>{loading ? '…' : 'Save'}</Text>,
+            onPress: submit,
+            accessibilityLabel: 'Save profile',
+          },
         ]}
       />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -31,7 +66,16 @@ export function ProfileEditScreen({ navigation }: any) {
           onChangeText={(t) => setHandle(t.replace(/[^a-z0-9_]/gi, '').toLowerCase())}
           autoCapitalize="none"
         />
-        <TextInput label="Bio" value={bio} onChangeText={setBio} multiline maxChars={80} showCounter />
+        <TextInput
+          label="Bio"
+          value={bio}
+          onChangeText={setBio}
+          multiline
+          maxChars={80}
+          showCounter
+          error={error ? error.message : undefined}
+        />
+        <Button label="Save changes" onPress={submit} loading={loading} fullWidth />
       </ScrollView>
     </ScreenBackground>
   );

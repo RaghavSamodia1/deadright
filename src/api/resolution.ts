@@ -57,7 +57,12 @@ export async function castDisputeVote(disputeId: string, side: BetSide) {
 export async function getDispute(betId: string) {
   const { data, error } = await supabase
     .from('disputes')
-    .select('*, votes:dispute_votes(user_id, side)')
+    .select(
+      `*,
+       votes:dispute_votes(user_id, side),
+       bet:bets(title, winning_side, status),
+       raiser:profiles!disputes_raised_by_fkey(handle, display_name)`,
+    )
     .eq('bet_id', betId)
     .order('created_at', { ascending: false })
     .limit(1)

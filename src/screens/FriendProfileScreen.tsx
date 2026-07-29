@@ -1,11 +1,28 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
-import { ScreenBackground, NavHeader, CredRing, StatsRow, Button, type Stat } from '../components';
+import { ScreenBackground, NavHeader, CredRing, StatsRow, Button, ActionSheet, type Stat } from '../components';
+import { searchProfiles } from '../api/profile';
+import { blockUser } from '../api/settings';
+import { useQuery, useAction } from '../hooks/useQuery';
 
 // Friend profile — their Cred + your head-to-head record.
 export function FriendProfileScreen({ navigation, route }: any) {
   const handle = route?.params?.handle ?? '@marcus';
+  const [sheetOpen, setSheetOpen] = React.useState(false);
+
+  // Look the person up by handle so we can act on them (block, head-to-head).
+  const { data: person } = useQuery<any>(
+    async () => {
+      const clean = String(handle).replace('@', '');
+      const results = await searchProfiles(clean);
+      return results.find((p: any) => p.handle === clean) ?? null;
+    },
+    null,
+    [handle],
+  );
+
+  const { run: block, loading: blocking } = useAction(blockUser);
 
   const stats: Stat[] = [
     { value: '812', label: 'Cred', highlight: true },
@@ -24,7 +41,11 @@ export function FriendProfileScreen({ navigation, route }: any) {
         title={handle}
         onBack={() => navigation.goBack()}
         rightActions={[
-          { icon: <Text style={styles.icon}>⋯</Text>, onPress: () => navigation.navigate('BlockedUsers'), accessibilityLabel: 'More' },
+          {
+            icon: <Text style={styles.icon}>⋯</Text>,
+            onPress: () => setSheetOpen(true),
+            accessibilityLabel: 'More options',
+          },
         ]}
       />
       <ScrollView contentContainerStyle={styles.content}>
@@ -50,6 +71,23 @@ export function FriendProfileScreen({ navigation, route }: any) {
 
         <Button label="Call them out 🔥" onPress={() => navigation.navigate('CreateBet')} fullWidth style={styles.cta} />
       </ScrollView>
+
+      <ActionSheet
+        visible={sheetOpen}
+        onDismiss={() => setSheetOpen(false)}
+        title={handle}
+        options={[
+          {
+            label: `🚫  Block ${handle}`,
+            destructive: true,
+            onPress: async () => {
+              if (!person?.id) return;
+              await block(person.id);
+              navigation.goBack();
+            },
+          },
+        ]}
+      />
     </ScreenBackground>
   );
 }

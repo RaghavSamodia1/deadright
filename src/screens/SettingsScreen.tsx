@@ -3,10 +3,35 @@ import { Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, SettingsRow, SettingsSection } from '../components';
 import { useAuth } from '../lib/AuthContext';
+import { getSettings, updateSettings } from '../api/settings';
+import { useQuery } from '../hooks/useQuery';
+import { isBackendConfigured } from '../lib/supabase';
 
 export function SettingsScreen({ navigation }: any) {
-  const [autoSettle, setAutoSettle] = useState(false);
   const { signOut, demoMode } = useAuth();
+  const { data: settings, refetch } = useQuery(getSettings, {
+    auto_settle: false,
+    currency: 'GBP',
+    default_resolution: 'mutual',
+    jar_cap_cents: 5000,
+  } as any);
+  const [pendingAutoSettle, setPendingAutoSettle] = useState<boolean | null>(null);
+  const autoSettle = pendingAutoSettle ?? settings.auto_settle;
+
+  const toggleAutoSettle = async (next: boolean) => {
+    setPendingAutoSettle(next);
+    if (!isBackendConfigured) return;
+    try {
+      await updateSettings({ auto_settle: next });
+      refetch();
+    } catch {
+      setPendingAutoSettle(!next);
+    }
+  };
+
+  const CURRENCY_LABEL: Record<string, string> = {
+    GBP: 'GBP £', USD: 'USD $', EUR: 'EUR €', INR: 'INR ₹',
+  };
 
   return (
     <ScreenBackground tone="base" glow={false}>
@@ -17,20 +42,44 @@ export function SettingsScreen({ navigation }: any) {
           <SettingsRow icon="👤" label="Profile" onPress={() => navigation.navigate('ProfileEdit')} />
           <SettingsRow icon="🔔" label="Notifications" onPress={() => navigation.navigate('NotificationPrefs')} />
           <SettingsRow icon="🔒" label="Privacy" onPress={() => navigation.navigate('Privacy')} />
-          <SettingsRow icon="🚫" label="Blocked users" onPress={() => {}} />
+          <SettingsRow icon="🚫" label="Blocked users" onPress={() => navigation.navigate('BlockedUsers')} />
         </SettingsSection>
 
         <SettingsSection title="Bets & Ledger">
-          <SettingsRow icon="⚖️" label="Default resolution" value="Mutual" onPress={() => {}} />
-          <SettingsRow icon="💷" label="Currency" value="GBP £" onPress={() => {}} />
+          <SettingsRow
+            icon="⚖️"
+            label="Default resolution"
+            value={settings.default_resolution === 'group_vote' ? 'Group vote' : 'Mutual'}
+            onPress={async () => {
+              const next = settings.default_resolution === 'mutual' ? 'group_vote' : 'mutual';
+              await updateSettings({ default_resolution: next });
+              refetch();
+            }}
+          />
+          <SettingsRow
+            icon="💷"
+            label="Currency"
+            value={CURRENCY_LABEL[settings.currency] ?? settings.currency}
+            onPress={async () => {
+              const order = ['GBP', 'USD', 'EUR', 'INR'];
+              const next = order[(order.indexOf(settings.currency) + 1) % order.length];
+              await updateSettings({ currency: next });
+              refetch();
+            }}
+          />
           <SettingsRow
             icon="🔄"
             label="Auto-settle"
             toggle
             toggleValue={autoSettle}
-            onToggle={setAutoSettle}
+            onToggle={toggleAutoSettle}
           />
-          <SettingsRow icon="🍪" label="Cookie Jar defaults" value="Cap $50" onPress={() => navigation.navigate('JarRules')} />
+          <SettingsRow
+            icon="🍪"
+            label="Cookie Jar defaults"
+            value={`Cap $${(settings.jar_cap_cents / 100).toFixed(0)}`}
+            onPress={() => navigation.navigate('JarRules')}
+          />
         </SettingsSection>
 
         <SettingsSection title="Appearance">

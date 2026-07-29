@@ -8,3 +8,4 @@ export * from './notifications';
 export * from './sharpen';
 export * from './ordinals';
 export * from './pools';
+export * from './settings';

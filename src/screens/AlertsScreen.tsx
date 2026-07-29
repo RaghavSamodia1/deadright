@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, ScrollView, StyleSheet } from 'react-native';
+import { Text, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import {
   ScreenBackground,
@@ -30,7 +30,7 @@ export function AlertsScreen({ navigation }: any) {
     { id: '4', avatar: { initials: 'AB', tint: 'a' }, text: '@abi joined your group.', meta: 'Sunday League · Yesterday' },
   ];
 
-  const { data: alerts, refetch } = useQuery<Alert[]>(
+  const { data: alerts, loading, refetch } = useQuery<Alert[]>(
     async () => (await getNotifications()).map(toAlert),
     MOCK,
   );
@@ -42,7 +42,18 @@ export function AlertsScreen({ navigation }: any) {
     <ScreenBackground tone="base">
       <NavHeader variant="back" title="Alerts" onBack={() => navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={refetch}
+            tintColor={colors.semantic.awaiting}
+            colors={[colors.semantic.awaiting]}
+          />
+        }
+      >
         {alerts.length === 0 ? (
           <EmptyState emoji="🔔" title="You're all caught up" body="New calls, resolutions and disputes land here." />
         ) : (

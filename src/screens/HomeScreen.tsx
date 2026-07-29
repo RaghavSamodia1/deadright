@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, spacing } from '../tokens';
 import {
@@ -40,7 +40,12 @@ export function HomeScreen({ navigation }: any) {
     pendingCents: 0,
   });
 
-  const { data: bets, error: feedError, refetch: refetchFeed } = useQuery<BetCardData[]>(
+  const {
+    data: bets,
+    error: feedError,
+    loading: feedLoading,
+    refetch: refetchFeed,
+  } = useQuery<BetCardData[]>(
     async () => {
       const uid = await uidOrNull();
       return (await getFeed()).map((b) => toBetCard(b, uid));
@@ -97,7 +102,22 @@ export function HomeScreen({ navigation }: any) {
         ]}
       />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={feedLoading}
+            onRefresh={() => {
+              refetchFeed();
+              refetchGroups();
+              refetchUnread();
+            }}
+            tintColor={colors.semantic.awaiting}
+            colors={[colors.semantic.awaiting]}
+          />
+        }
+      >
         {/* Row 1 — Cookie Jar hero + cred/streak column */}
         <View style={styles.row}>
           <BentoTile

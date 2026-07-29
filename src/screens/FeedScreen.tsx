@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
-import { spacing } from '../tokens';
+import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
+import { colors, spacing } from '../tokens';
 import {
   ScreenBackground,
   NavHeader,
@@ -48,7 +48,7 @@ export function FeedScreen({ navigation }: any) {
     },
   ];
 
-  const { data: bets } = useQuery<BetCardData[]>(
+  const { data: bets, loading, refetch } = useQuery<BetCardData[]>(
     async () => {
       const uid = await uidOrNull();
       return (await getFeed()).map((b) => toBetCard(b, uid));
@@ -73,7 +73,18 @@ export function FeedScreen({ navigation }: any) {
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={refetch}
+            tintColor={colors.semantic.awaiting}
+            colors={[colors.semantic.awaiting]}
+          />
+        }
+      >
         {shown.length === 0 ? (
           <EmptyState emoji="🎯" title="No bets here" body="Nothing matches this filter yet." />
         ) : (

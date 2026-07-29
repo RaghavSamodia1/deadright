@@ -70,3 +70,29 @@ export async function getCredHistory(days = 30) {
   if (error) throw error;
   return data;
 }
+
+/** Search people by handle or display name (Search screen). */
+export async function searchProfiles(query: string) {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, handle, display_name, avatar_url, cred_score')
+    .or(`handle.ilike.%${q}%,display_name.ilike.%${q}%`)
+    .limit(20);
+  if (error) throw error;
+  return data;
+}
+
+/** Search bets you can see, by title. */
+export async function searchBets(query: string) {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const { data, error } = await supabase
+    .from('bets')
+    .select('id, title, status, deadline, group:groups(name)')
+    .ilike('title', `%${q}%`)
+    .limit(20);
+  if (error) throw error;
+  return data;
+}

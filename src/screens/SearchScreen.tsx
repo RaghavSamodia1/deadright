@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, SearchBar, FilterChip, ListRow, Avatar, EmptyState } from '../components';
+import { searchProfiles, searchBets } from '../api/profile';
+import { getMyGroups } from '../api/groups';
+import { useQuery } from '../hooks/useQuery';
 
 type Filter = 'all' | 'bets' | 'people' | 'groups';
 
@@ -10,20 +13,51 @@ export function SearchScreen({ navigation }: any) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
 
-  // TODO: wire to src/api — search(query, filter)
   const FILTER_KIND: Record<Exclude<Filter, 'all'>, 'bet' | 'person' | 'group'> = {
     bets: 'bet',
     people: 'person',
     groups: 'group',
   };
-  const results =
-    query.trim().length === 0
-      ? []
-      : [
-          { kind: 'bet' as const, id: 'b1', title: `"${query}" — Arsenal top 4`, sub: 'Sunday League · awaiting' },
-          { kind: 'person' as const, id: 'p1', title: '@marcus', sub: 'Cred 812 · 3 mutual groups' },
-          { kind: 'group' as const, id: 'g1', title: 'Flatmates', sub: '5 members · 12 open bets' },
-        ].filter((r) => filter === 'all' || r.kind === FILTER_KIND[filter]);
+
+  type Result = { kind: 'bet' | 'person' | 'group'; id: string; title: string; sub: string };
+
+  const { data: hits, loading } = useQuery<Result[]>(
+    async () => {
+      const q = query.trim();
+      if (q.length < 2) return [];
+      const [people, bets, groups] = await Promise.all([
+        searchProfiles(q),
+        searchBets(q),
+        getMyGroups(),
+      ]);
+      return [
+        ...people.map((p: any) => ({
+          kind: 'person' as const,
+          id: p.handle,
+          title: `@${p.handle}`,
+          sub: `${p.display_name ?? ''} · Cred ${p.cred_score}`,
+        })),
+        ...bets.map((b: any) => ({
+          kind: 'bet' as const,
+          id: b.id,
+          title: b.title,
+          sub: `${b.group?.name ?? 'Personal'} · ${b.status}`,
+        })),
+        ...groups
+          .filter((g: any) => g.name.toLowerCase().includes(q.toLowerCase()))
+          .map((g: any) => ({
+            kind: 'group' as const,
+            id: g.id,
+            title: g.name,
+            sub: `${g.members?.length ?? 0} members`,
+          })),
+      ];
+    },
+    [],
+    [query],
+  );
+
+  const results = hits.filter((r) => filter === 'all' || r.kind === FILTER_KIND[filter]);
 
   return (
     <ScreenBackground tone="base">

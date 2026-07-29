@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { colors, spacing } from '../tokens';
 import {
   ScreenBackground,
@@ -11,7 +12,11 @@ import {
 import { getFeed } from '../api/bets';
 import { getMyProfile } from '../api/profile';
 import { getLedgerSummary } from '../api/ledger';
+import { getMyGroups } from '../api/groups';
+import { isBackendConfigured } from '../lib/supabase';
+import { Button, ListRow } from '../components';
 import { useQuery } from '../hooks/useQuery';
+import { useRealtime } from '../hooks/useRealtime';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
 
@@ -34,12 +39,32 @@ export function HomeScreen({ navigation }: any) {
     pendingCents: 0,
   });
 
-  const { data: bets } = useQuery<BetCardData[]>(
+  const { data: bets, error: feedError, refetch: refetchFeed } = useQuery<BetCardData[]>(
     async () => {
       const uid = await uidOrNull();
       return (await getFeed()).map((b) => toBetCard(b, uid));
     },
     [],
+  );
+
+  // No group means no feed, no jar and no ledger — everything is group-scoped,
+  // so that's the first thing to fix rather than showing empty tiles.
+  const { data: groups, refetch: refetchGroups } = useQuery(getMyGroups, [] as any[]);
+  const noGroups = isBackendConfigured && groups.length === 0;
+
+  // Someone else calling a bet or joining a side should show up without a
+  // navigate-away-and-back.
+  useRealtime('bets', refetchFeed);
+  useRealtime('bet_participants', refetchFeed);
+  useRealtime('group_members', refetchGroups);
+
+  // Coming back to Home after creating a group/bet should reflect it.
+  useFocusEffect(
+    useCallback(() => {
+      refetchFeed();
+      refetchGroups();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
   );
 
   return (
@@ -105,14 +130,70 @@ export function HomeScreen({ navigation }: any) {
           />
         </View>
 
-        {/* Row 3 — bets */}
-        <Text style={styles.section}>NEEDS YOU</Text>
-        {bets.map((bet) => (
-          <BetCard key={bet.id} bet={bet} onPress={(b) => navigation.navigate('BetDetail', { id: b.id })} />
+        {/* Row 3 — bets, or the first-run path into the social loop */}
+        {feedError ? (
+          <View style={styles.notice}>
+            <Text style={styles.noticeTitle}>Couldn’t load your feed</Text>
+            <Text style={styles.noticeBody}>{feedError.message}</Text>
+          </View>
+        ) : noGroups ? (
+          <View style={styles.firstRun}>
+            <Text style={styles.section}>START HERE</Text>
+            <Text style={styles.firstRunTitle}>Bets need people.</Text>
+            <Text style={styles.firstRunBody}>
+              Make a group with your friends, or join theirs with a code. Everything —
+              bets, the Cookie Jar, the ledger — lives inside a group.
+            </Text>
+            <Button label="Create a group" onPress={() => navigation.navigate('CreateGroup')} fullWidth />
+            <Button
+              label="I have an invite code"
+              onPress={() => navigation.navigate('JoinGroup')}
+              variant="secondary"
+              fullWidth
+            />
+          </View>
+        ) : (
+          <>
+            {/* Your groups — the only way back into a group after creating it */}
+            <Text style={styles.section}>YOUR GROUPS</Text>
+            {groups.map((g: any) => (
+              <ListRow
+                key={g.id}
+                title={`${g.emoji ?? '👥'}  ${g.name}`}
+                subtitle={`${g.members?.length ?? 0} members · tap for jar, bets & invite code`}
+                showChevron
+                onPress={() => navigation.navigate('Group', { id: g.id, name: g.name })}
+              />
+            ))}
+            <Text style={styles.seeAll} onPress={() => navigation.navigate('CreateGroup')}>
+              + New group
+            </Text>
+          </>
+        )}
+
+        {!noGroups && !feedError && (bets.length === 0 ? (
+          <View style={styles.firstRun}>
+            <Text style={styles.section}>NEEDS YOU</Text>
+            <Text style={styles.firstRunBody}>
+              Nothing open right now. Call something and drag the group in.
+            </Text>
+            <Button label="Call it 🔥" onPress={() => navigation.navigate('CreateBet')} fullWidth />
+          </View>
+        ) : (
+          <>
+            <Text style={styles.section}>NEEDS YOU</Text>
+            {bets.map((bet) => (
+              <BetCard
+                key={bet.id}
+                bet={bet}
+                onPress={(b) => navigation.navigate('BetDetail', { id: b.id })}
+              />
+            ))}
+            <Text style={styles.seeAll} onPress={() => navigation.navigate('AllBets')}>
+              See all bets →
+            </Text>
+          </>
         ))}
-        <Text style={styles.seeAll} onPress={() => navigation.navigate('AllBets')}>
-          See all bets →
-        </Text>
       </ScrollView>
     </ScreenBackground>
   );
@@ -153,6 +234,38 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     color: colors.semantic.awaiting,
     marginTop: spacing[2],
+  },
+  firstRun: { gap: spacing[3], marginTop: spacing[2] },
+  firstRunTitle: {
+    fontFamily: 'Barlow-Black',
+    fontSize: 22,
+    color: colors.text.primary,
+    letterSpacing: -0.3,
+  },
+  firstRunBody: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    lineHeight: 21,
+    color: colors.text.secondary,
+  },
+  notice: {
+    backgroundColor: colors.semantic.disputedDim,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.semantic.disputed,
+    padding: spacing[4],
+    gap: 4,
+    marginTop: spacing[3],
+  },
+  noticeTitle: {
+    fontFamily: 'Barlow-Bold',
+    fontSize: 15,
+    color: colors.semantic.disputed,
+  },
+  noticeBody: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 13,
+    color: colors.text.secondary,
   },
   seeAll: {
     fontFamily: 'Barlow-SemiBold',

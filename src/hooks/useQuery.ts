@@ -42,16 +42,18 @@ export function useQuery<T>(
     fetcher()
       .then((result) => {
         if (!alive) return;
-        // Treat an empty array as "no data yet" but still real, not mock.
+        // Real data wins even when empty. Showing mock rows to a signed-in user
+        // is worse than an empty state: the rows look tappable but their ids
+        // don't exist, so every interaction silently fails.
         setData(result);
         setIsMock(false);
         setError(null);
       })
       .catch((e: Error) => {
         if (!alive) return;
+        // Surface the failure instead of quietly pretending with mock data.
         setError(e);
-        setData(fallback); // degrade to mock rather than an empty screen
-        setIsMock(true);
+        setIsMock(false);
       })
       .finally(() => alive && setLoading(false));
     return () => {

@@ -24,4 +24,5 @@ ios/Pods/
 
 # Build output / CLI state
 ios/build-device/
+ios/build-signed/
 supabase/.temp/

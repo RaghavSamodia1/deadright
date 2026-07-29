@@ -10,6 +10,7 @@ import {
 } from '../components';
 import { getNotifications, markRead } from '../api/notifications';
 import { useQuery } from '../hooks/useQuery';
+import { useRealtime } from '../hooks/useRealtime';
 
 // V2-07 Alerts (design-v2.md §5) — notification feed with contextual actions.
 type Alert = {
@@ -29,10 +30,13 @@ export function AlertsScreen({ navigation }: any) {
     { id: '4', avatar: { initials: 'AB', tint: 'a' }, text: '@abi joined your group.', meta: 'Sunday League · Yesterday' },
   ];
 
-  const { data: alerts } = useQuery<Alert[]>(
+  const { data: alerts, refetch } = useQuery<Alert[]>(
     async () => (await getNotifications()).map(toAlert),
     MOCK,
   );
+
+  // Alerts are push-shaped: they should land while the screen is open.
+  useRealtime('notifications', refetch);
 
   return (
     <ScreenBackground tone="base">

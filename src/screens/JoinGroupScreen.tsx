@@ -2,11 +2,21 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, TextInput, AvatarStack, Button } from '../components';
+import { joinGroupByCode } from '../api/groups';
+import { useAction } from '../hooks/useQuery';
+import { isBackendConfigured } from '../lib/supabase';
 
 // Join a group by its 6-char code (join_group_by_code RPC).
 export function JoinGroupScreen({ navigation }: any) {
   const [code, setCode] = useState('');
   const found = code.trim().length === 6;
+  const { run: join, loading, error } = useAction(joinGroupByCode);
+
+  const submit = async () => {
+    if (!isBackendConfigured) return navigation.replace('Group', { name: 'Flatmates' });
+    const group = await join(code.trim());
+    if (group) navigation.replace('Group', { id: group.id, name: group.name });
+  };
 
   return (
     <ScreenBackground tone="base" glow={false}>
@@ -20,6 +30,7 @@ export function JoinGroupScreen({ navigation }: any) {
             onChangeText={(t) => setCode(t.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
             autoCapitalize="characters"
             autoFocus
+            error={error ? error.message : undefined}
           />
 
           {found && (
@@ -33,8 +44,9 @@ export function JoinGroupScreen({ navigation }: any) {
         </View>
         <Button
           label="Join group"
-          onPress={() => navigation.replace('Group', { name: 'Flatmates' })}
+          onPress={submit}
           disabled={!found}
+          loading={loading}
           fullWidth
           style={styles.cta}
         />

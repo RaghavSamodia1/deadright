@@ -2,13 +2,27 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, Button } from '../components';
+import { joinSide } from '../api/bets';
+import { useAction } from '../hooks/useQuery';
+import { isBackendConfigured } from '../lib/supabase';
 
 type Side = 'a' | 'b' | null;
 
 // Side selection sheet — pick which side of a bet you're on before it locks.
 export function SideSelectionScreen({ navigation, route }: any) {
   const title = route?.params?.title ?? 'Arsenal finish top 4 this season';
+  const betId = route?.params?.id ?? route?.params?.betId;
   const [side, setSide] = useState<Side>(null);
+  const { run: join, loading, error } = useAction(joinSide);
+
+  const submit = async () => {
+    if (!side) return;
+    if (!isBackendConfigured || !betId) {
+      return navigation.replace('BetDetail', { id: betId });
+    }
+    const joined = await join(betId, side);
+    if (joined) navigation.replace('BetDetail', { id: betId });
+  };
 
   const Option = ({ value, label, sub, color }: { value: Exclude<Side, null>; label: string; sub: string; color: string }) => (
     <Pressable
@@ -37,10 +51,12 @@ export function SideSelectionScreen({ navigation, route }: any) {
         <View style={styles.footer}>
           <Button
             label="Lock in my side"
-            onPress={() => navigation.replace('BetDetail', { id: route?.params?.id })}
+            onPress={submit}
             disabled={!side}
+            loading={loading}
             fullWidth
           />
+          {error && <Text style={styles.error}>{error.message}</Text>}
           <Text style={styles.warn}>Once locked, you can’t switch — but everyone sees if you try 👀</Text>
         </View>
       </View>
@@ -70,4 +86,10 @@ const styles = StyleSheet.create({
   optSub: { fontFamily: 'Inter-Regular', fontSize: 12, color: colors.text.secondary },
   footer: { gap: spacing[3], paddingBottom: spacing[6] },
   warn: { fontFamily: 'Inter-Regular', fontSize: 11, color: colors.text.tertiary, textAlign: 'center' },
+  error: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 13,
+    color: colors.interactive.destructive,
+    textAlign: 'center',
+  },
 });

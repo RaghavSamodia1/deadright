@@ -13,6 +13,10 @@ import {
   Button,
   type BetCardData,
 } from '../components';
+import { createBet } from '../api/bets';
+import { getMyGroups } from '../api/groups';
+import { useQuery, useAction } from '../hooks/useQuery';
+import { isBackendConfigured } from '../lib/supabase';
 
 type BetType = 'binary' | 'overunder' | 'ordinal';
 const TYPE_OPTS: { value: BetType; label: string }[] = [
@@ -44,12 +48,52 @@ export function CreateBetScreen({ navigation }: any) {
   const [type, setType] = useState<BetType>('binary');
   const [deadline, setDeadline] = useState<Deadline>('24h');
   const [stake, setStake] = useState<Stake>('brag');
-  const [group, setGroup] = useState<string>('g1');
+  // Empty means "no group" (a personal call) until the user picks one; the
+  // first real group is selected once they load.
+  const [group, setGroup] = useState<string>('');
 
-  const groups = [
+  const MOCK_GROUPS = [
     { id: 'g1', emoji: '⚽', name: 'Sunday League', memberCount: 8, members: [{ initials: 'MC' }, { initials: 'PR' }, { initials: 'DJ' }] },
     { id: 'g2', emoji: '🏠', name: 'Flatmates', memberCount: 5, members: [{ initials: 'AB' }, { initials: 'JK' }] },
   ];
+
+  const { data: groups } = useQuery(
+    async () =>
+      (await getMyGroups()).map((g: any) => ({
+        id: g.id,
+        emoji: g.emoji ?? '👥',
+        name: g.name,
+        memberCount: g.members?.length ?? 0,
+        members: (g.members ?? []).slice(0, 4).map((m: any) => ({
+          initials: (m.profile?.display_name ?? m.profile?.handle ?? '??')
+            .slice(0, 2)
+            .toUpperCase(),
+        })),
+      })),
+    MOCK_GROUPS,
+  );
+
+  const { run: publish, loading: publishing, error: publishError } = useAction(createBet);
+
+  const DEADLINE_MS: Record<Deadline, number> = {
+    '1h': 3600_000,
+    '24h': 86_400_000,
+    '1w': 604_800_000,
+    custom: 86_400_000,
+  };
+
+  const submit = async () => {
+    if (!isBackendConfigured) return navigation.replace('BetPlaced');
+    const bet = await publish({
+      groupId: group || null,
+      title: (sharpened || statement).trim(),
+      stakeKind: stake === 'money' ? 'money' : 'dare',
+      stakeAmountCents: stake === 'money' ? 1000 : undefined,
+      dareForfeit: stake === 'money' ? undefined : STAKE_OPTS.find((s) => s.value === stake)?.label,
+      deadline: new Date(Date.now() + DEADLINE_MS[deadline]),
+    });
+    if (bet) navigation.replace('BetPlaced', { id: bet.id });
+  };
 
   const canNext = step === 0 ? statement.trim().length > 4 : true;
   const preview: BetCardData = {
@@ -63,7 +107,7 @@ export function CreateBetScreen({ navigation }: any) {
     deadline: new Date(Date.now() + 1000 * 60 * 60 * 24),
   };
 
-  const next = () => (step === STEPS.length - 1 ? navigation.replace('BetPlaced') : setStep(step + 1));
+  const next = () => (step === STEPS.length - 1 ? submit() : setStep(step + 1));
   const back = () => (step === 0 ? navigation.goBack() : setStep(step - 1));
 
   return (
@@ -130,6 +174,7 @@ export function CreateBetScreen({ navigation }: any) {
             <Text style={styles.q}>Lock it in?</Text>
             <BetCard bet={preview} onPress={() => {}} />
             <Text style={styles.hint}>Once you publish, the clock starts and everyone gets pinged.</Text>
+            {publishError && <Text style={styles.error}>{publishError.message}</Text>}
           </>
         )}
       </ScrollView>
@@ -140,6 +185,7 @@ export function CreateBetScreen({ navigation }: any) {
           label={step === STEPS.length - 1 ? 'Call it 🔥' : 'Next'}
           onPress={next}
           disabled={!canNext}
+          loading={publishing}
           style={styles.nextBtn}
         />
       </View>
@@ -155,6 +201,11 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: colors.text.primary,
     letterSpacing: -0.3,
+  },
+  error: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 13,
+    color: colors.interactive.destructive,
   },
   hint: {
     fontFamily: 'Inter-Regular',

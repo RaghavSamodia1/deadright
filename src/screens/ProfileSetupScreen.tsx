@@ -5,17 +5,22 @@ import { ScreenBackground, NavHeader, Avatar, TextInput, Button } from '../compo
 import { claimHandle } from '../api/auth';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
 
 export function ProfileSetupScreen({ navigation }: any) {
   const [name, setName] = useState('');
   const [handle, setHandle] = useState('');
   const ready = name.trim().length > 1 && handle.trim().length > 2;
   const { run: claim, loading, error } = useAction(claimHandle);
+  const { refreshProfile } = useAuth();
 
   const finish = async () => {
     if (!isBackendConfigured) return navigation.replace('Root');
     const profile = await claim(handle, name);
-    if (profile) navigation.replace('Root');
+    if (profile) {
+      refreshProfile(); // clears needsProfile so this screen isn't the entry point again
+      navigation.replace('Root');
+    }
   };
 
   return (

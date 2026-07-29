@@ -46,7 +46,12 @@ export function GroupScreen({ navigation, route }: any) {
         <View style={styles.row}>
           <BentoTile
             size="wide" tone="amber" emoji="🍪" value="$23.50" label="Cookie Jar →"
-            onPress={() => navigation.navigate('CookieJar')}
+            onPress={() =>
+              navigation.navigate('CookieJar', {
+                groupId: route?.params?.id,
+                groupName: name,
+              })
+            }
           />
           <View style={styles.col}>
             <BentoTile size="stat" tone="navy" value="6" label="Open bets" />

@@ -3,34 +3,72 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, radius } from '../tokens';
 import { BottomSheet, Avatar, Button, ChoiceChip } from '../components';
+import { getJarRules, addViolation } from '../api/jar';
+import { getGroup } from '../api/groups';
+import { useQuery, useAction } from '../hooks/useQuery';
+import { isBackendConfigured } from '../lib/supabase';
 
-const MEMBERS = [
-  { handle: '@marcus', initials: 'MJ' },
-  { handle: '@abi', initials: 'AK' },
-  { handle: '@dave', initials: 'DJ' },
-  { handle: '@sam', initials: 'SB' },
+const MOCK_MEMBERS = [
+  { id: 'm1', handle: '@marcus', initials: 'MJ' },
+  { id: 'm2', handle: '@abi', initials: 'AK' },
+  { id: 'm3', handle: '@dave', initials: 'DJ' },
 ];
 
-const RULES = [
+const MOCK_RULES = [
   { id: 'swear', label: 'Swearing', amount: 1 },
   { id: 'late', label: 'Late to plans', amount: 5 },
   { id: 'phone', label: 'Phone at dinner', amount: 2 },
-  { id: 'flake', label: 'Flaking', amount: 10 },
 ];
 
 interface AddViolationSheetProps {
   visible: boolean;
   onDismiss: () => void;
+  /** The jar's group — rules and members are scoped to it. */
+  groupId?: string;
 }
 
-export function AddViolationSheet({ visible, onDismiss }: AddViolationSheetProps) {
+export function AddViolationSheet({ visible, onDismiss, groupId }: AddViolationSheetProps) {
   const [member, setMember] = useState<string | null>(null);
   const [rule, setRule] = useState<string | null>(null);
-  const selectedRule = RULES.find((r) => r.id === rule);
 
-  const submit = () => {
+  const { data: members } = useQuery(
+    async () => {
+      if (!groupId) return MOCK_MEMBERS;
+      const g: any = await getGroup(groupId);
+      return (g.members ?? []).map((m: any) => ({
+        id: m.user_id,
+        handle: m.profile?.handle ? `@${m.profile.handle}` : '@member',
+        initials: (m.profile?.display_name ?? m.profile?.handle ?? '??')
+          .slice(0, 2)
+          .toUpperCase(),
+      }));
+    },
+    MOCK_MEMBERS,
+    [groupId],
+  );
+
+  const { data: rules } = useQuery(
+    async () => {
+      if (!groupId) return MOCK_RULES;
+      return (await getJarRules(groupId)).map((r: any) => ({
+        id: r.id,
+        label: r.label,
+        amount: r.amount_cents / 100,
+      }));
+    },
+    MOCK_RULES,
+    [groupId],
+  );
+
+  const { run: report, loading, error } = useAction(addViolation);
+  const selectedRule = rules.find((r: any) => r.id === rule);
+
+  const submit = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    // TODO: insert violation; violator gets 24h dispute window notification
+    if (isBackendConfigured && groupId && member && rule) {
+      // The violator gets a 24h dispute window (add_violation RPC).
+      await report(groupId, rule, member);
+    }
     onDismiss();
     setMember(null);
     setRule(null);
@@ -42,16 +80,16 @@ export function AddViolationSheet({ visible, onDismiss }: AddViolationSheetProps
 
       <Text style={styles.label}>Who did it?</Text>
       <View style={styles.memberRow}>
-        {MEMBERS.map((m) => (
+        {members.map((m: any) => (
           <Pressable
-            key={m.handle}
-            onPress={() => setMember(m.handle)}
-            style={[styles.member, member === m.handle && styles.memberSelected]}
+            key={m.id}
+            onPress={() => setMember(m.id)}
+            style={[styles.member, member === m.id && styles.memberSelected]}
             accessibilityRole="button"
-            accessibilityState={{ selected: member === m.handle }}
+            accessibilityState={{ selected: member === m.id }}
           >
-            <Avatar size="md" initials={m.initials} tint={member === m.handle ? 'b' : 'neutral'} />
-            <Text style={[styles.memberHandle, member === m.handle && { color: colors.text.primary }]}>
+            <Avatar size="md" initials={m.initials} tint={member === m.id ? 'b' : 'neutral'} />
+            <Text style={[styles.memberHandle, member === m.id && { color: colors.text.primary }]}>
               {m.handle}
             </Text>
           </Pressable>
@@ -59,27 +97,34 @@ export function AddViolationSheet({ visible, onDismiss }: AddViolationSheetProps
       </View>
 
       <Text style={styles.label}>Which rule?</Text>
-      <View style={styles.ruleWrap}>
-        {RULES.map((r) => (
-          <ChoiceChip
-            key={r.id}
-            label={`${r.label} · $${r.amount}`}
-            selected={rule === r.id}
-            onPress={() => setRule(r.id)}
-          />
-        ))}
-      </View>
+      {rules.length === 0 ? (
+        <Text style={styles.note}>No rules yet — add one from the 📜 rules screen first.</Text>
+      ) : (
+        <View style={styles.ruleWrap}>
+          {rules.map((r: any) => (
+            <ChoiceChip
+              key={r.id}
+              label={`${r.label} · $${r.amount}`}
+              selected={rule === r.id}
+              onPress={() => setRule(r.id)}
+            />
+          ))}
+        </View>
+      )}
 
-      <Text style={styles.note}>
-        {member && selectedRule
-          ? `${member} can dispute within 24h. Fair's fair.`
-          : 'They get 24h to dispute — same rules as bets.'}
+      <Text style={[styles.note, error ? { color: colors.interactive.destructive } : null]}>
+        {error
+          ? error.message
+          : member && selectedRule
+            ? 'They can dispute within 24h. Fair’s fair.'
+            : 'They get 24h to dispute — same rules as bets.'}
       </Text>
 
       <Button
         label={selectedRule ? `INTO THE JAR — $${selectedRule.amount}` : 'INTO THE JAR'}
         onPress={submit}
         disabled={!member || !rule}
+        loading={loading}
         fullWidth
       />
     </BottomSheet>

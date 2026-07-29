@@ -28,6 +28,37 @@ export async function sendEmailOtp(email: string): Promise<void> {
   if (error) throw error;
 }
 
+/**
+ * Email + password, the delivery-free path.
+ *
+ * Supabase's built-in email service only reliably delivers to addresses on your
+ * own org and is rate-limited to a couple of messages an hour, so OTP is a poor
+ * bet until custom SMTP is configured. Password auth needs no email at all
+ * (provided "Confirm email" is off), which makes it the dependable way in.
+ *
+ * Tries sign-in first and falls back to sign-up, so one button serves both.
+ */
+export async function signInOrSignUp(email: string, password: string): Promise<Session> {
+  const clean = email.trim().toLowerCase();
+  const attempt = await supabase.auth.signInWithPassword({ email: clean, password });
+  if (attempt.data.session) return attempt.data.session;
+
+  // Wrong password on an existing account — don't mask it as a signup failure.
+  if (attempt.error && !/invalid login credentials/i.test(attempt.error.message)) {
+    throw attempt.error;
+  }
+
+  const created = await supabase.auth.signUp({ email: clean, password });
+  if (created.error) throw created.error;
+  if (!created.data.session) {
+    throw new Error(
+      'Account created — now confirm it from the email Supabase just sent, or ' +
+        'turn off "Confirm email" in Authentication → Providers → Email.',
+    );
+  }
+  return created.data.session;
+}
+
 export async function verifyEmailOtp(email: string, token: string): Promise<Session> {
   const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
   if (error) throw error;

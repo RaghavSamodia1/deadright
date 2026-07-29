@@ -18,6 +18,10 @@ export { FeedScreen } from './FeedScreen';            // V2-08 (route: AllBets)
 export { CreateBetScreen } from './CreateBetScreen';
 export { BetPlacedScreen } from './BetPlacedScreen';
 
+// ── Party Pools (guest-facing web page lives in supabase/functions/pool) ─────
+export { CreatePoolScreen } from './CreatePoolScreen';
+export { PoolDetailScreen } from './PoolDetailScreen';
+
 // ── Resolution & dispute ─────────────────────────────────────────────────────
 export { SideSelectionScreen } from './SideSelectionScreen';
 export { ResolutionScreen } from './ResolutionScreen';

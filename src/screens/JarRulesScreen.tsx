@@ -1,16 +1,58 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, spacing, radius } from '../tokens';
-import { ScreenBackground, NavHeader, Button, ListRow } from '../components';
+import {
+  ScreenBackground,
+  NavHeader,
+  Button,
+  ListRow,
+  BottomSheet,
+  TextInput,
+  ChoiceChip,
+} from '../components';
+import { getJarRules, proposeRule, settleJar } from '../api/jar';
+import { useQuery, useAction } from '../hooks/useQuery';
+import { isBackendConfigured } from '../lib/supabase';
 
-const RULES = [
-  { id: 'swear', emoji: '🤬', label: 'Swearing', amount: '$1', count: 14 },
-  { id: 'late', emoji: '⏰', label: 'Late to plans', amount: '$5', count: 4 },
-  { id: 'phone', emoji: '📱', label: 'Phone at dinner', amount: '$2', count: 7 },
-  { id: 'flake', emoji: '👻', label: 'Flaking', amount: '$10', count: 1 },
+const MOCK_RULES = [
+  { id: 'swear', emoji: '🤬', label: 'Swearing', amount_cents: 100 },
+  { id: 'late', emoji: '⏰', label: 'Late to plans', amount_cents: 500 },
+  { id: 'phone', emoji: '📱', label: 'Phone at dinner', amount_cents: 200 },
 ];
 
-export function JarRulesScreen({ navigation }: any) {
+const EMOJIS = ['🤬', '⏰', '📱', '👻', '🍺', '💤', '🙄', '🧢'];
+const AMOUNTS = [1, 2, 5, 10];
+
+/** Rules belong to a group's jar — proposing one writes to that group. */
+export function JarRulesScreen({ navigation, route }: any) {
+  const groupId: string | undefined = route?.params?.groupId;
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [label, setLabel] = useState('');
+  const [emoji, setEmoji] = useState('🤬');
+  const [amount, setAmount] = useState(1);
+
+  const { data: rules, refetch } = useQuery(
+    async () => (groupId ? await getJarRules(groupId) : MOCK_RULES),
+    MOCK_RULES as any[],
+    [groupId],
+  );
+
+  const { run: propose, loading, error } = useAction(proposeRule);
+  const { run: settle, loading: settling } = useAction(settleJar);
+
+  const addRule = async () => {
+    if (!isBackendConfigured || !groupId) {
+      setSheetOpen(false);
+      return;
+    }
+    const created = await propose(groupId, label.trim(), amount * 100, emoji);
+    if (created) {
+      setSheetOpen(false);
+      setLabel('');
+      refetch();
+    }
+  };
+
   return (
     <ScreenBackground tone="base">
       <NavHeader variant="back" title="Jar Rules" onBack={() => navigation.goBack()} />
@@ -22,30 +64,75 @@ export function JarRulesScreen({ navigation }: any) {
         </Text>
 
         <View style={styles.list}>
-          {RULES.map((r) => (
+          {rules.map((r: any) => (
             <ListRow
               key={r.id}
               left={
                 <View style={styles.emojiBox}>
-                  <Text style={styles.emoji}>{r.emoji}</Text>
+                  <Text style={styles.emoji}>{r.emoji ?? '🍪'}</Text>
                 </View>
               }
               title={r.label}
-              subtitle={`${r.count} violations all-time`}
-              value={r.amount}
+              subtitle="Anyone can report a break"
+              value={`$${(r.amount_cents / 100).toFixed(0)}`}
               valueColor={colors.semantic.awaiting}
               showChevron={false}
             />
           ))}
         </View>
 
-        <Button label="+ PROPOSE A RULE" onPress={() => {}} variant="secondary" fullWidth />
+        <Button label="+ PROPOSE A RULE" onPress={() => setSheetOpen(true)} variant="secondary" fullWidth />
+
+        {groupId && (
+          <Button
+            label="Settle the jar 🍕"
+            onPress={async () => {
+              await settle(groupId, 'settled from rules screen');
+              navigation.goBack();
+            }}
+            loading={settling}
+            variant="ghost"
+            fullWidth
+          />
+        )}
 
         <Text style={styles.footnote}>
-          Jar cap: $50 · When full, the jar settles into a group event and everyone's
+          Jar cap: $50 · When full, the jar settles into a group event and everyone’s
           ledger updates proportionally.
         </Text>
       </ScrollView>
+
+      <BottomSheet visible={sheetOpen} onDismiss={() => setSheetOpen(false)}>
+        <Text style={styles.overline}>NEW RULE</Text>
+        <TextInput
+          label="What’s the offence?"
+          placeholder="Swearing"
+          value={label}
+          onChangeText={setLabel}
+          maxChars={40}
+          error={error ? error.message : undefined}
+        />
+        <Text style={styles.label}>Icon</Text>
+        <View style={styles.chipWrap}>
+          {EMOJIS.map((e) => (
+            <ChoiceChip key={e} label={e} selected={emoji === e} onPress={() => setEmoji(e)} />
+          ))}
+        </View>
+        <Text style={styles.label}>Cost</Text>
+        <View style={styles.chipWrap}>
+          {AMOUNTS.map((a) => (
+            <ChoiceChip key={a} label={`$${a}`} selected={amount === a} onPress={() => setAmount(a)} />
+          ))}
+        </View>
+        <Button
+          label="Add rule"
+          onPress={addRule}
+          disabled={label.trim().length < 2}
+          loading={loading}
+          fullWidth
+          style={styles.sheetCta}
+        />
+      </BottomSheet>
     </ScreenBackground>
   );
 }
@@ -54,6 +141,7 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.screenGutter,
     gap: spacing[4],
+    paddingBottom: spacing[8],
   },
   intro: {
     fontFamily: 'Inter-Regular',
@@ -77,4 +165,22 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     color: colors.text.tertiary,
   },
+  overline: {
+    fontFamily: 'Barlow-SemiBold',
+    fontSize: 11,
+    letterSpacing: 2,
+    color: colors.semantic.awaiting,
+    marginBottom: spacing[3],
+  },
+  label: {
+    fontFamily: 'Barlow-SemiBold',
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: colors.text.secondary,
+    marginTop: spacing[3],
+    marginBottom: spacing[2],
+  },
+  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] },
+  sheetCta: { marginTop: spacing[4] },
 });

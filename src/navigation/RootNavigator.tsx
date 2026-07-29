@@ -18,6 +18,8 @@ import {
   FeedScreen,
   CreateBetScreen,
   BetPlacedScreen,
+  CreatePoolScreen,
+  PoolDetailScreen,
   SideSelectionScreen,
   ResolutionScreen,
   EvidenceUploadScreen,
@@ -50,7 +52,7 @@ export type RootStackParamList = Record<string, object | undefined>;
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
-  const { isAuthed, loading } = useAuth();
+  const { isAuthed, loading, needsProfile } = useAuth();
 
   // Hold on the navy base while the stored session is read — avoids a flash of
   // the auth stack for users who are already signed in.
@@ -58,20 +60,25 @@ export function RootNavigator() {
     return <View style={{ flex: 1, backgroundColor: colors.bg.base }} />;
   }
 
+  // Signed out: only the auth stack exists. Screens must NOT navigate manually
+  // after signing in — the session change swaps the whole stack below, and a
+  // replace() from a screen that's unmounting in the same render is dropped.
+  if (!isAuthed) {
+    return (
+      <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Splash" component={SplashScreen} />
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        <Stack.Screen name="SignUp" component={SignUpScreen} />
+        <Stack.Screen name="OTP" component={OTPScreen} />
+      </Stack.Navigator>
+    );
+  }
+
   return (
     <Stack.Navigator
-      initialRouteName={isAuthed ? 'Root' : 'Splash'}
+      initialRouteName={needsProfile ? 'ProfileSetup' : 'Root'}
       screenOptions={{ headerShown: false }}
     >
-      {/* Auth — only mounted while signed out, so back can't return here */}
-      {!isAuthed && (
-        <Stack.Group>
-          <Stack.Screen name="Splash" component={SplashScreen} />
-          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-          <Stack.Screen name="SignUp" component={SignUpScreen} />
-          <Stack.Screen name="OTP" component={OTPScreen} />
-        </Stack.Group>
-      )}
       <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
 
       {/* Hub + spokes */}
@@ -84,6 +91,7 @@ export function RootNavigator() {
       <Stack.Screen name="AllBets" component={FeedScreen} />
       <Stack.Screen name="CookieJar" component={SwearJarScreen} />
       <Stack.Screen name="JarRules" component={JarRulesScreen} />
+      <Stack.Screen name="PoolDetail" component={PoolDetailScreen} />
 
       {/* Resolution & dispute */}
       <Stack.Screen name="Resolution" component={ResolutionScreen} />
@@ -106,6 +114,7 @@ export function RootNavigator() {
       {/* Modals (sheets & wizards) */}
       <Stack.Group screenOptions={{ presentation: 'modal' }}>
         <Stack.Screen name="CreateBet" component={CreateBetScreen} />
+        <Stack.Screen name="CreatePool" component={CreatePoolScreen} />
         <Stack.Screen name="SideSelection" component={SideSelectionScreen} />
         <Stack.Screen name="CreateGroup" component={CreateGroupScreen} />
         <Stack.Screen name="JoinGroup" component={JoinGroupScreen} />

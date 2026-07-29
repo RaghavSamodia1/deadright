@@ -2,12 +2,28 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, TextInput, ChoiceChip, Button } from '../components';
+import { createGroup } from '../api/groups';
+import { useAction } from '../hooks/useQuery';
+import { isBackendConfigured } from '../lib/supabase';
 
 const EMOJIS = ['⚽', '🏠', '🍻', '🎮', '💼', '🎓', '🏀', '🎾'];
 
 export function CreateGroupScreen({ navigation }: any) {
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('⚽');
+  const { run: create, loading, error } = useAction(createGroup);
+
+  const submit = async () => {
+    if (!isBackendConfigured) return navigation.replace('ShareInvite', { name });
+    const group = await create(name.trim(), emoji);
+    if (group) {
+      navigation.replace('ShareInvite', {
+        name: group.name,
+        code: group.invite_code,
+        groupId: group.id,
+      });
+    }
+  };
 
   return (
     <ScreenBackground tone="base" glow={false}>
@@ -27,12 +43,14 @@ export function CreateGroupScreen({ navigation }: any) {
             value={name}
             onChangeText={setName}
             maxChars={30}
+            error={error ? error.message : undefined}
           />
         </View>
         <Button
           label="Create group"
-          onPress={() => navigation.replace('ShareInvite', { name })}
+          onPress={submit}
           disabled={name.trim().length < 2}
+          loading={loading}
           fullWidth
           style={styles.cta}
         />

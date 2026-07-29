@@ -10,6 +10,7 @@ import {
 } from '../components';
 import { getFeed } from '../api/bets';
 import { getMyProfile } from '../api/profile';
+import { getLedgerSummary } from '../api/ledger';
 import { useQuery } from '../hooks/useQuery';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
@@ -26,6 +27,12 @@ export function HomeScreen({ navigation }: any) {
     current_streak: 5,
     best_streak: 8,
   } as any);
+
+  const { data: summary } = useQuery(getLedgerSummary, {
+    lifetimeCents: 14500,
+    thisMonthCents: 0,
+    pendingCents: 0,
+  });
 
   const { data: bets } = useQuery<BetCardData[]>(
     async () => {
@@ -61,6 +68,8 @@ export function HomeScreen({ navigation }: any) {
             value={`$${jarTotal.toFixed(2)}`}
             label="4 violations this week"
             caption="Open the jar →"
+            // No group param: the jar screen falls back to your first group,
+            // and prompts you to make one if you have none.
             onPress={() => navigation.navigate('CookieJar')}
           >
             <View style={styles.capTrack}>
@@ -83,12 +92,12 @@ export function HomeScreen({ navigation }: any) {
         {/* Row 2 — navigation strip (replaces the tab bar) */}
         <View style={styles.row}>
           <BentoTile
-            size="nav" tone="mint-tint" value="+$145" label="Ledger →"
+            size="nav" tone="mint-tint" value={`${money(summary.lifetimeCents)}`} label="Ledger →"
             onPress={() => navigation.navigate('Ledger')}
           />
           <BentoTile
-            size="nav" tone="navy" value="⌕" label="Search"
-            onPress={() => navigation.navigate('Search')}
+            size="nav" tone="violet-tint" value="🎉" label="Party Pool"
+            onPress={() => navigation.navigate('CreatePool')}
           />
           <BentoTile
             size="nav" tone="amber" value="+" label="New Bet"
@@ -108,6 +117,9 @@ export function HomeScreen({ navigation }: any) {
     </ScreenBackground>
   );
 }
+
+const money = (cents: number) =>
+  `${cents >= 0 ? '+' : '−'}$${Math.abs(cents / 100).toFixed(0)}`;
 
 const styles = StyleSheet.create({
   content: {

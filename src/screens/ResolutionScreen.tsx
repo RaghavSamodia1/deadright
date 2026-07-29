@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, ChoiceChipGroup, TextInput, Banner, Button } from '../components';
+import { proposeOutcome } from '../api/resolution';
+import { useAction } from '../hooks/useQuery';
+import { isBackendConfigured } from '../lib/supabase';
 
 type Outcome = 'won' | 'lost' | 'push';
 const OPTS: { value: Outcome; label: string }[] = [
@@ -13,8 +16,21 @@ const OPTS: { value: Outcome; label: string }[] = [
 // Resolution — propose the outcome. Both sides must agree (agree_outcome RPC).
 export function ResolutionScreen({ navigation, route }: any) {
   const title = route?.params?.title ?? 'Arsenal finish top 4 this season';
+  const betId = route?.params?.id ?? route?.params?.betId;
   const [outcome, setOutcome] = useState<Outcome>('won');
   const [note, setNote] = useState('');
+  const { run: propose, loading, error } = useAction(proposeOutcome);
+
+  const submit = async () => {
+    if (!isBackendConfigured || !betId) {
+      return navigation.replace(outcome === 'won' ? 'Win' : 'Root');
+    }
+    // "I called it" = my side won. The RPC records the proposal; the other
+    // side still has to agree before it resolves.
+    const side = outcome === 'won' ? 'a' : 'b';
+    const bet = await propose(betId, side, note || undefined);
+    if (bet) navigation.replace(outcome === 'won' ? 'Win' : 'Root');
+  };
 
   return (
     <ScreenBackground tone="base" glow={false}>
@@ -42,15 +58,12 @@ export function ResolutionScreen({ navigation, route }: any) {
 
         <Button
           label="Attach evidence"
-          onPress={() => navigation.navigate('EvidenceUpload', { title, outcome })}
+          onPress={() => navigation.navigate('EvidenceUpload', { title, outcome, betId })}
           variant="secondary"
           fullWidth
         />
-        <Button
-          label="Submit resolution"
-          onPress={() => navigation.replace(outcome === 'won' ? 'Win' : 'Root')}
-          fullWidth
-        />
+        {error && <Text style={styles.error}>{error.message}</Text>}
+        <Button label="Submit resolution" onPress={submit} loading={loading} fullWidth />
       </ScrollView>
     </ScreenBackground>
   );
@@ -70,5 +83,10 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textTransform: 'uppercase',
     color: colors.semantic.awaiting,
+  },
+  error: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 13,
+    color: colors.interactive.destructive,
   },
 });

@@ -3,14 +3,18 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, ChoiceChipGroup, TextInput, Banner, Button } from '../components';
 import { proposeOutcome } from '../api/resolution';
-import { useAction } from '../hooks/useQuery';
-import { isBackendConfigured } from '../lib/supabase';
+import { useAction, useQuery } from '../hooks/useQuery';
+import { isBackendConfigured, uidOrNull } from '../lib/supabase';
+import { getBet } from '../api/bets';
 
-type Outcome = 'won' | 'lost' | 'push';
+// No push: bet_side is enum ('a','b') and winning_side takes one of them, so a
+// draw has nowhere to go. Offering it recorded Side B as the winner, which
+// silently resolved the bet against whoever was on Side A. Better to not offer
+// an outcome the model cannot represent than to record the wrong one.
+type Outcome = 'won' | 'lost';
 const OPTS: { value: Outcome; label: string }[] = [
   { value: 'won', label: '✅ I called it' },
   { value: 'lost', label: '❌ They did' },
-  { value: 'push', label: '🤝 Push / draw' },
 ];
 
 // Resolution — propose the outcome. Both sides must agree (agree_outcome RPC).
@@ -21,15 +25,36 @@ export function ResolutionScreen({ navigation, route }: any) {
   const [note, setNote] = useState('');
   const { run: propose, loading, error } = useAction(proposeOutcome);
 
+  // Which side the viewer is actually on. This used to be hardcoded to 'a', so
+  // anyone on Side B choosing "I called it" proposed that the *other* side won.
+  const { data: mySide } = useQuery<'a' | 'b' | null>(
+    async () => {
+      if (!betId) return null;
+      const [bet, uid] = await Promise.all([getBet(betId), uidOrNull()]);
+      const mine = (bet?.participants ?? []).find((p: any) => p.user_id === uid);
+      return (mine?.side as 'a' | 'b') ?? null;
+    },
+    null,
+    [betId],
+  );
+
   const submit = async () => {
     if (!isBackendConfigured || !betId) {
       return navigation.replace(outcome === 'won' ? 'Win' : 'Root', { betId });
     }
-    // "I called it" = my side won. The RPC records the proposal; the other
-    // side still has to agree before it resolves.
-    const side = outcome === 'won' ? 'a' : 'b';
+    const me = mySide ?? 'a';
+    const other = me === 'a' ? 'b' : 'a';
+    const side = outcome === 'won' ? me : other;
     const bet = await propose(betId, side, note || undefined);
-    if (bet) navigation.replace(outcome === 'won' ? 'Win' : 'Root', { betId });
+    if (!bet) return;
+    // propose_outcome only *proposes*: it moves the bet to pending_agreement and
+    // the other side still has to agree. Celebrating here showed "CALLED IT —
+    // you were dead right" for a result nobody had accepted yet.
+    if (bet.status === 'resolved' && outcome === 'won') {
+      navigation.replace('Win', { betId });
+    } else {
+      navigation.goBack();
+    }
   };
 
   return (

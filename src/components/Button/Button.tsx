@@ -40,8 +40,11 @@ const VARIANT_STYLES: Record<ButtonVariant, { bg: string; text: string; pressedB
   },
   destructive: {
     bg: colors.interactive.destructive,
-    text: colors.text.primary,
-    pressedBg: '#D94040',
+    // Off-white on coral is 2.79:1 — a destructive action was the least
+    // readable control in the app. Navy on coral is 5.90:1. The pressed shade
+    // moved too: navy on the old #D94040 was 4.25:1, still short of AA.
+    text: colors.text.inverse,
+    pressedBg: '#E04A42',
   },
   ghost: {
     bg: 'transparent',

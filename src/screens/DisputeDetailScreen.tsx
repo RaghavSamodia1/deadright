@@ -9,12 +9,20 @@ import { uidOrNull } from '../lib/supabase';
 import { takePhoto, pickFromLibrary, type PickedPhoto } from '../lib/evidence';
 import { addEvidence } from '../api/resolution';
 import { isBackendConfigured } from '../lib/supabase';
+import { relativeTime } from '../lib/plural';
 
 // Dispute detail — group vote resolves a contested outcome (dispute_votes).
 // Evidence matters most here: the group votes on what it can actually see.
 export function DisputeDetailScreen({ navigation, route }: any) {
   const betId = route?.params?.betId ?? route?.params?.id;
   const [localVote, setLocalVote] = useState<'a' | 'b' | null>(null);
+
+  const REASON_LABEL: Record<string, string> = {
+    didnt_happen: 'DIDN’T HAPPEN',
+    deadline: 'DEADLINE',
+    stake_unclear: 'STAKE UNCLEAR',
+    other: 'OTHER',
+  };
 
   const { data: dispute, refetch } = useQuery<any>(
     async () => {
@@ -25,6 +33,10 @@ export function DisputeDetailScreen({ navigation, route }: any) {
     null,
     [betId],
   );
+
+  const raiserHandle = dispute?.raiser?.handle
+    ? `@${dispute.raiser.handle}`
+    : dispute?.raiser?.display_name ?? 'Someone';
 
   // Live: other members voting should move the bar while you watch.
   useRealtime('dispute_votes', refetch);
@@ -82,7 +94,12 @@ export function DisputeDetailScreen({ navigation, route }: any) {
           </Text>
         </View>
         <View style={[styles.claim, { borderColor: colors.side.b }]}>
-          <Text style={[styles.claimSide, { color: colors.side.b }]}>@deej · SIDE B</Text>
+          {/* getDispute already joins the raiser; this was the literal string
+              "@deej · SIDE B", so every dispute was attributed to a mock user. */}
+          <Text style={[styles.claimSide, { color: colors.side.b }]}>
+            {raiserHandle}
+            {dispute?.reason ? ` · ${REASON_LABEL[dispute.reason] ?? dispute.reason}` : ''}
+          </Text>
           <Text style={styles.claimText}>
             {dispute?.detail ? `“${dispute.detail}”` : 'Someone contested the result.'}
           </Text>
@@ -142,7 +159,12 @@ export function DisputeDetailScreen({ navigation, route }: any) {
         <View>
           <TimelineEvent text="@abi voted Side A" timestamp="10m ago" tone="side-a" />
           <TimelineEvent text="@jk voted Side B" timestamp="25m ago" tone="side-b" />
-          <TimelineEvent text="@deej raised the dispute" timestamp="1h ago" tone="dispute" isLast />
+          <TimelineEvent
+            text={`${raiserHandle} raised the dispute`}
+            timestamp={dispute?.created_at ? relativeTime(dispute.created_at) : ''}
+            tone="dispute"
+            isLast
+          />
         </View>
       </ScrollView>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import {
@@ -16,6 +16,7 @@ import {
 import { createBet } from '../api/bets';
 import { addOptions } from '../api/ordinals';
 import { getMyGroups } from '../api/groups';
+import { sharpen } from '../api/sharpen';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 
@@ -46,6 +47,12 @@ export function CreateBetScreen({ navigation }: any) {
   const [step, setStep] = useState(0);
   const [statement, setStatement] = useState('');
   const [sharpened, setSharpened] = useState<string | null>(null);
+  // The AI suggestion used to be fabricated on-device: it appended
+  // "— resolved by the final Premier League table." to whatever you typed, so a
+  // cricket call got told it settles on the Premier League table. Now it asks
+  // the sharpen function and shows nothing when there is nothing real to show.
+  const [suggestion, setSuggestion] = useState<string | null>(null);
+  const [rejected, setRejected] = useState(false);
   const [type, setType] = useState<BetType>('binary');
   const [deadline, setDeadline] = useState<Deadline>('24h');
   const [stake, setStake] = useState<Stake>('brag');
@@ -123,6 +130,30 @@ export function CreateBetScreen({ navigation }: any) {
     deadline: new Date(Date.now() + 1000 * 60 * 60 * 24),
   };
 
+  // Debounced: the user is still typing, and sharpen is a network call.
+  useEffect(() => {
+    const text = statement.trim();
+    if (text.length < 15 || sharpened || rejected) {
+      setSuggestion(null);
+      return;
+    }
+    let alive = true;
+    const t = setTimeout(() => {
+      sharpen(text, type === 'binary' ? 'prediction' : 'open')
+        .then((r) => {
+          // Only surface a rewrite that actually differs from what they wrote.
+          if (!alive || !r?.sharpened || r.sharpened.trim() === text) return;
+          setSuggestion(r.sharpened.trim());
+        })
+        .catch(() => {});
+    }, 700);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statement, type, sharpened, rejected]);
+
   const next = () => (step === STEPS.length - 1 ? submit() : setStep(step + 1));
   const back = () => (step === 0 ? navigation.goBack() : setStep(step - 1));
 
@@ -138,17 +169,17 @@ export function CreateBetScreen({ navigation }: any) {
             <TextInput
               placeholder="e.g. Arsenal finish top 4 this season"
               value={statement}
-              onChangeText={(t) => { setStatement(t); setSharpened(null); }}
+              onChangeText={(t) => { setStatement(t); setSharpened(null); setRejected(false); }}
               multiline
               maxChars={140}
               showCounter
               autoFocus
             />
-            {statement.trim().length > 8 && !sharpened && (
+            {suggestion && !sharpened && !rejected && (
               <SuggestionCard
-                suggestion={`${statement.trim().replace(/\.$/, '')} — resolved by the final Premier League table.`}
-                onAccept={() => setSharpened(`${statement.trim().replace(/\.$/, '')} — resolved by the final Premier League table.`)}
-                onReject={() => setSharpened('')}
+                suggestion={suggestion}
+                onAccept={() => setSharpened(suggestion)}
+                onReject={() => setRejected(true)}
               />
             )}
           </>

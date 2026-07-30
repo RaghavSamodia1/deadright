@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Linking } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, TextInput, Button, SegmentedControl } from '../components';
 import { sendOtp, signInOrSignUp } from '../api/auth';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { links } from '../lib/links';
 
 type Method = 'phone' | 'email';
 
@@ -120,7 +121,15 @@ export function SignUpScreen({ navigation }: any) {
             fullWidth
           />
           <Text style={styles.legal}>
-            By continuing you agree to our Terms & Privacy Policy.
+            By continuing you agree to our{' '}
+            <Text style={styles.legalLink} onPress={() => Linking.openURL(links.terms)}>
+              Terms
+            </Text>
+            {' '}&amp;{' '}
+            <Text style={styles.legalLink} onPress={() => Linking.openURL(links.privacy)}>
+              Privacy Policy
+            </Text>
+            .
           </Text>
         </View>
       </KeyboardAvoidingView>
@@ -145,6 +154,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing[2],
   },
   footer: { gap: spacing[3], paddingBottom: spacing[6] },
+  legalLink: {
+    color: colors.text.link,
+    textDecorationLine: 'underline',
+  },
   legal: {
     fontFamily: 'Inter-Regular',
     fontSize: 11,

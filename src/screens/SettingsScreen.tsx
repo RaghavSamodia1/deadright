@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Text, ScrollView, StyleSheet } from 'react-native';
+import { Text, ScrollView, StyleSheet, Linking } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, SettingsRow, SettingsSection } from '../components';
 import { useAuth } from '../lib/AuthContext';
 import { getSettings, updateSettings } from '../api/settings';
 import { useQuery } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { links } from '../lib/links';
 
 export function SettingsScreen({ navigation }: any) {
   const { signOut, demoMode } = useAuth();
@@ -89,8 +90,18 @@ export function SettingsScreen({ navigation }: any) {
         <SettingsSection title="About">
           <SettingsRow icon="❤️" label="Rate DeadRight" onPress={() => {}} />
           <SettingsRow icon="📤" label="Share the app" onPress={() => {}} />
-          <SettingsRow icon="📄" label="Privacy Policy" onPress={() => {}} />
-          <SettingsRow icon="📃" label="Terms of Service" onPress={() => {}} />
+          {/* Both were no-ops. The App Store and Play both require a reachable
+              privacy policy, and a dead row is worse than no row. */}
+          <SettingsRow
+            icon="📄"
+            label="Privacy Policy"
+            onPress={() => Linking.openURL(links.privacy)}
+          />
+          <SettingsRow
+            icon="📃"
+            label="Terms of Service"
+            onPress={() => Linking.openURL(links.terms)}
+          />
           <SettingsRow icon="ℹ️" label="Version" value="1.0.0" showChevron={false} />
         </SettingsSection>
 

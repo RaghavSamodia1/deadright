@@ -229,6 +229,9 @@
       input.name = 'option';
       input.value = o.id;
       input.id = 'o' + i;
+      // Without this the accessible name falls back to the value, so a screen
+      // reader announces a raw uuid instead of the option.
+      input.setAttribute('aria-label', o.label);
       var span = document.createElement('span');
       span.textContent = o.label;
       lab.appendChild(input);

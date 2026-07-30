@@ -68,6 +68,18 @@ export function HomeScreen({ navigation }: any) {
   const { data: groups, refetch: refetchGroups } = useQuery(getMyGroups, [] as any[]);
   const noGroups = isBackendConfigured && groups.length === 0;
 
+  // There is no friends table: a friend is someone you share a group with, so
+  // count distinct co-members across your groups and leave yourself out.
+  const friendCount = React.useMemo(() => {
+    const ids = new Set<string>();
+    (groups as any[]).forEach((g) =>
+      (g.members ?? []).forEach((m: any) => {
+        if (m.user_id && m.user_id !== profile?.id) ids.add(m.user_id);
+      }),
+    );
+    return ids.size;
+  }, [groups, profile?.id]);
+
   // Someone else calling a bet or joining a side should show up without a
   // navigate-away-and-back.
   const { data: unread, refetch: refetchUnread } = useQuery(getUnreadCount, 0);
@@ -181,6 +193,25 @@ export function HomeScreen({ navigation }: any) {
           />
         </View>
 
+        {/* Row 2b — people. Groups own everything in this app, so getting to
+            them (and to who is in them) deserves a tile rather than only the
+            list further down. */}
+        <View style={styles.row}>
+          <BentoTile
+            size="nav" tone="violet-tint"
+            value={`${friendCount}`} label="Friends & groups →"
+            onPress={() => navigation.navigate('Search')}
+          />
+          <BentoTile
+            size="nav" tone="navy" value="🔗" label="Join code"
+            onPress={() => navigation.navigate('JoinGroup')}
+          />
+          <BentoTile
+            size="nav" tone="navy" value="+" label="New group"
+            onPress={() => navigation.navigate('CreateGroup')}
+          />
+        </View>
+
         {/* Row 3 — bets, or the first-run path into the social loop */}
         {feedError ? (
           <View style={styles.notice}>
@@ -211,14 +242,7 @@ export function HomeScreen({ navigation }: any) {
               {/* On the header rather than a row of its own: as a standalone
                   centred link it cost a full row of empty width and pushed
                   NEEDS YOU off the first screen. */}
-              <Pressable
-                onPress={() => navigation.navigate('CreateGroup')}
-                hitSlop={{ top: 14, bottom: 14, left: 14, right: 8 }}
-                accessibilityRole="button"
-                accessibilityLabel="New group"
-              >
-                <Text style={styles.sectionAction}>+ New</Text>
-              </Pressable>
+
             </View>
             {groups.map((g: any) => (
               <ListRow

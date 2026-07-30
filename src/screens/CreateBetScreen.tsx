@@ -56,8 +56,10 @@ export function CreateBetScreen({ navigation }: any) {
   const [type, setType] = useState<BetType>('binary');
   const [deadline, setDeadline] = useState<Deadline>('24h');
   const [stake, setStake] = useState<Stake>('brag');
-  // Empty means "no group" (a personal call) until the user picks one; the
-  // first real group is selected once they load.
+  // Nothing ever performed the auto-selection this used to claim, so tapping
+  // straight through the Group step created a bet with group_id null — a bet
+  // nobody can see or take the other side of, in an app whose whole premise is
+  // that everything lives in a group. The first group is now really selected.
   const [group, setGroup] = useState<string>('');
   const [rankOptions, setRankOptions] = useState<string[]>(['', '']);
 
@@ -118,7 +120,11 @@ export function CreateBetScreen({ navigation }: any) {
       ? statement.trim().length > 4
       : step === 1 && type === 'ordinal'
         ? rankOptions.filter((o) => o.trim()).length >= 2
-        : true;
+        : // A bet with no group has no audience and no opposing side, so the
+          // Group step is a real gate rather than a formality.
+          step === 4
+          ? !!group
+          : true;
   const preview: BetCardData = {
     id: 'preview',
     title: sharpened || statement || 'Your call goes here…',
@@ -129,6 +135,10 @@ export function CreateBetScreen({ navigation }: any) {
     stake: STAKE_OPTS.find((s) => s.value === stake)?.label.split(' ')[0],
     deadline: new Date(Date.now() + 1000 * 60 * 60 * 24),
   };
+
+  useEffect(() => {
+    if (!group && groups.length > 0) setGroup(groups[0].id);
+  }, [groups, group]);
 
   // Debounced: the user is still typing, and sharpen is a network call.
   useEffect(() => {
@@ -238,9 +248,29 @@ export function CreateBetScreen({ navigation }: any) {
         {step === 4 && (
           <>
             <Text style={styles.q}>Who’s in?</Text>
-            {groups.map((g) => (
-              <GroupCard key={g.id} {...g} selected={group === g.id} onPress={() => setGroup(g.id)} />
-            ))}
+            {groups.length === 0 ? (
+              <>
+                <Text style={styles.hint}>
+                  A call needs someone to argue with. Make a group or join one with a
+                  code, then come back to this.
+                </Text>
+                <Button
+                  label="Create a group"
+                  onPress={() => navigation.navigate('CreateGroup')}
+                  fullWidth
+                />
+                <Button
+                  label="I have an invite code"
+                  onPress={() => navigation.navigate('JoinGroup')}
+                  variant="secondary"
+                  fullWidth
+                />
+              </>
+            ) : (
+              groups.map((g) => (
+                <GroupCard key={g.id} {...g} selected={group === g.id} onPress={() => setGroup(g.id)} />
+              ))
+            )}
           </>
         )}
 

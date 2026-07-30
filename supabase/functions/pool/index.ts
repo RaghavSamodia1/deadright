@@ -18,6 +18,11 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
+// Overridable so a custom domain can take over later without a code change.
+const GUEST_BASE =
+  Deno.env.get('POOL_GUEST_BASE') ??
+  'https://raghavsamodia1.github.io/deadright/pool/';
+
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'content-type',
@@ -44,6 +49,21 @@ Deno.serve(async (req) => {
     .maybeSingle();
 
   if (!pool) return html(notFoundPage(), 404);
+
+  // The guest page itself is served from GUEST_BASE (GitHub Pages), because
+  // Supabase rewrites text/html to text/plain with nosniff on the shared
+  // *.supabase.co domain — for Storage as well as Functions — so anything
+  // HTML-shaped returned from here renders as source in a browser.
+  //
+  // Redirecting rather than changing the share link keeps every QR code and
+  // link already handed out working. A 302 is not HTML, so it is not rewritten.
+  // /data, /results and the POST join stay on this origin as JSON.
+  if (req.method === 'GET' && !wantsResults && !wantsData) {
+    return new Response(null, {
+      status: 302,
+      headers: { ...CORS, location: `${GUEST_BASE}?t=${encodeURIComponent(token)}` },
+    });
+  }
 
   // Supabase rewrites text/html to text/plain with nosniff on the shared
   // *.supabase.co functions domain (anti-phishing), so the embedded page below

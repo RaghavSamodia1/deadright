@@ -73,8 +73,11 @@ export function AlertDetailScreen({ navigation, route }: any) {
           {action && (
             <Button
               label={action.label}
+              // push, not replace: replacing dropped this screen from the stack,
+              // so the target had nothing to go back to — and for the modal
+              // targets (SideSelection) the sheet's Cancel was the only way out.
               onPress={() =>
-                navigation.replace(action.screen, {
+                navigation.navigate(action.screen, {
                   id: alert?.bet_id ?? alert?.group_id,
                   betId: alert?.bet_id,
                   groupId: alert?.group_id,

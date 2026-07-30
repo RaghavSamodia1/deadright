@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { isBackendConfigured } from '../lib/supabase';
 
 export interface QueryState<T> {
@@ -61,6 +62,23 @@ export function useQuery<T>(
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tick, ...deps]);
+
+  // React Navigation keeps screens mounted when you push past them, so the
+  // effect above does not re-run on the way back and the screen shows what it
+  // loaded the first time. Adding a jar rule and returning still read "No rules
+  // yet"; the same staleness hit the group page after creating a bet. Refetch
+  // when the screen regains focus — skipping the first focus, which the mount
+  // fetch already covers.
+  const mounted = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!mounted.current) {
+        mounted.current = true;
+        return;
+      }
+      refetch();
+    }, [refetch]),
+  );
 
   return { data, loading, error, refetch, isMock };
 }

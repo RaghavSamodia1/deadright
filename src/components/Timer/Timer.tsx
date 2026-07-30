@@ -10,6 +10,14 @@ interface TimerProps {
   size?: TimerSize;
   style?: TextStyle;
   onExpire?: () => void;
+  /**
+   * Fixed colour, for timers on a coloured card fill. The urgency palette
+   * (mint / amber / coral) assumes a dark surface — mint on a mint win card is
+   * 1.00:1 and the amber "warning" colour on an amber awaiting card is 1.00:1,
+   * i.e. the countdown disappears exactly when it matters. Urgency stays
+   * colour-coded on the dark cards, where the contrast holds.
+   */
+  ink?: string;
 }
 
 function formatCountdown(ms: number): string {
@@ -38,7 +46,7 @@ const SIZE_MAP: Record<TimerSize, { fontSize: number; lineHeight: number }> = {
   sm: { fontSize: 20, lineHeight: 28 },
 };
 
-export function Timer({ deadline, size = 'sm', style, onExpire }: TimerProps) {
+export function Timer({ deadline, size = 'sm', style, onExpire, ink }: TimerProps) {
   const [ms, setMs] = useState(() => deadline.getTime() - Date.now());
   const hapticsRef = { fiveMin: false, oneMin: false, thirtyS: false };
 
@@ -70,7 +78,7 @@ export function Timer({ deadline, size = 'sm', style, onExpire }: TimerProps) {
   }, [deadline]);
 
   const s = SIZE_MAP[size];
-  const color = getTimerColor(ms);
+  const color = ink ?? getTimerColor(ms);
 
   return (
     <Text

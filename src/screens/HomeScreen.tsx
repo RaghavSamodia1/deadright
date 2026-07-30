@@ -16,15 +16,25 @@ import { getMyGroups } from '../api/groups';
 import { getUnreadCount } from '../api/notifications';
 import { isBackendConfigured } from '../lib/supabase';
 import { Button, ListRow } from '../components';
+import { getJarSummary } from '../api/jar';
 import { useQuery } from '../hooks/useQuery';
 import { useRealtime } from '../hooks/useRealtime';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
+import { plural } from '../lib/plural';
 
 // v2 bento hub (design-v2.md §2) — no bottom nav; tiles are the navigation.
 export function HomeScreen({ navigation }: any) {
-  const jarTotal = 23.5;
   const jarCap = 50;
+
+  // Was a hardcoded 23.5 with a hardcoded "4 violations this week" — it showed
+  // $23.50 to an account whose only jar was empty.
+  const { data: jarSummary, refetch: refetchJar } = useQuery(getJarSummary, {
+    totalCents: 0,
+    violationCount: 0,
+    weekCount: 0,
+  });
+  const jarTotal = jarSummary.totalCents / 100;
 
   const { data: profile } = useQuery(getMyProfile, {
     handle: 'you',
@@ -72,6 +82,7 @@ export function HomeScreen({ navigation }: any) {
     useCallback(() => {
       refetchFeed();
       refetchGroups();
+      refetchJar();
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []),
   );
@@ -125,7 +136,13 @@ export function HomeScreen({ navigation }: any) {
             tone="amber"
             emoji="🍪"
             value={`$${jarTotal.toFixed(2)}`}
-            label="4 violations this week"
+            label={
+              jarSummary.weekCount > 0
+                ? `${jarSummary.weekCount} this week`
+                : jarSummary.violationCount > 0
+                  ? `${jarSummary.violationCount} all time`
+                  : 'Nobody has slipped yet'
+            }
             caption="Open the jar →"
             // No group param: the jar screen falls back to your first group,
             // and prompts you to make one if you have none.
@@ -189,19 +206,28 @@ export function HomeScreen({ navigation }: any) {
         ) : (
           <>
             {/* Your groups — the only way back into a group after creating it */}
-            <Text style={styles.section}>YOUR GROUPS</Text>
+            <View style={styles.sectionRow}>
+              <Text style={[styles.section, styles.sectionInRow]}>YOUR GROUPS</Text>
+              {/* On the header rather than a row of its own: as a standalone
+                  centred link it cost a full row of empty width and pushed
+                  NEEDS YOU off the first screen. */}
+              <Text
+                style={styles.sectionAction}
+                onPress={() => navigation.navigate('CreateGroup')}
+                accessibilityRole="button"
+              >
+                + New
+              </Text>
+            </View>
             {groups.map((g: any) => (
               <ListRow
                 key={g.id}
                 title={`${g.emoji ?? '👥'}  ${g.name}`}
-                subtitle={`${g.members?.length ?? 0} members · tap for jar, bets & invite code`}
+                subtitle={plural(g.members?.length ?? 0, 'member')}
                 showChevron
                 onPress={() => navigation.navigate('Group', { id: g.id, name: g.name })}
               />
             ))}
-            <Text style={styles.seeAll} onPress={() => navigation.navigate('CreateGroup')}>
-              + New group
-            </Text>
           </>
         )}
 
@@ -215,7 +241,16 @@ export function HomeScreen({ navigation }: any) {
           </View>
         ) : (
           <>
-            <Text style={styles.section}>NEEDS YOU</Text>
+            <View style={styles.sectionRow}>
+              <Text style={[styles.section, styles.sectionInRow]}>NEEDS YOU</Text>
+              <Text
+                style={styles.sectionAction}
+                onPress={() => navigation.navigate('AllBets')}
+                accessibilityRole="button"
+              >
+                See all →
+              </Text>
+            </View>
             {bets.map((bet) => (
               <BetCard
                 key={bet.id}
@@ -223,9 +258,6 @@ export function HomeScreen({ navigation }: any) {
                 onPress={(b) => navigation.navigate('BetDetail', { id: b.id })}
               />
             ))}
-            <Text style={styles.seeAll} onPress={() => navigation.navigate('AllBets')}>
-              See all bets →
-            </Text>
           </>
         ))}
       </ScrollView>
@@ -279,12 +311,29 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: colors.text.inverse,
   },
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing[2],
+  },
   section: {
     fontFamily: 'Barlow-SemiBold',
     fontSize: 11,
     letterSpacing: 2,
     color: colors.semantic.awaiting,
     marginTop: spacing[2],
+  },
+  // The row owns the top spacing; the overline must not add its own or it
+  // sits lower than the action beside it.
+  sectionInRow: { marginTop: 0 },
+  sectionAction: {
+    fontFamily: 'Barlow-SemiBold',
+    fontSize: 12,
+    color: colors.text.secondary,
+    // Keeps the 44pt tap target the standalone link used to get from its row.
+    paddingVertical: spacing[3],
+    paddingLeft: spacing[4],
   },
   firstRun: { gap: spacing[3], marginTop: spacing[2] },
   firstRunTitle: {

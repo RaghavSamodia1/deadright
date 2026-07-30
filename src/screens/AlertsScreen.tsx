@@ -20,6 +20,9 @@ type Alert = {
   meta: string;
   unread?: boolean;
   action?: NotificationAction;
+  /** What the alert is *about*. The row's own id is the notification's. */
+  betId?: string | null;
+  groupId?: string | null;
 };
 
 export function AlertsScreen({ navigation }: any) {
@@ -69,13 +72,17 @@ export function AlertsScreen({ navigation }: any) {
                 if (a.unread) markRead(a.id).catch(() => {});
                 navigation.navigate('AlertDetail', { id: a.id });
               }}
-              onAction={() =>
-                a.action === 'join'
-                  ? navigation.navigate('BetDetail', { id: a.id })
-                  : a.action === 'resolve'
-                    ? navigation.navigate('Resolution', { id: a.id })
-                    : navigation.navigate('DisputeDetail', { id: a.id })
-              }
+              // a.id is the notification; the target screens want the bet.
+              // Without a bet_id there is nothing to open, so fall back to the
+              // alert itself rather than pushing a screen that loads nothing.
+              onAction={() => {
+                if (a.unread) markRead(a.id).catch(() => {});
+                if (!a.betId) return navigation.navigate('AlertDetail', { id: a.id });
+                const params = { id: a.betId, betId: a.betId, groupId: a.groupId };
+                if (a.action === 'join') navigation.navigate('SideSelection', params);
+                else if (a.action === 'resolve') navigation.navigate('Resolution', params);
+                else navigation.navigate('DisputeDetail', params);
+              }}
             />
           ))
         )}
@@ -107,6 +114,8 @@ function toAlert(n: any): Alert {
     meta: relativeTime(n.created_at),
     unread: !n.read_at,
     action: ACTION_FOR[n.type] ?? null,
+    betId: n.bet_id ?? null,
+    groupId: n.group_id ?? null,
   };
 }
 

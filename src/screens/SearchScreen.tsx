@@ -5,6 +5,7 @@ import { ScreenBackground, NavHeader, SearchBar, FilterChip, ListRow, Avatar, Em
 import { searchProfiles, searchBets } from '../api/profile';
 import { getMyGroups } from '../api/groups';
 import { useQuery } from '../hooks/useQuery';
+import { plural } from '../lib/plural';
 
 type Filter = 'all' | 'bets' | 'people' | 'groups';
 
@@ -49,7 +50,7 @@ export function SearchScreen({ navigation }: any) {
             kind: 'group' as const,
             id: g.id,
             title: g.name,
-            sub: `${g.members?.length ?? 0} members`,
+            sub: plural(g.members?.length ?? 0, 'member'),
           })),
       ];
     },

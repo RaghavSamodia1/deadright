@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../tokens';
 import { AvatarStack } from '../AvatarStack/AvatarStack';
+import { plural } from '../../lib/plural';
 
 interface GroupCardProps {
   emoji: string;
@@ -46,7 +47,7 @@ export function GroupCard({
       ]}
       accessibilityRole="button"
       accessibilityState={{ selected }}
-      accessibilityLabel={`${name}, ${memberCount} members`}
+      accessibilityLabel={`${name}, ${plural(memberCount, 'member')}`}
     >
       <View style={styles.emojiBox}>
         <Text style={styles.emoji}>{emoji}</Text>
@@ -57,7 +58,8 @@ export function GroupCard({
           {name}
         </Text>
         <Text style={styles.meta}>
-          {memberCount} members{activeBets !== undefined ? ` · ${activeBets} active bets` : ''}
+          {plural(memberCount, 'member')}
+          {activeBets !== undefined ? ` · ${plural(activeBets, 'active bet')}` : ''}
         </Text>
       </View>
 

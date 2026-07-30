@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { Notification } from '../types/database';
+import { uniqueChannelName } from '../lib/realtime';
 
 export async function getNotifications(): Promise<Notification[]> {
   const { data, error } = await supabase
@@ -46,7 +47,7 @@ export function subscribeToNotifications(
   onNew: (n: Notification) => void,
 ) {
   const channel = supabase
-    .channel(`notifications:${userId}`)
+    .channel(uniqueChannelName(`notifications:${userId}`))
     .on(
       'postgres_changes',
       {

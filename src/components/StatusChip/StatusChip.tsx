@@ -14,6 +14,13 @@ export type BetStatus =
 interface StatusChipProps {
   status: BetStatus;
   isCreator?: boolean;
+  /**
+   * Ink for a chip sitting on a coloured card fill. Each status's own hue
+   * matches the fill it appears on by design ("card fill = card status"), so
+   * the untinted chip is the same colour as its backdrop and disappears —
+   * AWAITING on an amber card measured 1.00:1. See colors.cardInk.
+   */
+  ink?: { primary: string; chip: string };
   style?: ViewStyle;
 }
 
@@ -59,15 +66,17 @@ const STATUS_CONFIG: Record<
   },
 };
 
-export function StatusChip({ status, isCreator = false, style }: StatusChipProps) {
+export function StatusChip({ status, isCreator = false, ink, style }: StatusChipProps) {
   const config = STATUS_CONFIG[status];
+  const bg = ink?.chip ?? config.bg;
+  const fg = ink?.primary ?? config.text;
 
   return (
-    <View style={[styles.chip, { backgroundColor: config.bg }, style]}>
+    <View style={[styles.chip, { backgroundColor: bg }, style]}>
       {config.dot && (
-        <View style={[styles.dot, { backgroundColor: config.dot }]} />
+        <View style={[styles.dot, { backgroundColor: ink?.primary ?? config.dot }]} />
       )}
-      <Text style={[styles.label, { color: config.text }]}>
+      <Text style={[styles.label, { color: fg }]}>
         {isCreator && status === 'active' ? 'CREATOR' : config.label}
       </Text>
     </View>

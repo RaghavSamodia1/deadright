@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { supabase, isBackendConfigured } from '../lib/supabase';
+import { uniqueChannelName } from '../lib/realtime';
 
 /**
  * Re-run a refetch whenever rows in `table` change.
@@ -22,7 +23,8 @@ export function useRealtime(
     if (!isBackendConfigured || !enabled) return;
 
     const channel = supabase
-      .channel(`rt:${table}:${filter ?? 'all'}`)
+      // Unique per subscriber — see lib/realtime for why sharing a name throws.
+      .channel(uniqueChannelName(`rt:${table}:${filter ?? 'all'}`))
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table, ...(filter ? { filter } : {}) },

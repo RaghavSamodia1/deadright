@@ -416,7 +416,7 @@ begin
   if not p_owned_up then
     insert into notifications (user_id, type, title, group_id, actor_id)
     values (p_violator, 'jar_violation',
-            r.emoji || ' ' || r.label || ' — $' || (r.amount_cents / 100.0) || ' to the jar',
+            r.emoji || ' ' || r.label || ' — $' || money_text(r.amount_cents) || ' to the jar',
             p_group, auth.uid());
   end if;
 

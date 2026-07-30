@@ -66,9 +66,9 @@ export function NavHeader({
               onPress={onBack}
               style={styles.textBtn}
               accessibilityRole="button"
-              accessibilityLabel="Discard"
+              accessibilityLabel="Cancel"
             >
-              <Text style={styles.textAction}>Discard</Text>
+              <Text style={styles.textAction}>Cancel</Text>
             </Pressable>
           )}
           {variant === 'home' && (

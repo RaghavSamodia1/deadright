@@ -16,6 +16,7 @@ import { getJar } from '../api/jar';
 import { useQuery } from '../hooks/useQuery';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
+import { plural } from '../lib/plural';
 
 // Group detail — members, the group's Cookie Jar, and its open bets.
 export function GroupScreen({ navigation, route }: any) {
@@ -71,15 +72,20 @@ export function GroupScreen({ navigation, route }: any) {
           <Text style={styles.emoji}>{group?.emoji ?? '👥'}</Text>
           <AvatarStack people={members} max={5} size="md" />
           <Text style={styles.count}>
-            {members.length} {members.length === 1 ? 'member' : 'members'}
+            {plural(members.length, 'member')}
           </Text>
         </View>
 
         {/* Group tiles */}
         <View style={styles.row}>
+          {/* hero, not wide: hero's height is defined as two stat tiles plus the
+              gap, so it lines up with the column beside it. wide (150) left the
+              column overhanging by ~76pt. */}
           <BentoTile
-            size="wide" tone="amber" emoji="🍪"
-            value={`$${(jar.totalCents / 100).toFixed(2)}`} label="Cookie Jar →"
+            size="hero" tone="amber" emoji="🍪"
+            value={`$${(jar.totalCents / 100).toFixed(2)}`}
+            label={`${jar.violations.length} ${jar.violations.length === 1 ? 'violation' : 'violations'}`}
+            caption="Open the jar →"
             onPress={() =>
               navigation.navigate('CookieJar', {
                 groupId: route?.params?.id,

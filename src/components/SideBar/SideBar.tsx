@@ -13,6 +13,13 @@ interface SideBarProps {
   sideBCount?: number;
   animated?: boolean;
   showLabels?: boolean;
+  /**
+   * Text colours, when this sits on a coloured card fill rather than a dark
+   * surface. The defaults (tertiary grey, side violet/coral) are unreadable on
+   * amber, mint and coral — see colors.cardInk. When set, both percentages use
+   * the same ink and the A/B identity is carried by the bars below them.
+   */
+  ink?: { primary: string; muted: string };
   style?: ViewStyle;
 }
 
@@ -22,6 +29,7 @@ export function SideBar({
   sideBCount,
   animated = true,
   showLabels = true,
+  ink,
   style,
 }: SideBarProps) {
   const sideBPercent = 100 - sideAPercent;
@@ -35,23 +43,25 @@ export function SideBar({
     flex: animated ? aWidth.value : sideAPercent / 100,
   }));
 
+  const mutedStyle = ink ? { color: ink.muted } : undefined;
+
   return (
     <View style={[styles.container, style]}>
       {showLabels && (
         <View style={styles.labels}>
           <View style={styles.labelLeft}>
-            <Text style={styles.sideLabel}>Side A</Text>
-            <Text style={[styles.pct, { color: colors.side.a }]}>{sideAPercent}%</Text>
+            <Text style={[styles.sideLabel, mutedStyle]}>Side A</Text>
+            <Text style={[styles.pct, { color: ink?.primary ?? colors.side.a }]}>{sideAPercent}%</Text>
             {sideACount !== undefined && (
-              <Text style={styles.count}>{sideACount} {sideACount === 1 ? 'person' : 'people'}</Text>
+              <Text style={[styles.count, mutedStyle]}>{sideACount} {sideACount === 1 ? 'person' : 'people'}</Text>
             )}
           </View>
           <View style={styles.labelRight}>
             {sideBCount !== undefined && (
-              <Text style={styles.count}>{sideBCount} {sideBCount === 1 ? 'person' : 'people'}</Text>
+              <Text style={[styles.count, mutedStyle]}>{sideBCount} {sideBCount === 1 ? 'person' : 'people'}</Text>
             )}
-            <Text style={[styles.pct, { color: colors.side.b }]}>{sideBPercent}%</Text>
-            <Text style={styles.sideLabel}>Side B</Text>
+            <Text style={[styles.pct, { color: ink?.primary ?? colors.side.b }]}>{sideBPercent}%</Text>
+            <Text style={[styles.sideLabel, mutedStyle]}>Side B</Text>
           </View>
         </View>
       )}

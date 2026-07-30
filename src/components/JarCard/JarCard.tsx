@@ -50,12 +50,17 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing[6],
     gap: 4,
+    // Hero card: centre the stack so the total reads as the headline object
+    // rather than sitting left-heavy against a wide amber field.
+    alignItems: 'center',
   },
   topRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
+    gap: spacing[3],
     marginBottom: spacing[2],
+    alignSelf: 'stretch',
   },
   emoji: { fontSize: 36 },
   groupChip: {
@@ -72,6 +77,7 @@ const styles = StyleSheet.create({
   },
   total: {
     fontFamily: 'Barlow-Black',
+    textAlign: 'center',
     fontSize: 64,
     lineHeight: 68,
     letterSpacing: -2,
@@ -80,6 +86,7 @@ const styles = StyleSheet.create({
   },
   sub: {
     fontFamily: 'Barlow-SemiBold',
+    textAlign: 'center',
     fontSize: 12,
     letterSpacing: 1,
     color: 'rgba(14,18,26,0.6)',

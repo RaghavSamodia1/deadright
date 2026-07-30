@@ -1,5 +1,6 @@
 import { supabase, uidAsync } from '../lib/supabase';
 import type { Bet, BetEvent, BetParticipant, BetSide } from '../types/database';
+import { uniqueChannelName } from '../lib/realtime';
 
 export interface CreateBetInput {
   groupId: string | null;
@@ -89,7 +90,7 @@ export async function joinSide(betId: string, side: BetSide): Promise<BetPartici
 /** Realtime: feed updates for a group (card states flip live). */
 export function subscribeToBets(groupId: string, onChange: () => void) {
   const channel = supabase
-    .channel(`bets:${groupId}`)
+    .channel(uniqueChannelName(`bets:${groupId}`))
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'bets', filter: `group_id=eq.${groupId}` },
@@ -102,7 +103,7 @@ export function subscribeToBets(groupId: string, onChange: () => void) {
 /** Realtime: a single bet's timeline (detail screen). */
 export function subscribeToBetEvents(betId: string, onEvent: (e: BetEvent) => void) {
   const channel = supabase
-    .channel(`bet_events:${betId}`)
+    .channel(uniqueChannelName(`bet_events:${betId}`))
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'bet_events', filter: `bet_id=eq.${betId}` },

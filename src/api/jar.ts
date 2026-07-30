@@ -96,6 +96,39 @@ export async function getJar(groupId: string) {
   return { violations: violations ?? [], totalCents };
 }
 
+/**
+ * Every jar the signed-in user is in, summed — for the Home tile, which is not
+ * scoped to one group. RLS already limits jar_violations to the user's groups,
+ * so this needs no group filter of its own.
+ */
+export async function getJarSummary(): Promise<{
+  totalCents: number;
+  violationCount: number;
+  weekCount: number;
+}> {
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const [{ data: violations, error: vError }, { data: entries, error: lError }] =
+    await Promise.all([
+      supabase.from('jar_violations').select('id, created_at'),
+      supabase
+        .from('ledger_entries')
+        .select('amount_cents, violation_id')
+        .not('violation_id', 'is', null)
+        .eq('status', 'pending'),
+    ]);
+  if (vError) throw vError;
+  if (lError) throw lError;
+
+  const ids = new Set((violations ?? []).map((v) => v.id));
+  return {
+    totalCents: (entries ?? [])
+      .filter((e) => ids.has(e.violation_id!))
+      .reduce((sum, e) => sum + e.amount_cents, 0),
+    violationCount: violations?.length ?? 0,
+    weekCount: (violations ?? []).filter((v) => v.created_at >= weekAgo).length,
+  };
+}
+
 /** Admin: empty the jar into a settlement (pizza night). */
 export async function settleJar(groupId: string, note?: string) {
   const { data, error } = await supabase.rpc('settle_jar', {

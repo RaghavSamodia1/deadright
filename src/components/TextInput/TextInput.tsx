@@ -56,7 +56,7 @@ export function TextInput({
           onChangeText={onChangeText}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholderTextColor={colors.text.tertiary}
+          placeholderTextColor={colors.text.secondary /* placeholder on surface-3: tertiary is only 3.93:1 */}
           maxLength={maxChars}
           multiline={multiline}
           style={[styles.input, multiline && styles.multiline]}

@@ -2,10 +2,24 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, Stamp, Button } from '../components';
+import { undoResolution } from '../api/resolution';
+import { useAction } from '../hooks/useQuery';
 
 // Peak — "CALLED IT" win moment. Mint, rotated stamp (the signature moment).
+const UNDO_WINDOW_SECONDS = 300; // matches undo_resolution's 5-minute check
+
 export function WinScreen({ navigation, route }: any) {
   const cred = route?.params?.credGain ?? 12;
+  const betId: string | undefined = route?.params?.id ?? route?.params?.betId;
+
+  const { run: undo, loading: undoing } = useAction(undoResolution);
+  const [secondsLeft, setSecondsLeft] = React.useState(UNDO_WINDOW_SECONDS);
+
+  React.useEffect(() => {
+    if (!betId) return;
+    const t = setInterval(() => setSecondsLeft((s) => (s > 0 ? s - 1 : 0)), 1000);
+    return () => clearInterval(t);
+  }, [betId]);
 
   return (
     <ScreenBackground tone="win">
@@ -21,6 +35,20 @@ export function WinScreen({ navigation, route }: any) {
         <View style={styles.footer}>
           <Button label="Rub it in 😏" onPress={() => navigation.replace('ShareInvite')} variant="secondary" fullWidth />
           <Button label="Nice" onPress={() => navigation.popToTop?.() ?? navigation.navigate('Root')} fullWidth />
+
+          {/* The backend allows undoing a resolution for 5 minutes; without
+              this the window existed but was unreachable. */}
+          {betId && secondsLeft > 0 && (
+            <Text
+              style={styles.undo}
+              onPress={async () => {
+                await undo(betId);
+                navigation.popToTop?.() ?? navigation.navigate('Root');
+              }}
+            >
+              {undoing ? 'Undoing…' : `Wrong call? Undo (${secondsLeft}s)`}
+            </Text>
+          )}
         </View>
       </View>
     </ScreenBackground>
@@ -50,4 +78,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   footer: { gap: spacing[3] },
+  undo: {
+    fontFamily: 'Barlow-SemiBold',
+    fontSize: 13,
+    color: colors.text.inverse,
+    textAlign: 'center',
+    opacity: 0.75,
+    paddingVertical: spacing[3], // keeps the tap target at 44pt
+  },
 });

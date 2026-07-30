@@ -163,8 +163,9 @@ const styles = StyleSheet.create({
   rankNumTop: { color: colors.text.inverse },
   label: { flex: 1, fontFamily: 'Barlow-SemiBold', fontSize: 15, color: colors.text.primary },
   arrow: {
-    width: 36,
-    height: 36,
+    // 44pt is the minimum comfortable tap target
+    width: 44,
+    height: 44,
     borderRadius: radius.xs,
     backgroundColor: colors.bg.surface2,
     alignItems: 'center',

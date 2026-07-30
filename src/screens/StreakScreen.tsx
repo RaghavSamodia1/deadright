@@ -3,6 +3,9 @@ import { View, Text, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, Button } from '../components';
 
+// The flame background is bright: navy text clears 5.85:1 where off-white
+// managed only 2.81:1.
+
 // Peak — win streak milestone. Flame orange.
 export function StreakScreen({ navigation, route }: any) {
   const streak = route?.params?.streak ?? 5;
@@ -29,19 +32,19 @@ const styles = StyleSheet.create({
   count: {
     fontFamily: 'Barlow-Black',
     fontSize: 72,
-    color: colors.text.primary,
+    color: colors.text.inverse,
     letterSpacing: -2,
   },
   title: {
     fontFamily: 'Barlow-Bold',
     fontSize: 24,
-    color: colors.text.primary,
+    color: colors.text.inverse,
   },
   sub: {
     fontFamily: 'Inter-Medium',
     fontSize: 15,
     lineHeight: 22,
-    color: colors.text.primary,
+    color: colors.text.inverse,
     textAlign: 'center',
     maxWidth: 280,
     opacity: 0.9,

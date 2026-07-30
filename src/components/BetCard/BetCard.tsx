@@ -39,7 +39,8 @@ const STATUS_CARD_STYLE: Record<
   awaiting: { bg: colors.card.amber, textColor: colors.text.inverse, textOpacity: 1 },
   win: { bg: colors.card.mint, textColor: colors.text.inverse, textOpacity: 1 },
   loss: null,
-  disputed: { bg: colors.card.coral, textColor: colors.text.primary, textOpacity: 1 },
+  // Off-white on coral is only 2.79:1 — navy on coral is 5.90:1.
+  disputed: { bg: colors.card.coral, textColor: colors.text.inverse, textOpacity: 1 },
   controversial: { bg: colors.card.violet, textColor: colors.text.primary, textOpacity: 1 },
 };
 

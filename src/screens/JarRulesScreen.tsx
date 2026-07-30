@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Alert, StyleSheet } from 'react-native';
 import { colors, spacing, radius } from '../tokens';
 import {
   ScreenBackground,
@@ -86,10 +86,25 @@ export function JarRulesScreen({ navigation, route }: any) {
         {groupId && (
           <Button
             label="Settle the jar 🍕"
-            onPress={async () => {
-              await settle(groupId, 'settled from rules screen');
-              navigation.goBack();
-            }}
+            // Settling empties the pot for the whole group and writes ledger
+            // entries — never do that on a single tap.
+            onPress={() =>
+              Alert.alert(
+                'Settle the jar?',
+                'This empties the pot for everyone and writes it to the group ledger. It can’t be undone.',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Settle it',
+                    style: 'destructive',
+                    onPress: async () => {
+                      await settle(groupId, 'settled from rules screen');
+                      navigation.goBack();
+                    },
+                  },
+                ],
+              )
+            }
             loading={settling}
             variant="ghost"
             fullWidth

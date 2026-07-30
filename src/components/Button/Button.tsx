@@ -108,14 +108,15 @@ export function Button({
       accessibilityState={{ disabled: disabled || loading }}
     >
       {loading ? (
-        <ActivityIndicator color={disabled ? colors.text.tertiary : v.text} size="small" />
+        <ActivityIndicator color={disabled ? colors.text.secondary : v.text} size="small" />
       ) : (
         <Text
           style={[
             styles.label,
             {
               fontSize: s.fontSize,
-              color: disabled ? colors.text.tertiary : v.text,
+              // tertiary on the disabled fill is only 3.70:1
+              color: disabled ? colors.text.secondary : v.text,
               fontFamily: size === 'sm' ? 'Barlow-SemiBold' : 'Barlow-Bold',
               letterSpacing: variant === 'primary' ? 0.5 : 0,
               textTransform: variant === 'primary' ? 'uppercase' : 'none',

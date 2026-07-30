@@ -19,7 +19,7 @@ export const colors = {
     awaitingDim: 'rgba(247,200,70,0.15)',
     disputed: '#FC574E',
     disputedDim: 'rgba(252,87,78,0.15)',
-    controversial: '#9650FF',
+    controversial: '#9F54FF', // was #9650FF (4.36:1) — now 4.63:1 on base
     live: '#8AE98D',
   },
 
@@ -28,7 +28,9 @@ export const colors = {
     coral: '#FC574E',
     mint: '#8AE98D',
     light: '#F0F0F0',
-    violet: '#6C63FF',
+    // Card fill is darker than side.a so off-white body text clears 4.5:1
+    // (it was 3.79:1 on the raw #6C63FF).
+    violet: '#5F57E0',
     navy: '#151B26',
   },
 
@@ -50,9 +52,12 @@ export const colors = {
   text: {
     primary: '#F0F0F0',
     secondary: '#96A5B9',
-    tertiary: '#5A697D',
+    // #5A697D failed WCAG AA on every surface (2.75:1 on surface-2).
+    // Lightened to clear 4.5:1 on base, surface-1 and surface-2.
+    tertiary: '#798DA8',
     brand: '#FF5500',
-    link: '#6C63FF',
+    // Link violet only reached 4.00:1 on surface-1; lightened to 4.65:1.
+    link: '#7C71FF',
     inverse: '#0E121A',
   },
 

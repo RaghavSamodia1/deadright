@@ -20,17 +20,17 @@ export async function getOptions(betId: string): Promise<BetOption[]> {
 }
 
 /** Lock in my predicted order — array of option ids, best first. */
+/**
+ * Ranking is also how you join an ordinal bet, so it goes through an RPC that
+ * does both atomically. The direct upsert this replaced could not satisfy the
+ * bet_rankings insert policy — that policy requires an existing
+ * bet_participants row, which only the RPC creates.
+ */
 export async function submitRanking(betId: string, orderedOptionIds: string[]) {
-  const uid = (await supabase.auth.getSession()).data.session?.user.id;
-  const rows = orderedOptionIds.map((option_id, i) => ({
-    bet_id: betId,
-    user_id: uid!,
-    option_id,
-    rank: i + 1,
-  }));
-  const { error } = await supabase
-    .from('bet_rankings')
-    .upsert(rows, { onConflict: 'bet_id,user_id,option_id' });
+  const { error } = await supabase.rpc('submit_ranking', {
+    p_bet: betId,
+    p_options: orderedOptionIds,
+  });
   if (error) throw error;
 }
 

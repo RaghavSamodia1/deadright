@@ -34,7 +34,7 @@ export function EvidenceUploadScreen({ navigation, route }: any) {
     setError(null);
     // Demo mode: nothing to upload to.
     if (!isBackendConfigured || !betId) {
-      return navigation.replace(outcome === 'won' ? 'Win' : 'Root');
+      return navigation.replace(outcome === 'won' ? 'Win' : 'Root', { betId });
     }
     setUploading(true);
     try {
@@ -42,7 +42,7 @@ export function EvidenceUploadScreen({ navigation, route }: any) {
       for (const item of items) {
         await addEvidence(betId, undefined, item.uri);
       }
-      navigation.replace(outcome === 'won' ? 'Win' : 'Root');
+      navigation.replace(outcome === 'won' ? 'Win' : 'Root', { betId });
     } catch (e) {
       setError((e as Error).message ?? 'Upload failed — check your connection.');
     } finally {

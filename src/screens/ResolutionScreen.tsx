@@ -23,13 +23,13 @@ export function ResolutionScreen({ navigation, route }: any) {
 
   const submit = async () => {
     if (!isBackendConfigured || !betId) {
-      return navigation.replace(outcome === 'won' ? 'Win' : 'Root');
+      return navigation.replace(outcome === 'won' ? 'Win' : 'Root', { betId });
     }
     // "I called it" = my side won. The RPC records the proposal; the other
     // side still has to agree before it resolves.
     const side = outcome === 'won' ? 'a' : 'b';
     const bet = await propose(betId, side, note || undefined);
-    if (bet) navigation.replace(outcome === 'won' ? 'Win' : 'Root');
+    if (bet) navigation.replace(outcome === 'won' ? 'Win' : 'Root', { betId });
   };
 
   return (

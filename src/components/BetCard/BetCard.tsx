@@ -20,6 +20,8 @@ export interface BetCardData {
   stake?: string;
   deadline: Date;
   isCreator?: boolean;
+  /** Ranking bets have no sides, so the A/B bar is meaningless for them. */
+  isOrdinal?: boolean;
 }
 
 interface BetCardProps {
@@ -102,8 +104,8 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
         "{bet.title}"
       </Text>
 
-      {/* Side distribution */}
-      {!compact && (
+      {/* Side distribution — a ranking bet has no sides to distribute. */}
+      {!compact && !bet.isOrdinal && (
         <SideBar
           sideAPercent={bet.sideAPercent}
           sideACount={bet.sideACount}

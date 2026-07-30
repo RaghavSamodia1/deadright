@@ -28,7 +28,7 @@ export function RankPickerScreen({ navigation, route }: any) {
   const betId: string | undefined = route?.params?.id ?? route?.params?.betId;
   const title: string = route?.params?.title ?? 'Rank them';
 
-  const { data: options } = useQuery<Option[]>(
+  const { data: options, isMock: optionsAreMock } = useQuery<Option[]>(
     async () => (betId ? ((await getOptions(betId)) as any as Option[]) : MOCK),
     MOCK,
     [betId],
@@ -38,10 +38,13 @@ export function RankPickerScreen({ navigation, route }: any) {
   const [seeded, setSeeded] = useState(false);
 
   useEffect(() => {
-    if (seeded || options.length === 0) return;
+    // Seed only from real options. `data` starts as the mock fallback, so the
+    // latch below used to fix the order to Arsenal/Man City/Liverpool/Spurs
+    // before the bet's actual options arrived — and never let go.
+    if (optionsAreMock || seeded || options.length === 0) return;
     setOrder(options);
     setSeeded(true);
-  }, [options, seeded]);
+  }, [options, seeded, optionsAreMock]);
 
   const { run: submit, loading, error } = useAction(submitRanking);
 

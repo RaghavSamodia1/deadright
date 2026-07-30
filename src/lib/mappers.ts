@@ -28,6 +28,7 @@ export function toBetCard(b: any, myUserId?: string | null): BetCardData {
     sideBCount: sideB,
     participantCount: total,
     stake: formatStake(b),
+    isOrdinal: b.type === 'ordinal',
     deadline: new Date(b.deadline),
     isCreator: b.is_creator ?? undefined,
   };

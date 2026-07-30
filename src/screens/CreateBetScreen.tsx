@@ -68,7 +68,7 @@ export function CreateBetScreen({ navigation }: any) {
     { id: 'g2', emoji: '🏠', name: 'Flatmates', memberCount: 5, members: [{ initials: 'AB' }, { initials: 'JK' }] },
   ];
 
-  const { data: groups } = useQuery(
+  const { data: groups, isMock: groupsAreMock } = useQuery(
     async () =>
       (await getMyGroups()).map((g: any) => ({
         id: g.id,
@@ -137,8 +137,13 @@ export function CreateBetScreen({ navigation }: any) {
   };
 
   useEffect(() => {
+    // Only ever seed from real data. `data` starts out as the mock fallback, so
+    // auto-selecting without this check latched onto the mock id "g1" on the
+    // first render and never corrected once the real groups arrived — the
+    // insert then failed with `invalid input syntax for type uuid: "g1"`.
+    if (groupsAreMock) return;
     if (!group && groups.length > 0) setGroup(groups[0].id);
-  }, [groups, group]);
+  }, [groups, group, groupsAreMock]);
 
   // Debounced: the user is still typing, and sharpen is a network call.
   useEffect(() => {

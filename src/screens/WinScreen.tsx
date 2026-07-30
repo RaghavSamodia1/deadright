@@ -2,15 +2,30 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, Stamp, Button } from '../components';
-import { undoResolution } from '../api/resolution';
+import { undoResolution, getCredDelta } from '../api/resolution';
 import { useAction } from '../hooks/useQuery';
 
 // Peak — "CALLED IT" win moment. Mint, rotated stamp (the signature moment).
 const UNDO_WINDOW_SECONDS = 300; // matches undo_resolution's 5-minute check
 
 export function WinScreen({ navigation, route }: any) {
-  const cred = route?.params?.credGain ?? 12;
   const betId: string | undefined = route?.params?.id ?? route?.params?.betId;
+
+  // Was a hardcoded 12, because nothing navigating here passed a number. Ask
+  // for the real award and show nothing rather than a made-up figure.
+  const [cred, setCred] = React.useState<number | null>(
+    route?.params?.credGain ?? null,
+  );
+  React.useEffect(() => {
+    if (!betId || cred !== null) return;
+    let alive = true;
+    getCredDelta(betId).then((d) => {
+      if (alive && d !== null) setCred(d);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [betId, cred]);
 
   const { run: undo, loading: undoing } = useAction(undoResolution);
   const [secondsLeft, setSecondsLeft] = React.useState(UNDO_WINDOW_SECONDS);
@@ -28,9 +43,13 @@ export function WinScreen({ navigation, route }: any) {
           <Stamp label="CALLED IT" color={colors.text.inverse} rotate={-12} fontSize={60} />
           <Text style={styles.emoji}>🔥</Text>
           <Text style={styles.sub}>You were dead right.</Text>
-          <View style={styles.credPill}>
-            <Text style={styles.credText}>+{cred} Cred</Text>
-          </View>
+          {cred !== null && (
+            <View style={styles.credPill}>
+              <Text style={styles.credText}>
+                {cred >= 0 ? '+' : '−'}{Math.abs(cred)} Cred
+              </Text>
+            </View>
+          )}
         </View>
         <View style={styles.footer}>
           <Button label="Rub it in 😏" onPress={() => navigation.replace('ShareInvite')} variant="secondary" fullWidth />

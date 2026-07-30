@@ -26,7 +26,13 @@ export function useQuery<T>(
   const [data, setData] = useState<T>(fallback);
   const [loading, setLoading] = useState(isBackendConfigured);
   const [error, setError] = useState<Error | null>(null);
-  const [isMock, setIsMock] = useState(!isBackendConfigured);
+  // `data` is seeded with the fallback, so it *is* the mock until a fetch
+  // succeeds — regardless of whether a backend is configured. This started as
+  // !isBackendConfigured, which reported real data during the whole loading
+  // window: CreateBet trusted it, latched onto the mock group id "g1" before
+  // the real groups landed, and every bet insert failed with
+  // `invalid input syntax for type uuid: "g1"`.
+  const [isMock, setIsMock] = useState(true);
   const [tick, setTick] = useState(0);
 
   const refetch = useCallback(() => setTick((t) => t + 1), []);

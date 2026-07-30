@@ -68,6 +68,13 @@ export function BetDetailScreen({ navigation, route }: any) {
   const myEntry = (raw?.participants ?? []).find((p: any) => p.user_id === raw?.uid);
   const canJoin = raw ? raw.status === 'active' || raw.status === 'live' : true;
   const canResolve = raw ? raw.status === 'awaiting' : false;
+  // propose_outcome accepts active, live and awaiting — the outcome of a call
+  // is often known long before its deadline ("India win the third test" when the
+  // test finishes in four days). Gating settlement on the deadline left
+  // participants staring at a disabled "You're on Side A" with no way to close
+  // it out until a cron job flipped the status.
+  const canSettleEarly =
+    !!raw && !!myEntry && (raw.status === 'active' || raw.status === 'live');
   const isOrdinal = raw?.type === 'ordinal';
   // pending_agreement: someone proposed an outcome and the other side must
   // agree or dispute. Only participants who haven't agreed get the choice.
@@ -97,7 +104,7 @@ export function BetDetailScreen({ navigation, route }: any) {
         .slice()
         .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at))
         .map((e) => ({
-          text: describeEvent(e, raw?.uid),
+          text: describeEvent(e, raw?.uid, isOrdinal),
           timestamp: relativeTime(e.created_at),
           tone: eventTone(e.kind),
         }))
@@ -178,15 +185,27 @@ export function BetDetailScreen({ navigation, route }: any) {
             style={styles.cta}
           />
         ) : canJoin ? (
-          <Button
-            label={myEntry ? `You're on Side ${String(myEntry.side).toUpperCase()}` : 'Pick your side'}
-            onPress={() =>
-              navigation.navigate('SideSelection', { id: bet.id, title: bet.title })
-            }
-            disabled={!!myEntry}
-            fullWidth
-            style={styles.cta}
-          />
+          <>
+            <Button
+              label={myEntry ? `You're on Side ${String(myEntry.side).toUpperCase()}` : 'Pick your side'}
+              onPress={() =>
+                navigation.navigate('SideSelection', { id: bet.id, title: bet.title })
+              }
+              disabled={!!myEntry}
+              fullWidth
+              style={styles.cta}
+            />
+            {canSettleEarly && (
+              <Button
+                label="Settle it now"
+                onPress={() =>
+                  navigation.navigate('Resolution', { id: bet.id, title: bet.title })
+                }
+                variant="secondary"
+                fullWidth
+              />
+            )}
+          </>
         ) : null}
       </ScrollView>
 
@@ -235,7 +254,7 @@ export function BetDetailScreen({ navigation, route }: any) {
 }
 
 // bet_events row → a human line in the timeline.
-function describeEvent(e: any, myUserId?: string | null): string {
+function describeEvent(e: any, myUserId?: string | null, isOrdinal = false): string {
   // The trigger never wrote payload.handle, so every line read "Someone" —
   // including your own. actor_id is populated, so resolve through the joined
   // profile and name yourself as "You".
@@ -247,7 +266,12 @@ function describeEvent(e: any, myUserId?: string | null): string {
         : e.actor?.display_name ?? (e.payload?.handle ? `@${e.payload.handle}` : 'Someone');
   switch (e.kind) {
     case 'created': return `${who} called it`;
-    case 'joined': return `${who} joined Side ${String(e.payload?.side ?? '').toUpperCase()}`;
+    // An ordinal bet stores side 'a' purely to mark participation, so naming a
+    // side here would be meaningless.
+    case 'joined':
+      return isOrdinal
+        ? `${who} locked in a ranking`
+        : `${who} joined Side ${String(e.payload?.side ?? '').toUpperCase()}`;
     case 'side_switched': return `${who} switched sides 👀`;
     case 'went_live': return 'It kicked off — live now';
     case 'deadline_passed': return 'Deadline passed — needs resolving';

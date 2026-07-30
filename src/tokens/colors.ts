@@ -6,6 +6,8 @@ export const colors = {
 
   side: {
     a: '#6C63FF',
+    // For text on the violet tint fill, where raw side.a is 3.74:1.
+    aLift: '#8F86FF',
     aDim: 'rgba(108,99,255,0.15)',
     b: '#FC574E',
     bDim: 'rgba(252,87,78,0.15)',

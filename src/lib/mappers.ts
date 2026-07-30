@@ -65,7 +65,10 @@ function toBetStatus(b: any, myUserId?: string | null): BetStatus {
 }
 
 function formatStake(b: any): string | undefined {
-  if (b.stake_kind === 'dare') return b.dare_forfeit ? '🎲' : undefined;
+  // dare_forfeit already carries its own emoji ("🏆 Bragging rights"), and it is
+  // the whole point of the stake — returning a bare 🎲 threw it away and every
+  // non-money bet looked identical.
+  if (b.stake_kind === 'dare') return b.dare_forfeit || undefined;
   if (b.stake_kind === 'secret') return '🤐';
   if (b.stake_amount_cents) return `£${(b.stake_amount_cents / 100).toFixed(0)}`;
   return undefined;

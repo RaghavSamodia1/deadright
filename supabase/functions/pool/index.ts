@@ -33,6 +33,7 @@ Deno.serve(async (req) => {
   const idx = parts.indexOf('pool');
   const token = parts[idx + 1] ?? url.searchParams.get('t') ?? '';
   const wantsResults = parts[idx + 2] === 'results';
+  const wantsData = parts[idx + 2] === 'data';
 
   if (!token) return html(notFoundPage(), 404);
 
@@ -43,6 +44,28 @@ Deno.serve(async (req) => {
     .maybeSingle();
 
   if (!pool) return html(notFoundPage(), 404);
+
+  // Supabase rewrites text/html to text/plain with nosniff on the shared
+  // *.supabase.co functions domain (anti-phishing), so the embedded page below
+  // renders as source in a browser and cannot be fixed from in here. This
+  // endpoint exposes the same data as JSON so the guest page can be served from
+  // any static host while this function stays the API — the service-role key
+  // never leaves the server either way.
+  if (wantsData) {
+    const { data: opts } = await supabase
+      .from('pool_options')
+      .select('id, label')
+      .eq('pool_id', pool.id)
+      .order('sort');
+    return json({
+      title: pool.title,
+      question: pool.question,
+      status: pool.status,
+      closesAt: pool.closes_at,
+      winningOption: pool.winning_option,
+      options: opts ?? [],
+    });
+  }
 
   if (wantsResults) {
     const { data } = await supabase.rpc('pool_results', { p_pool: pool.id });

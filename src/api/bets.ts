@@ -66,7 +66,10 @@ export async function getBet(betId: string) {
        creator:profiles!bets_creator_id_fkey(handle, display_name, avatar_url),
        participants:bet_participants(user_id, side, agreed,
          profile:profiles(handle, display_name, avatar_url)),
-       events:bet_events(id, actor_id, kind, payload, created_at),
+       events:bet_events(
+         id, actor_id, kind, payload, created_at,
+         actor:profiles!bet_events_actor_id_fkey(handle, display_name)
+       ),
        evidence:bet_evidence(id, user_id, note, file_path, created_at)`,
     )
     .eq('id', betId)

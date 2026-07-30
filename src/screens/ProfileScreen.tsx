@@ -43,7 +43,9 @@ export function ProfileScreen({ navigation }: any) {
   const percentile = Math.max(0, Math.min(100, Math.round(((cred - 250) / 500) * 100)));
 
   const stats: Stat[] = [
-    { value: `${myStats.total}`, label: 'Called' },
+    // getStats counts resolved bets only, so "Called" read 0 while an open
+    // bet of theirs sat right below it. Label what it actually measures.
+    { value: `${myStats.total}`, label: 'Settled' },
     { value: `${myStats.winRate}%`, label: 'Win rate' },
     { value: `${cred}`, label: 'Cred', highlight: true },
   ];

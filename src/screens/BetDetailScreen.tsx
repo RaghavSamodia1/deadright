@@ -97,7 +97,7 @@ export function BetDetailScreen({ navigation, route }: any) {
         .slice()
         .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at))
         .map((e) => ({
-          text: describeEvent(e),
+          text: describeEvent(e, raw?.uid),
           timestamp: relativeTime(e.created_at),
           tone: eventTone(e.kind),
         }))
@@ -235,8 +235,16 @@ export function BetDetailScreen({ navigation, route }: any) {
 }
 
 // bet_events row → a human line in the timeline.
-function describeEvent(e: any): string {
-  const who = e.payload?.handle ? `@${e.payload.handle}` : 'Someone';
+function describeEvent(e: any, myUserId?: string | null): string {
+  // The trigger never wrote payload.handle, so every line read "Someone" —
+  // including your own. actor_id is populated, so resolve through the joined
+  // profile and name yourself as "You".
+  const who =
+    e.actor_id && e.actor_id === myUserId
+      ? 'You'
+      : e.actor?.handle
+        ? `@${e.actor.handle}`
+        : e.actor?.display_name ?? (e.payload?.handle ? `@${e.payload.handle}` : 'Someone');
   switch (e.kind) {
     case 'created': return `${who} called it`;
     case 'joined': return `${who} joined Side ${String(e.payload?.side ?? '').toUpperCase()}`;

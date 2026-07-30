@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { View, Text, ScrollView, RefreshControl, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, spacing } from '../tokens';
 import {
@@ -211,13 +211,14 @@ export function HomeScreen({ navigation }: any) {
               {/* On the header rather than a row of its own: as a standalone
                   centred link it cost a full row of empty width and pushed
                   NEEDS YOU off the first screen. */}
-              <Text
-                style={styles.sectionAction}
+              <Pressable
                 onPress={() => navigation.navigate('CreateGroup')}
+                hitSlop={{ top: 14, bottom: 14, left: 14, right: 8 }}
                 accessibilityRole="button"
+                accessibilityLabel="New group"
               >
-                + New
-              </Text>
+                <Text style={styles.sectionAction}>+ New</Text>
+              </Pressable>
             </View>
             {groups.map((g: any) => (
               <ListRow
@@ -243,13 +244,14 @@ export function HomeScreen({ navigation }: any) {
           <>
             <View style={styles.sectionRow}>
               <Text style={[styles.section, styles.sectionInRow]}>NEEDS YOU</Text>
-              <Text
-                style={styles.sectionAction}
+              <Pressable
                 onPress={() => navigation.navigate('AllBets')}
+                hitSlop={{ top: 14, bottom: 14, left: 14, right: 8 }}
                 accessibilityRole="button"
+                accessibilityLabel="See all bets"
               >
-                See all →
-              </Text>
+                <Text style={styles.sectionAction}>See all →</Text>
+              </Pressable>
             </View>
             {bets.map((bet) => (
               <BetCard
@@ -314,8 +316,7 @@ const styles = StyleSheet.create({
   sectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: spacing[2],
+    marginTop: spacing[1],
   },
   section: {
     fontFamily: 'Barlow-SemiBold',
@@ -325,15 +326,17 @@ const styles = StyleSheet.create({
     marginTop: spacing[2],
   },
   // The row owns the top spacing; the overline must not add its own or it
-  // sits lower than the action beside it.
-  sectionInRow: { marginTop: 0 },
+  // sits lower than the action beside it. flex:1 (rather than the row using
+  // space-between) makes the overline absorb the slack, so a longer action like
+  // "See all →" is right-aligned inside the gutter instead of being pushed past
+  // the screen edge and clipped.
+  sectionInRow: { marginTop: 0, flex: 1 },
   sectionAction: {
     fontFamily: 'Barlow-SemiBold',
     fontSize: 12,
     color: colors.text.secondary,
-    // Keeps the 44pt tap target the standalone link used to get from its row.
-    paddingVertical: spacing[3],
-    paddingLeft: spacing[4],
+    // No padding: it inflated the header row by ~24pt. The Pressable's hitSlop
+    // carries the 44pt target instead, which costs no layout.
   },
   firstRun: { gap: spacing[3], marginTop: spacing[2] },
   firstRunTitle: {

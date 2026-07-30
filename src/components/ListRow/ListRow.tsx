@@ -73,9 +73,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing[3],
     paddingHorizontal: spacing[4],
-    paddingVertical: spacing[4],
+    // Was spacing[4]/64: with a title and subtitle the padding dominated the
+    // row and left it looking half empty.
+    paddingVertical: spacing[3],
     borderRadius: radius.md,
-    minHeight: 64,
+    minHeight: 56,
   },
   dot: {
     width: 8,

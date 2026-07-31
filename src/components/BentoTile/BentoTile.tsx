@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, ViewStyle, useWindowDimensions } fro
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../tokens';
 
-export type TileSize = 'hero' | 'wide' | 'stat' | 'nav' | 'chart';
+export type TileSize = 'hero' | 'feature' | 'wide' | 'stat' | 'nav' | 'chart';
 export type TileTone =
   | 'amber' | 'mint' | 'flame' | 'navy'
   | 'amber-tint' | 'mint-tint' | 'violet-tint';
@@ -36,9 +36,12 @@ const GAP = spacing[3];
 const BASE_CONTENT = 390 - spacing.screenGutter * 2;
 
 // Heights at the reference width. Widths are derived from the live screen
-// width instead — see tileSizesFor(). Hero has no entry: its height is derived
-// from stat so the two stack up to exactly one hero (226 == 107 * 2 + 12).
-const BASE_HEIGHTS: Record<Exclude<TileSize, 'hero'>, number> = {
+// width instead — see tileSizesFor(). Hero and feature have no entry: their
+// heights are derived from the small tile they pair with, so a large tile and
+// the column beside it always line up (226 == 107 * 2 + 12 for hero,
+// 180 == 84 * 2 + 12 for feature). Deriving rather than hardcoding is what
+// stops the ragged row `wide` produced when it sat next to two stats.
+const BASE_HEIGHTS: Record<Exclude<TileSize, 'hero' | 'feature'>, number> = {
   wide: 150,
   stat: 107,
   nav: 84,
@@ -66,13 +69,16 @@ export function tileSizesFor(windowWidth: number): Record<TileSize, TileDims> {
   const large = content - GAP - small;
   const scale = tileScaleFor(windowWidth);
   const statH = Math.round(BASE_HEIGHTS.stat * scale);
+  const navH = Math.round(BASE_HEIGHTS.nav * scale);
 
   return {
     // Two stacked stat tiles must line up with the hero beside them.
     hero: { w: large, h: statH * 2 + GAP, r: radius.lg },
+    // Same trick one size down: pairs with two stacked nav tiles.
+    feature: { w: large, h: navH * 2 + GAP, r: radius.lg },
     wide: { w: large, h: Math.round(BASE_HEIGHTS.wide * scale), r: radius.lg },
     stat: { w: small, h: statH, r: radius.md },
-    nav: { w: small, h: Math.round(BASE_HEIGHTS.nav * scale), r: radius.md },
+    nav: { w: small, h: navH, r: radius.md },
     chart: { w: large, h: Math.round(BASE_HEIGHTS.chart * scale), r: radius.md },
   };
 }
@@ -104,7 +110,7 @@ const TONES: Record<TileTone, { bg: string; border?: string; text: string; sub: 
   'violet-tint': { bg: 'rgba(108,99,255,0.15)', border: 'rgba(108,99,255,0.4)', text: colors.side.aLift, sub: colors.text.secondary },
 };
 
-const VALUE_SIZE: Record<TileSize, number> = { hero: 52, wide: 48, stat: 28, nav: 22, chart: 0 };
+const VALUE_SIZE: Record<TileSize, number> = { hero: 52, feature: 26, wide: 48, stat: 28, nav: 22, chart: 0 };
 
 /**
  * v2 bento vocabulary (design-v2.md). Tiles that navigate should pass onPress
@@ -155,7 +161,11 @@ export function BentoTile({
       {size === 'wide' && label && (
         <Text style={[styles.label, { color: t.sub }]}>{label}</Text>
       )}
-      {emoji && <Text style={size === 'hero' ? styles.emojiLg : styles.emojiSm}>{emoji}</Text>}
+      {emoji && (
+        <Text style={size === 'hero' || size === 'feature' ? styles.emojiLg : styles.emojiSm}>
+          {emoji}
+        </Text>
+      )}
       {value != null && VALUE_SIZE[size] > 0 && (
         <Text
           style={[

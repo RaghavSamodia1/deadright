@@ -177,30 +177,33 @@ export function HomeScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* Row 2 — navigation strip (replaces the tab bar) */}
+        {/* Row 2 — mirrored: the column sits left and the large tile right, so
+            the grid doesn't read as three identical strips stacked up. Feature
+            is exactly two navs plus the gap, so the row lines up by
+            construction rather than by hand-tuned numbers. */}
         <View style={styles.row}>
+          <View style={styles.col}>
+            <BentoTile
+              size="nav" tone="mint-tint" value={`${money(summary.lifetimeCents)}`} label="Ledger →"
+              onPress={() => navigation.navigate('Ledger')}
+            />
+            <BentoTile
+              size="nav" tone="navy" value={`${friendCount}`} label="Friends →"
+              onPress={() => navigation.navigate('Search')}
+            />
+          </View>
           <BentoTile
-            size="nav" tone="mint-tint" value={`${money(summary.lifetimeCents)}`} label="Ledger →"
-            onPress={() => navigation.navigate('Ledger')}
-          />
-          <BentoTile
-            size="nav" tone="violet-tint" value="🎉" label="Party Pool"
+            size="feature" tone="violet-tint" emoji="🎉"
+            value="Party Pool" label="One link · no app needed"
             onPress={() => navigation.navigate('CreatePool')}
-          />
-          <BentoTile
-            size="nav" tone="amber" value="+" label="New Bet"
-            onPress={() => navigation.navigate('CreateBet')}
           />
         </View>
 
-        {/* Row 2b — people. Groups own everything in this app, so getting to
-            them (and to who is in them) deserves a tile rather than only the
-            list further down. */}
+        {/* Row 3 — the action strip. */}
         <View style={styles.row}>
           <BentoTile
-            size="nav" tone="violet-tint"
-            value={`${friendCount}`} label="Friends & groups →"
-            onPress={() => navigation.navigate('Search')}
+            size="nav" tone="amber" value="+" label="New bet"
+            onPress={() => navigation.navigate('CreateBet')}
           />
           <BentoTile
             size="nav" tone="navy" value="🔗" label="Join code"

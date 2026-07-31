@@ -54,7 +54,7 @@ export function NavHeader({
             <Pressable
               onPress={onBack}
               style={styles.iconBtn}
-              hitSlop={8}
+              hitSlop={10}
               accessibilityRole="button"
               accessibilityLabel="Go back"
             >
@@ -92,7 +92,7 @@ export function NavHeader({
               key={i}
               onPress={action.onPress}
               style={styles.iconBtn}
-              hitSlop={8}
+              hitSlop={10}
               accessibilityRole="button"
               accessibilityLabel={action.accessibilityLabel}
             >
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   inner: {
-    height: 56,
+    height: 46,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.screenGutter,
@@ -125,24 +125,24 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 4,
   },
   right: {
     justifyContent: 'flex-end',
   },
   iconBtn: {
-    width: spacing.touchTarget,
-    height: spacing.touchTarget,
+    width: 34,
+    height: 34,
     alignItems: 'center',
     justifyContent: 'center',
   },
   textBtn: {
-    height: spacing.touchTarget,
+    height: 34,
     justifyContent: 'center',
   },
   backArrow: {
     fontFamily: 'Barlow-Bold',
-    fontSize: 22,
+    fontSize: 20,
     color: colors.text.secondary,
   },
   textAction: {
@@ -152,16 +152,16 @@ const styles = StyleSheet.create({
   },
   brandName: {
     fontFamily: 'Barlow-Black',
-    fontSize: 24,
+    fontSize: 19,
     color: colors.interactive.primary,
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
   },
   brandEmoji: {
-    fontSize: 20,
+    fontSize: 15,
   },
   title: {
     fontFamily: 'Barlow-Bold',
-    fontSize: 17,
+    fontSize: 16,
     color: colors.text.primary,
     textAlign: 'center',
     flex: 2,

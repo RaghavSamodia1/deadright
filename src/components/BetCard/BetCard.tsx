@@ -44,7 +44,7 @@ const STATUS_CARD_STYLE: Record<BetStatus, { bg: string; ink: CardInk } | null> 
   loss: null,
   // Off-white on coral is only 2.79:1 — navy on coral is 5.90:1.
   disputed: { bg: colors.card.coral, ink: colors.cardInk.onLight },
-  controversial: { bg: colors.card.violet, ink: colors.cardInk.onDark },
+  controversial: null,
 };
 
 /** Inks for the default dark card, so every branch below has a full set. */
@@ -119,14 +119,20 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
         <Text style={[styles.meta, { color: metaColor }]}>
           👥 {bet.participantCount}
         </Text>
-        <View style={[styles.dot, { backgroundColor: dotColor }]} />
         {bet.stake && (
           <>
-            <Text style={[styles.meta, { color: metaColor }]}>{bet.stake}</Text>
             <View style={[styles.dot, { backgroundColor: dotColor }]} />
+            <Text style={[styles.meta, { color: metaColor }]}>{bet.stake}</Text>
           </>
         )}
-        <Timer deadline={bet.deadline} size="sm" ink={override ? ink.primary : undefined} />
+        {/* Pushed to the right margin so the countdown anchors the card's
+            trailing edge instead of trailing a separator dot. */}
+        <Timer
+          deadline={bet.deadline}
+          size="sm"
+          ink={override ? ink.primary : undefined}
+          style={styles.timer}
+        />
       </View>
     </Pressable>
   );
@@ -175,4 +181,5 @@ const styles = StyleSheet.create({
     width: 1,
     height: 12,
   },
+  timer: { marginLeft: 'auto' },
 });

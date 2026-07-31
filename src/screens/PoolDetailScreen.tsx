@@ -5,7 +5,7 @@ import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, Button, ListRow } from '../components';
-import { getPool, getPoolResults, poolShareUrl, setPoolStatus } from '../api/pools';
+import { getPool, getPoolResults, poolShareUrl, setPoolStatus, settlePool } from '../api/pools';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 
@@ -40,6 +40,7 @@ export function PoolDetailScreen({ navigation, route }: any) {
     [] as any[],
     [poolId],
   );
+  const { run: settle, loading: settling } = useAction(settlePool);
   const { run: changeStatus, loading: changing } = useAction(setPoolStatus);
 
   const url = isBackendConfigured && pool.share_token ? poolShareUrl(pool.share_token) : 'https://deadright.co/p/demo';
@@ -110,6 +111,27 @@ export function PoolDetailScreen({ navigation, route }: any) {
               </View>
             </View>
           ))
+        )}
+
+        {poolId && !isOpen && !pool.winning_option && (
+          <>
+            <Text style={styles.section}>CALL THE WINNER</Text>
+            <Text style={styles.empty}>
+              Pick what actually happened. Everyone with the link sees it.
+            </Text>
+            {(pool.options ?? []).map((o: any) => (
+              <ListRow
+                key={o.id}
+                title={o.label}
+                subtitle={`${results.find((r: any) => r.option_id === o.id)?.entries ?? 0} picked this`}
+                showChevron
+                onPress={async () => {
+                  await settle(poolId, o.id);
+                  refetch();
+                }}
+              />
+            ))}
+          </>
         )}
 
         {poolId && (

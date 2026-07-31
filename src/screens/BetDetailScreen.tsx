@@ -79,7 +79,17 @@ export function BetDetailScreen({ navigation, route }: any) {
   const isOrdinal = raw?.type === 'ordinal';
   // pending_agreement: someone proposed an outcome and the other side must
   // agree or dispute. Only participants who haven't agreed get the choice.
-  const awaitingMyCall = !!raw && raw.status === 'pending_agreement' && !!myEntry && !myEntry.agreed;
+  // Bets now settle on one person's word and the other side objects afterwards,
+  // so the decision point is a *resolved* bet inside its dispute window — not a
+  // bet parked in pending_agreement, which no longer occurs.
+  const disputeWindowOpen =
+    !!raw?.dispute_deadline && new Date(raw.dispute_deadline).getTime() > Date.now();
+  const awaitingMyCall =
+    !!raw &&
+    !!myEntry &&
+    !myEntry.agreed &&
+    ((raw.status === 'resolved' && disputeWindowOpen && raw.resolved_by !== raw.uid) ||
+      raw.status === 'pending_agreement');
 
   const { run: agree, loading: agreeing } = useAction(agreeOutcome);
   const { run: dispute, loading: disputing, error: disputeError } = useAction(raiseDispute);
@@ -153,10 +163,12 @@ export function BetDetailScreen({ navigation, route }: any) {
         {awaitingMyCall ? (
           <View style={styles.decision}>
             <Text style={styles.decisionTitle}>
-              An outcome was proposed. Do you agree?
+              {raw?.status === 'resolved'
+                ? 'This was settled without you. Agree, or dispute it.'
+                : 'An outcome was proposed. Do you agree?'}
             </Text>
             <Button
-              label="Agree — settle it"
+              label="Agree"
               onPress={async () => {
                 await agree(bet.id);
                 refetch();

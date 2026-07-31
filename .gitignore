@@ -26,3 +26,10 @@ ios/Pods/
 ios/build-device/
 ios/build-signed/
 supabase/.temp/
+
+# Signing keys — never commit. The upload keystore and its passwords live
+# outside the repo (~/.gradle/gradle.properties); losing them is unrecoverable
+# without Play App Signing.
+*.keystore
+*.jks
+!android/app/debug.keystore

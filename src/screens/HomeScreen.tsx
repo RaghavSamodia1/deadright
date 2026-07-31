@@ -7,6 +7,7 @@ import {
   NavHeader,
   BentoTile,
   BetCard,
+  Icon,
   type BetCardData,
 } from '../components';
 import { getFeed } from '../api/bets';
@@ -110,7 +111,7 @@ export function HomeScreen({ navigation }: any) {
           {
             icon: (
               <View>
-                <Text style={styles.bell}>🔔</Text>
+                <Icon name="bell" size={21} color={colors.text.secondary} strokeWidth={1.9} />
                 {unread > 0 && (
                   <View style={styles.badge}>
                     <Text style={styles.badgeText}>{unread > 9 ? '9+' : unread}</Text>
@@ -314,11 +315,10 @@ const styles = StyleSheet.create({
   col: {
     gap: spacing[3],
   },
-  bell: { fontSize: 18 },
   badge: {
     position: 'absolute',
-    top: -4,
-    right: -8,
+    top: -5,
+    right: -7,
     minWidth: 16,
     height: 16,
     borderRadius: 8,

@@ -19,8 +19,8 @@ interface StatCardProps {
 
 const TONES: Record<StatCardTone, { bg: string; text: string; sub: string }> = {
   navy: { bg: colors.bg.surface1, text: colors.text.primary, sub: colors.text.tertiary },
-  amber: { bg: colors.card.amber, text: colors.text.inverse, sub: 'rgba(14,18,26,0.6)' },
-  mint: { bg: colors.card.mint, text: colors.text.inverse, sub: 'rgba(14,18,26,0.6)' },
+  amber: { bg: colors.card.amber, text: colors.text.inverse, sub: 'rgba(10,10,11,0.6)' },
+  mint: { bg: colors.card.mint, text: colors.text.inverse, sub: 'rgba(10,10,11,0.6)' },
   coral: { bg: colors.card.coral, text: colors.text.primary, sub: 'rgba(240,240,240,0.65)' },
   violet: { bg: colors.card.violet, text: colors.text.primary, sub: 'rgba(240,240,240,0.65)' },
 };

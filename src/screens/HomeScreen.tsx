@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   capTrack: {
     height: 8,
     borderRadius: 999,
-    backgroundColor: 'rgba(14,18,26,0.15)',
+    backgroundColor: 'rgba(10,10,11,0.15)',
     marginTop: spacing[3],
     overflow: 'hidden',
   },

@@ -100,16 +100,16 @@ export function useTileSizes(): Record<TileSize, TileDims> {
 export const TILE_SIZES = tileSizesFor(390);
 
 const TONES: Record<TileTone, { bg: string; border?: string; text: string; sub: string }> = {
-  amber: { bg: colors.card.amber, text: colors.text.inverse, sub: 'rgba(14,18,26,0.6)' },
-  mint: { bg: colors.card.mint, text: colors.text.inverse, sub: 'rgba(14,18,26,0.6)' },
-  flame: { bg: colors.brand.flame, text: colors.text.primary, sub: 'rgba(240,240,240,0.7)' },
+  amber: { bg: colors.card.amber, text: colors.text.inverse, sub: 'rgba(10,10,11,0.6)' },
+  mint: { bg: colors.card.mint, text: colors.text.inverse, sub: 'rgba(10,10,11,0.6)' },
+  flame: { bg: colors.brand.flame, text: colors.text.inverse, sub: 'rgba(10,10,11,0.65)' },
   navy: { bg: colors.bg.surface1, border: colors.border.default, text: colors.text.primary, sub: colors.text.tertiary },
   // The tint fills sit ~12–15% above the page, which is enough to push
   // text.tertiary under AA (4.35:1 on amber-tint, 4.29:1 on mint-tint), so the
   // labels use text.secondary. side.a on violet-tint was worse at 3.74:1 —
   // lifted to a brighter violet that keeps the hue and clears 5.40:1.
   'amber-tint': { bg: 'rgba(247,200,70,0.12)', border: 'rgba(247,200,70,0.4)', text: colors.semantic.awaiting, sub: colors.text.secondary },
-  'mint-tint': { bg: 'rgba(138,233,141,0.12)', border: 'rgba(138,233,141,0.4)', text: colors.semantic.win, sub: colors.text.secondary },
+  'mint-tint': { bg: 'rgba(99,185,114,0.12)', border: 'rgba(99,185,114,0.45)', text: colors.semantic.win, sub: colors.text.secondary },
   'violet-tint': { bg: 'rgba(90,107,229,0.15)', border: 'rgba(90,107,229,0.45)', text: colors.side.aLift, sub: colors.text.secondary },
 };
 

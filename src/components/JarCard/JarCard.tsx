@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   emoji: { fontSize: 36 },
   groupChip: {
-    backgroundColor: 'rgba(14,18,26,0.15)',
+    backgroundColor: 'rgba(10,10,11,0.15)',
     borderRadius: radius.xs,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     letterSpacing: 1,
-    color: 'rgba(14,18,26,0.6)',
+    color: 'rgba(10,10,11,0.6)',
   },
   capWrap: {
     marginTop: spacing[3],
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   capTrack: {
     height: 8,
     borderRadius: radius.full,
-    backgroundColor: 'rgba(14,18,26,0.15)',
+    backgroundColor: 'rgba(10,10,11,0.15)',
     overflow: 'hidden',
   },
   capFill: {
@@ -109,6 +109,6 @@ const styles = StyleSheet.create({
   capLabel: {
     fontFamily: 'Inter-Regular',
     fontSize: 11,
-    color: 'rgba(14,18,26,0.6)',
+    color: 'rgba(10,10,11,0.6)',
   },
 });

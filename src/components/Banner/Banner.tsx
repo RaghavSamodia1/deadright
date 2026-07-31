@@ -34,7 +34,7 @@ const TONES: Record<BannerTone, { bg: string; accent: string; text: string; sub:
     sub: colors.text.secondary,
   },
   invite: {
-    bg: 'rgba(255,85,0,0.1)',
+    bg: 'rgba(226,102,31,0.1)',
     accent: colors.brand.flame,
     text: colors.text.primary,
     sub: colors.text.secondary,

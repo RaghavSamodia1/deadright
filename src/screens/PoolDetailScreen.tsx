@@ -81,7 +81,7 @@ export function PoolDetailScreen({ navigation, route }: any) {
         {/* The QR is the point: hold up your phone, everyone scans it */}
         <View style={styles.qrCard}>
           <View style={styles.qrBox}>
-            <QRCode value={url} size={180} backgroundColor="#FFFFFF" color="#0E121A" />
+            <QRCode value={url} size={180} backgroundColor="#FFFFFF" color="#0A0A0B" />
           </View>
           <Text style={styles.qrHint}>Scan to join — no app, no signup</Text>
         </View>

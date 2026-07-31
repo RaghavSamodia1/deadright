@@ -6,10 +6,10 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#0E121A",
+    "backgroundColor": "#0A0A0B",
     "newArchEnabled": true,
     "splash": {
-      "backgroundColor": "#0E121A",
+      "backgroundColor": "#0A0A0B",
       "resizeMode": "contain"
     },
     "ios": {
@@ -24,7 +24,7 @@
     "android": {
       "package": "co.deadright.app",
       "adaptiveIcon": {
-        "backgroundColor": "#0E121A"
+        "backgroundColor": "#0A0A0B"
       },
       "permissions": [
         "android.permission.CAMERA",

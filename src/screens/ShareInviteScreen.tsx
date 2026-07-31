@@ -43,7 +43,7 @@ export function ShareInviteScreen({ navigation, route }: any) {
             <InviteCodeCard code={code} />
 
             <View style={styles.qr}>
-              <QRCode value={`deadright://join/${code}`} size={168} backgroundColor="#FFFFFF" color="#0E121A" />
+              <QRCode value={`deadright://join/${code}`} size={168} backgroundColor="#FFFFFF" color="#0A0A0B" />
             </View>
             <Text style={styles.qrHint}>Point a camera at this to join</Text>
           </>

@@ -151,16 +151,16 @@ const styles = StyleSheet.create({
   },
   handle: {
     fontFamily: 'Barlow-SemiBold',
-    fontSize: 12,
+    fontSize: 13,
   },
   groupLabel: {
     fontFamily: 'Inter-Regular',
-    fontSize: 10,
+    fontSize: 11,
   },
   title: {
     fontFamily: 'Barlow-Bold',
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 17,
+    lineHeight: 23,
   },
   footer: {
     flexDirection: 'row',
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   },
   meta: {
     fontFamily: 'Inter-Regular',
-    fontSize: 11,
+    fontSize: 12,
   },
   dot: {
     width: 1,

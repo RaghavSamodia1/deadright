@@ -90,16 +90,16 @@ const styles = StyleSheet.create({
   labelRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   sideLabel: {
     fontFamily: 'Inter-Regular',
-    fontSize: 10,
+    fontSize: 11,
     color: colors.text.tertiary,
   },
   pct: {
     fontFamily: 'Barlow-Bold',
-    fontSize: 10,
+    fontSize: 12,
   },
   count: {
     fontFamily: 'Inter-Regular',
-    fontSize: 10,
+    fontSize: 11,
     color: colors.text.tertiary,
   },
   track: {

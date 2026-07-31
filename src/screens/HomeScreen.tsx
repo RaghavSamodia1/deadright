@@ -156,9 +156,10 @@ export function HomeScreen({ navigation }: any) {
                   : 'Nobody has slipped yet'
             }
             caption="Open the jar →"
-            // No group param: the jar screen falls back to your first group,
-            // and prompts you to make one if you have none.
-            onPress={() => navigation.navigate('CookieJar')}
+            // The tile sums every group's jar, so it opens the breakdown —
+            // sending it to CookieJar with no group silently showed only
+            // whichever group came first.
+            onPress={() => navigation.navigate('AllJars')}
           >
             <View style={styles.capTrack}>
               <View style={[styles.capFill, { width: `${(jarTotal / jarCap) * 100}%` }]} />

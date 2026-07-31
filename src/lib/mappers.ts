@@ -1,5 +1,6 @@
 import type { BetCardData } from '../components';
 import type { BetStatus } from '../components';
+import { formatMoney } from './money';
 
 /**
  * DB `bets` row (with embedded creator + participants) → the shape BetCard
@@ -71,6 +72,8 @@ function formatStake(b: any): string | undefined {
   // non-money bet looked identical.
   if (b.stake_kind === 'dare') return b.dare_forfeit || undefined;
   if (b.stake_kind === 'secret') return '🤐';
-  if (b.stake_amount_cents) return `£${(b.stake_amount_cents / 100).toFixed(0)}`;
+  // toFixed(0) rounded a custom £12.50 stake to "£13" — formatMoney keeps the
+  // decimals when there are any and drops them when there aren't.
+  if (b.stake_amount_cents) return formatMoney(b.stake_amount_cents);
   return undefined;
 }

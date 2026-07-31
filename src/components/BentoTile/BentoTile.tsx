@@ -178,7 +178,17 @@ export function BentoTile({
         </Text>
       )}
       {size !== 'wide' && label && (
-        <Text style={[styles.label, { color: tone === 'navy' ? colors.text.tertiary : t.sub }]}>
+        <Text
+          style={[
+            styles.label,
+            // Only `caption` used to push to the bottom, so a tile without one
+            // (every nav tile, and feature) bunched its glyph and label against
+            // the top with the lower third left empty. With no caption the
+            // label takes that job, so content spans the tile.
+            !caption && styles.labelToBottom,
+            { color: tone === 'navy' ? colors.text.tertiary : t.sub },
+          ]}
+        >
           {label}
         </Text>
       )}
@@ -223,14 +233,17 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: 'Barlow-SemiBold',
-    fontSize: 9,
-    letterSpacing: 1,
+    // 11 wrapped "JOIN CODE" and "LEDGER →" in the third-width nav tiles;
+    // 10 with tighter tracking is still larger than the original 9 and fits.
+    fontSize: 10,
+    letterSpacing: 0.4,
     marginTop: 4,
     textTransform: 'uppercase',
   },
+  labelToBottom: { marginTop: 'auto' as unknown as number },
   caption: {
     fontFamily: 'Inter-Regular',
-    fontSize: 10,
+    fontSize: 12,
     marginTop: 'auto' as unknown as number,
   },
 });

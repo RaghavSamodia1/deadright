@@ -44,6 +44,7 @@ export { TransactionDetailScreen } from './TransactionDetailScreen';
 
 // ── Cookie Jar (route: CookieJar) ────────────────────────────────────────────
 export { SwearJarScreen } from './SwearJarScreen';
+export { AllJarsScreen } from './AllJarsScreen';
 export { AddViolationSheet } from './AddViolationSheet';
 export { JarRulesScreen } from './JarRulesScreen';
 

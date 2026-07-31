@@ -73,9 +73,15 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     marginVertical: spacing[5],
   },
-  options: { flexDirection: 'row', gap: spacing[3], flex: 1 },
+  // alignItems:'center' stops the cards stretching to the cross axis. With
+  // flex:1 alone they grew to the full height left between the statement and
+  // the footer — on a tall phone that was a ~700pt card with the label
+  // stranded in the middle. The row still takes the space; the cards sit
+  // centred inside it at their own height.
+  options: { flexDirection: 'row', gap: spacing[3], flex: 1, alignItems: 'center' },
   option: {
     flex: 1,
+    minHeight: 168,
     borderRadius: radius.lg,
     borderWidth: 2,
     padding: spacing[5],

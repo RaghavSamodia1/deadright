@@ -138,3 +138,50 @@ export async function settleJar(groupId: string, note?: string) {
   if (error) throw error;
   return data;
 }
+
+/**
+ * One row per group the user is in, with that group's jar total.
+ *
+ * The Home tile aggregates every jar, so tapping it needs the breakdown rather
+ * than a single group's. RLS already scopes all three tables to the caller's
+ * groups (jar ledger rows became visible to co-members in 00015), so no group
+ * filter is needed here.
+ */
+export async function getJarsByGroup(): Promise<
+  { groupId: string; name: string; emoji: string | null; totalCents: number; violationCount: number }[]
+> {
+  const [{ data: groups, error: gErr }, { data: violations, error: vErr }, { data: entries, error: lErr }] =
+    await Promise.all([
+      supabase.from('groups').select('id, name, emoji').order('created_at'),
+      supabase.from('jar_violations').select('id, group_id'),
+      supabase
+        .from('ledger_entries')
+        .select('amount_cents, violation_id')
+        .not('violation_id', 'is', null)
+        .eq('status', 'pending'),
+    ]);
+  if (gErr) throw gErr;
+  if (vErr) throw vErr;
+  if (lErr) throw lErr;
+
+  const groupOfViolation = new Map<string, string>();
+  const countByGroup = new Map<string, number>();
+  (violations ?? []).forEach((v) => {
+    groupOfViolation.set(v.id, v.group_id);
+    countByGroup.set(v.group_id, (countByGroup.get(v.group_id) ?? 0) + 1);
+  });
+
+  const totalByGroup = new Map<string, number>();
+  (entries ?? []).forEach((e) => {
+    const g = groupOfViolation.get(e.violation_id!);
+    if (g) totalByGroup.set(g, (totalByGroup.get(g) ?? 0) + e.amount_cents);
+  });
+
+  return (groups ?? []).map((g) => ({
+    groupId: g.id,
+    name: g.name,
+    emoji: g.emoji,
+    totalCents: totalByGroup.get(g.id) ?? 0,
+    violationCount: countByGroup.get(g.id) ?? 0,
+  }));
+}

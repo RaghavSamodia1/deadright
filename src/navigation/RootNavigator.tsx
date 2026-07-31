@@ -35,6 +35,7 @@ import {
   AlertDetailScreen,
   TransactionDetailScreen,
   SwearJarScreen,
+  AllJarsScreen,
   JarRulesScreen,
   SettingsScreen,
   ProfileEditScreen,
@@ -94,6 +95,7 @@ export function RootNavigator() {
       <Stack.Screen name="Alerts" component={AlertsScreen} />
       <Stack.Screen name="AllBets" component={FeedScreen} />
       <Stack.Screen name="CookieJar" component={SwearJarScreen} />
+      <Stack.Screen name="AllJars" component={AllJarsScreen} />
       <Stack.Screen name="JarRules" component={JarRulesScreen} />
       <Stack.Screen name="PoolDetail" component={PoolDetailScreen} />
 

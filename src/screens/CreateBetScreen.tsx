@@ -17,6 +17,8 @@ import { createBet } from '../api/bets';
 import { addOptions } from '../api/ordinals';
 import { getMyGroups } from '../api/groups';
 import { sharpen } from '../api/sharpen';
+import { getSettings } from '../api/settings';
+import { currencySymbol, formatMoney, parseAmountToCents } from '../lib/money';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 
@@ -33,13 +35,16 @@ const DEADLINE_OPTS: { value: Deadline; label: string }[] = [
   { value: '1w', label: 'Next week' },
   { value: 'custom', label: 'Pick a date' },
 ];
-type Stake = 'brag' | 'coffee' | 'beer' | 'money';
+type Stake = 'brag' | 'coffee' | 'beer' | 'money' | 'custom';
 const STAKE_OPTS: { value: Stake; label: string }[] = [
   { value: 'brag', label: '🏆 Bragging rights' },
   { value: 'coffee', label: '☕ Coffee' },
   { value: 'beer', label: '🍺 Round' },
   { value: 'money', label: '💷 A tenner' },
+  { value: 'custom', label: '✏️ Custom amount' },
 ];
+/** The preset money option. Custom overrides this with whatever they type. */
+const TENNER_CENTS = 1000;
 
 const STEPS = ['Statement', 'Type', 'Deadline', 'Stake', 'Group', 'Review'];
 
@@ -62,6 +67,13 @@ export function CreateBetScreen({ navigation }: any) {
   // that everything lives in a group. The first group is now really selected.
   const [group, setGroup] = useState<string>('');
   const [rankOptions, setRankOptions] = useState<string[]>(['', '']);
+  const [customAmount, setCustomAmount] = useState('');
+
+  // Stakes are ledger-only, but they should still read in the user's own
+  // currency rather than a hardcoded pound sign.
+  const { data: settings } = useQuery(getSettings, { currency: 'GBP' } as any);
+  const symbol = currencySymbol(settings?.currency);
+  const customCents = parseAmountToCents(customAmount);
 
   const MOCK_GROUPS = [
     { id: 'g1', emoji: '⚽', name: 'Sunday League', memberCount: 8, members: [{ initials: 'MC' }, { initials: 'PR' }, { initials: 'DJ' }] },
@@ -93,15 +105,21 @@ export function CreateBetScreen({ navigation }: any) {
     custom: 86_400_000,
   };
 
+  const isMoneyStake = stake === 'money' || stake === 'custom';
+
   const submit = async () => {
     if (!isBackendConfigured) return navigation.replace('BetPlaced');
     const bet = await publish({
       groupId: group || null,
       title: (sharpened || statement).trim(),
       type: type === 'ordinal' ? 'ordinal' : 'prediction',
-      stakeKind: stake === 'money' ? 'money' : 'dare',
-      stakeAmountCents: stake === 'money' ? 1000 : undefined,
-      dareForfeit: stake === 'money' ? undefined : STAKE_OPTS.find((s) => s.value === stake)?.label,
+      stakeKind: isMoneyStake ? 'money' : 'dare',
+      stakeAmountCents: isMoneyStake
+        ? (stake === 'custom' ? customCents! : TENNER_CENTS)
+        : undefined,
+      dareForfeit: isMoneyStake
+        ? undefined
+        : STAKE_OPTS.find((s) => s.value === stake)?.label,
       deadline: new Date(Date.now() + DEADLINE_MS[deadline]),
     });
     if (!bet) return;
@@ -120,9 +138,12 @@ export function CreateBetScreen({ navigation }: any) {
       ? statement.trim().length > 4
       : step === 1 && type === 'ordinal'
         ? rankOptions.filter((o) => o.trim()).length >= 2
-        : // A bet with no group has no audience and no opposing side, so the
-          // Group step is a real gate rather than a formality.
-          step === 4
+        : // A custom stake with no usable number would post NaN cents.
+          step === 3 && stake === 'custom'
+          ? customCents !== null
+          : // A bet with no group has no audience and no opposing side, so the
+            // Group step is a real gate rather than a formality.
+            step === 4
           ? !!group
           : true;
   const preview: BetCardData = {
@@ -132,7 +153,10 @@ export function CreateBetScreen({ navigation }: any) {
     author: { handle: '@you', initials: 'RS' },
     group: groups.find((g) => g.id === group)?.name,
     sideAPercent: 50, sideACount: 0, sideBCount: 0, participantCount: 1,
-    stake: STAKE_OPTS.find((s) => s.value === stake)?.label.split(' ')[0],
+    stake:
+      stake === 'custom'
+        ? (customCents !== null ? formatMoney(customCents, settings?.currency) : undefined)
+        : STAKE_OPTS.find((s) => s.value === stake)?.label.split(' ')[0],
     deadline: new Date(Date.now() + 1000 * 60 * 60 * 24),
   };
 
@@ -247,6 +271,21 @@ export function CreateBetScreen({ navigation }: any) {
             <Text style={styles.q}>What’s at stake?</Text>
             <Text style={styles.hint}>No real money moves — it’s tracked on the ledger.</Text>
             <ChoiceChipGroup options={STAKE_OPTS} value={stake} onChange={setStake} />
+            {stake === 'custom' && (
+              <TextInput
+                label={`How much? (${symbol})`}
+                placeholder="25"
+                value={customAmount}
+                onChangeText={setCustomAmount}
+                keyboardType="decimal-pad"
+                autoFocus
+                error={
+                  customAmount.length > 0 && customCents === null
+                    ? `Enter an amount between ${symbol}0.01 and ${symbol}10,000`
+                    : undefined
+                }
+              />
+            )}
           </>
         )}
 

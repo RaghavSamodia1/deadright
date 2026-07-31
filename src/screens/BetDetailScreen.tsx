@@ -23,6 +23,7 @@ import { useQuery, useAction } from '../hooks/useQuery';
 import { useRealtime } from '../hooks/useRealtime';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
+import { formatMoney } from '../lib/money';
 
 // V2-04 Bet Detail (design-v2.md §5) — BetCard + stat strip + timeline + action.
 export function BetDetailScreen({ navigation, route }: any) {
@@ -92,8 +93,10 @@ export function BetDetailScreen({ navigation, route }: any) {
     { value: hoursLeft > 0 ? `${hoursLeft}h` : 'Passed', label: 'Deadline' },
     { value: bet.stake ?? '—', label: 'Stake' },
     {
+      // toFixed(0) turned a £12.50 stake into a "£13" pot. Same rounding bug
+      // as formatStake had; same fix.
       value: stakeCents
-        ? `£${((stakeCents * Math.max(bet.participantCount, 1)) / 100).toFixed(0)}`
+        ? formatMoney(stakeCents * Math.max(bet.participantCount, 1))
         : '—',
       label: 'Pot',
     },

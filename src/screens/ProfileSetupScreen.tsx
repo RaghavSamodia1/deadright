@@ -47,7 +47,7 @@ export function ProfileSetupScreen({ navigation }: any) {
           />
         </View>
         <Button
-          label="Start calling it"
+          label="Start keeping score"
           onPress={finish}
           disabled={!ready}
           loading={loading}

@@ -23,6 +23,7 @@ export { BetPlacedScreen } from './BetPlacedScreen';
 // ── Party Pools (guest-facing web page lives in supabase/functions/pool) ─────
 export { CreatePoolScreen } from './CreatePoolScreen';
 export { PoolDetailScreen } from './PoolDetailScreen';
+export { PoolsScreen } from './PoolsScreen';
 
 // ── Resolution & dispute ─────────────────────────────────────────────────────
 export { SideSelectionScreen } from './SideSelectionScreen';

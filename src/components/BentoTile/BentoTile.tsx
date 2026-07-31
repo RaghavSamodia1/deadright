@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle, useWindowDimensions } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../tokens';
+import { Icon, type IconName } from '../Icon/Icon';
 
 export type TileSize = 'hero' | 'feature' | 'wide' | 'stat' | 'nav' | 'chart';
 export type TileTone =
@@ -18,6 +19,8 @@ interface BentoTileProps {
   /** Small caption under value — "Open the jar →" */
   caption?: string;
   emoji?: string;
+  /** Drawn icon — preferred over `emoji` for anything functional. */
+  icon?: IconName;
   onPress?: () => void;
   /** Free-form children (charts, progress bars) rendered below value */
   children?: React.ReactNode;
@@ -107,7 +110,7 @@ const TONES: Record<TileTone, { bg: string; border?: string; text: string; sub: 
   // lifted to a brighter violet that keeps the hue and clears 5.40:1.
   'amber-tint': { bg: 'rgba(247,200,70,0.12)', border: 'rgba(247,200,70,0.4)', text: colors.semantic.awaiting, sub: colors.text.secondary },
   'mint-tint': { bg: 'rgba(138,233,141,0.12)', border: 'rgba(138,233,141,0.4)', text: colors.semantic.win, sub: colors.text.secondary },
-  'violet-tint': { bg: 'rgba(108,99,255,0.15)', border: 'rgba(108,99,255,0.4)', text: colors.side.aLift, sub: colors.text.secondary },
+  'violet-tint': { bg: 'rgba(90,107,229,0.15)', border: 'rgba(90,107,229,0.45)', text: colors.side.aLift, sub: colors.text.secondary },
 };
 
 const VALUE_SIZE: Record<TileSize, number> = { hero: 52, feature: 26, wide: 48, stat: 28, nav: 22, chart: 0 };
@@ -123,6 +126,7 @@ export function BentoTile({
   label,
   caption,
   emoji,
+  icon,
   onPress,
   children,
   style,
@@ -132,6 +136,7 @@ export function BentoTile({
   const scale = tileScaleFor(windowWidth);
   const valueSize = Math.round(VALUE_SIZE[size] * scale);
   const t = TONES[tone];
+  const isLarge = size === 'hero' || size === 'feature' || size === 'wide' || size === 'chart';
 
   const handlePress = onPress
     ? () => {
@@ -156,38 +161,60 @@ export function BentoTile({
 
   const a11yLabel = [label, value, caption].filter(Boolean).join(', ');
 
+  const iconNode = icon ? (
+    <Icon
+      name={icon}
+      size={isLarge ? 30 : 20}
+      color={t.text}
+      strokeWidth={isLarge ? 2 : 2.1}
+    />
+  ) : emoji ? (
+    <Text style={isLarge ? styles.emojiLg : styles.emojiSm}>{emoji}</Text>
+  ) : null;
+
+  const valueNode =
+    value != null && VALUE_SIZE[size] > 0 ? (
+      <Text
+        style={[styles.value, { color: t.text, fontSize: valueSize, lineHeight: valueSize * 1.08 }]}
+        numberOfLines={1}
+      >
+        {value}
+      </Text>
+    ) : null;
+
   const body = (
     <>
       {size === 'wide' && label && (
         <Text style={[styles.label, { color: t.sub }]}>{label}</Text>
       )}
-      {emoji && (
-        <Text style={size === 'hero' || size === 'feature' ? styles.emojiLg : styles.emojiSm}>
-          {emoji}
-        </Text>
+
+      {/* A small tile can't stack icon, value and label in 52pt of inner
+          height — the label was being clipped. Icon and value share a row
+          instead; large tiles have the room to stack. */}
+      {isLarge ? (
+        <>
+          {iconNode}
+          {valueNode}
+        </>
+      ) : (
+        (iconNode || valueNode) && (
+          <View style={styles.compactRow}>
+            {iconNode}
+            {valueNode}
+          </View>
+        )
       )}
-      {value != null && VALUE_SIZE[size] > 0 && (
-        <Text
-          style={[
-            styles.value,
-            { color: t.text, fontSize: valueSize, lineHeight: valueSize * 1.08 },
-          ]}
-          numberOfLines={1}
-        >
-          {value}
-        </Text>
-      )}
+
       {size !== 'wide' && label && (
         <Text
           style={[
             styles.label,
             // Only `caption` used to push to the bottom, so a tile without one
-            // (every nav tile, and feature) bunched its glyph and label against
-            // the top with the lower third left empty. With no caption the
-            // label takes that job, so content spans the tile.
+            // bunched its content against the top with the lower third empty.
             !caption && styles.labelToBottom,
             { color: tone === 'navy' ? colors.text.tertiary : t.sub },
           ]}
+          numberOfLines={1}
         >
           {label}
         </Text>
@@ -241,6 +268,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   labelToBottom: { marginTop: 'auto' as unknown as number },
+  compactRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   caption: {
     fontFamily: 'Inter-Regular',
     fontSize: 12,

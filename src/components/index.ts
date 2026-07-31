@@ -107,3 +107,5 @@ export {
   useTileSizes,
 } from './BentoTile/BentoTile';
 export type { TileSize, TileTone, TileDims } from './BentoTile/BentoTile';
+
+export { Icon, type IconName } from './Icon/Icon';

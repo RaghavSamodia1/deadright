@@ -14,7 +14,7 @@ export function FriendJoinedScreen({ navigation, route }: any) {
         <View style={styles.center}>
           <Avatar size="xl" initials={initials} tint="a" />
           <Text style={styles.title}>{handle} joined!</Text>
-          <Text style={styles.sub}>They came in on your invite. Time to call something and drag them in.</Text>
+          <Text style={styles.sub}>They came in on your invite. Time to start one and drag them in.</Text>
         </View>
         <View style={styles.footer}>
           <Button label="Bet them something" onPress={() => navigation.replace('CreateBet')} variant="secondary" fullWidth />

@@ -146,7 +146,7 @@ export function HomeScreen({ navigation }: any) {
           <BentoTile
             size="hero"
             tone="amber"
-            emoji="🍪"
+            icon="jar"
             value={`$${jarTotal.toFixed(2)}`}
             label={
               jarSummary.weekCount > 0
@@ -155,7 +155,7 @@ export function HomeScreen({ navigation }: any) {
                   ? `${jarSummary.violationCount} all time`
                   : 'Nobody has slipped yet'
             }
-            caption="Open the jar →"
+            caption="Open the jar"
             // The tile sums every group's jar, so it opens the breakdown —
             // sending it to CookieJar with no group silently showed only
             // whichever group came first.
@@ -167,7 +167,7 @@ export function HomeScreen({ navigation }: any) {
           </BentoTile>
           <View style={styles.col}>
             <BentoTile
-              size="stat" tone="navy" value={`${profile.cred_score}`} label="Cred" caption="Details →"
+              size="stat" tone="navy" value={`${profile.cred_score}`} label="Cred" caption="Details"
               onPress={() => navigation.navigate('Cred')}
             />
             <BentoTile
@@ -185,33 +185,36 @@ export function HomeScreen({ navigation }: any) {
         <View style={styles.row}>
           <View style={styles.col}>
             <BentoTile
-              size="nav" tone="mint-tint" value={`${money(summary.lifetimeCents)}`} label="Ledger →"
+              size="nav" tone="mint-tint" value={`${money(summary.lifetimeCents)}`} label="Ledger" icon="ledger"
               onPress={() => navigation.navigate('Ledger')}
             />
             <BentoTile
-              size="nav" tone="navy" value={`${friendCount}`} label="Friends →"
+              size="nav" tone="navy" value={`${friendCount}`} label="Friends" icon="users"
               onPress={() => navigation.navigate('Search')}
             />
           </View>
           <BentoTile
-            size="feature" tone="violet-tint" emoji="🎉"
+            size="feature" tone="violet-tint" icon="party"
             value="Party Pool" label="One link · no app needed"
-            onPress={() => navigation.navigate('CreatePool')}
+            // Opens the list, not the create flow: the tile used to be the
+            // only route to pools and always made a new one, so every pool you
+            // had already made was unreachable.
+            onPress={() => navigation.navigate('Pools')}
           />
         </View>
 
         {/* Row 3 — the action strip. */}
         <View style={styles.row}>
           <BentoTile
-            size="nav" tone="amber" value="+" label="New bet"
+            size="nav" tone="amber" label="New bet" icon="plus"
             onPress={() => navigation.navigate('CreateBet')}
           />
           <BentoTile
-            size="nav" tone="navy" value="🔗" label="Join code"
+            size="nav" tone="navy" label="Join code" icon="link"
             onPress={() => navigation.navigate('JoinGroup')}
           />
           <BentoTile
-            size="nav" tone="navy" value="+" label="New group"
+            size="nav" tone="navy" label="Group" icon="users"
             onPress={() => navigation.navigate('CreateGroup')}
           />
         </View>
@@ -264,9 +267,9 @@ export function HomeScreen({ navigation }: any) {
           <View style={styles.firstRun}>
             <Text style={styles.section}>NEEDS YOU</Text>
             <Text style={styles.firstRunBody}>
-              Nothing open right now. Call something and drag the group in.
+              Nothing open right now. Start one and drag the group in.
             </Text>
-            <Button label="Call it 🔥" onPress={() => navigation.navigate('CreateBet')} fullWidth />
+            <Button label="Start a bet" onPress={() => navigation.navigate('CreateBet')} fullWidth />
           </View>
         ) : (
           <>
@@ -278,7 +281,7 @@ export function HomeScreen({ navigation }: any) {
                 accessibilityRole="button"
                 accessibilityLabel="See all bets"
               >
-                <Text style={styles.sectionAction}>See all →</Text>
+                <Text style={styles.sectionAction}>See all</Text>
               </Pressable>
             </View>
             {bets.map((bet) => (
@@ -356,7 +359,7 @@ const styles = StyleSheet.create({
   // The row owns the top spacing; the overline must not add its own or it
   // sits lower than the action beside it. flex:1 (rather than the row using
   // space-between) makes the overline absorb the slack, so a longer action like
-  // "See all →" is right-aligned inside the gutter instead of being pushed past
+  // "See all" is right-aligned inside the gutter instead of being pushed past
   // the screen edge and clipped.
   sectionInRow: { marginTop: 0, flex: 1 },
   sectionAction: {

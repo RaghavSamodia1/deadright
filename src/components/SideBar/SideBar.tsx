@@ -51,7 +51,7 @@ export function SideBar({
         <View style={styles.labels}>
           <View style={styles.labelLeft}>
             <Text style={[styles.sideLabel, mutedStyle]}>Side A</Text>
-            <Text style={[styles.pct, { color: ink?.primary ?? colors.side.a }]}>{sideAPercent}%</Text>
+            <Text style={[styles.pct, { color: ink?.primary ?? colors.side.aLift }]}>{sideAPercent}%</Text>
             {sideACount !== undefined && (
               <Text style={[styles.count, mutedStyle]}>{sideACount} {sideACount === 1 ? 'person' : 'people'}</Text>
             )}

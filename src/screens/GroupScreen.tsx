@@ -101,7 +101,7 @@ export function GroupScreen({ navigation, route }: any) {
 
         <Text style={styles.q}>OPEN BETS</Text>
         {bets.length === 0 ? (
-          <Text style={styles.empty}>Nothing called in here yet. Be the first.</Text>
+          <Text style={styles.empty}>Nothing open in here yet. Be the first.</Text>
         ) : (
           bets.map((b) => (
             <BetCard key={b.id} bet={b} onPress={() => navigation.navigate('BetDetail', { id: b.id })} />
@@ -109,7 +109,7 @@ export function GroupScreen({ navigation, route }: any) {
         )}
 
         <Button
-          label="Call something new"
+          label="Start a new bet"
           onPress={() => navigation.navigate('CreateBet', { groupId })}
           fullWidth
           style={styles.cta}

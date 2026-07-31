@@ -126,8 +126,8 @@ function buildSeries(history: any[], current: number): number[] {
 
 function reasonLabel(reason: string): string {
   const map: Record<string, string> = {
-    bet_won: 'Called it right',
-    bet_lost: 'Called it wrong',
+    bet_won: 'Won the bet',
+    bet_lost: 'Lost the bet',
     settled_fast: 'Settled promptly',
     settled_slow: 'Slow to settle',
     disputed_lost: 'Lost a dispute',

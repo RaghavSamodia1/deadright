@@ -111,7 +111,7 @@ export function BetDetailScreen({ navigation, route }: any) {
           timestamp: relativeTime(e.created_at),
           tone: eventTone(e.kind),
         }))
-    : [{ text: 'Called it — the clock is running', timestamp: relativeTime(raw?.created_at ?? new Date().toISOString()), tone: 'side-a' as const }];
+    : [{ text: 'Bet opened — the clock is running', timestamp: relativeTime(raw?.created_at ?? new Date().toISOString()), tone: 'side-a' as const }];
 
   return (
     <ScreenBackground tone="base">
@@ -268,7 +268,7 @@ function describeEvent(e: any, myUserId?: string | null, isOrdinal = false): str
         ? `@${e.actor.handle}`
         : e.actor?.display_name ?? (e.payload?.handle ? `@${e.payload.handle}` : 'Someone');
   switch (e.kind) {
-    case 'created': return `${who} called it`;
+    case 'created': return `${who} opened this`;
     // An ordinal bet stores side 'a' purely to mark participation, so naming a
     // side here would be meaningless.
     case 'joined':

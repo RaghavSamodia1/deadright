@@ -204,7 +204,7 @@ export function CreateBetScreen({ navigation }: any) {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {step === 0 && (
           <>
-            <Text style={styles.q}>What are you calling?</Text>
+            <Text style={styles.q}>What's the bet?</Text>
             <TextInput
               placeholder="e.g. Arsenal finish top 4 this season"
               value={statement}
@@ -331,7 +331,7 @@ export function CreateBetScreen({ navigation }: any) {
       <View style={styles.footer}>
         <Button label={step === 0 ? 'Cancel' : 'Back'} onPress={back} variant="ghost" />
         <Button
-          label={step === STEPS.length - 1 ? 'Call it 🔥' : 'Next'}
+          label={step === STEPS.length - 1 ? 'Send it 🔥' : 'Next'}
           onPress={next}
           disabled={!canNext}
           loading={publishing}

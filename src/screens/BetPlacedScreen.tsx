@@ -10,7 +10,7 @@ export function BetPlacedScreen({ navigation }: any) {
       <View style={styles.root}>
         <View style={styles.center}>
           <Text style={styles.emoji}>🎯</Text>
-          <Stamp label="CALLED IT" color="#FFFFFF" rotate={-8} fontSize={48} />
+          <Stamp label="LOCKED IN" color="#FFFFFF" rotate={-8} fontSize={48} />
           <Text style={styles.sub}>Your bet is live. The clock’s ticking — everyone’s been pinged.</Text>
         </View>
         <View style={styles.footer}>

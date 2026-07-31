@@ -22,6 +22,7 @@ import {
   BetPlacedScreen,
   CreatePoolScreen,
   PoolDetailScreen,
+  PoolsScreen,
   SideSelectionScreen,
   ResolutionScreen,
   EvidenceUploadScreen,
@@ -98,6 +99,7 @@ export function RootNavigator() {
       <Stack.Screen name="AllJars" component={AllJarsScreen} />
       <Stack.Screen name="JarRules" component={JarRulesScreen} />
       <Stack.Screen name="PoolDetail" component={PoolDetailScreen} />
+      <Stack.Screen name="Pools" component={PoolsScreen} />
 
       {/* Resolution & dispute */}
       <Stack.Screen name="Resolution" component={ResolutionScreen} />

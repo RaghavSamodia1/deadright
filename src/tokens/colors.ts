@@ -5,10 +5,16 @@ export const colors = {
   },
 
   side: {
-    a: '#6C63FF',
-    // For text on the violet tint fill, where raw side.a is 3.74:1.
-    aLift: '#8F86FF',
-    aDim: 'rgba(108,99,255,0.15)',
+    // #6C63FF is the stock "AI product" violet. Shifted toward indigo so the
+    // palette reads chosen rather than defaulted.
+    a: '#5A6BE5',
+    // side.a is a *graphic* colour — bars, avatar fills, borders — where 3:1
+    // is the bar. As text it was never legible enough: the old #6C63FF was
+    // 4.00:1 on the dark card, which the earlier contrast pass missed because
+    // it audited fills and tints but not the side percentages. Use aLift for
+    // any violet text; it clears 4.5:1 on base, surface-1 and the violet tint.
+    aLift: '#8A97F5',
+    aDim: 'rgba(90,107,229,0.15)',
     b: '#FC574E',
     bDim: 'rgba(252,87,78,0.15)',
   },

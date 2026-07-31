@@ -18,7 +18,7 @@ export function RankUpScreen({ navigation, route }: any) {
           <Text style={styles.rank}>{rank}</Text>
           <Text style={styles.sub}>Top {100 - percentile}% of callers. Your word carries weight.</Text>
         </View>
-        <Button label="Keep calling it" onPress={() => navigation.popToTop?.() ?? navigation.navigate('Root')} fullWidth />
+        <Button label="Keep it up" onPress={() => navigation.popToTop?.() ?? navigation.navigate('Root')} fullWidth />
       </View>
     </ScreenBackground>
   );

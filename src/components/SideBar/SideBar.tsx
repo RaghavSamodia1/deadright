@@ -84,22 +84,25 @@ const styles = StyleSheet.create({
   labels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    alignItems: 'baseline',
   },
-  labelLeft: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  labelRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  labelLeft: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
+  labelRight: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
   sideLabel: {
     fontFamily: 'Inter-Regular',
     fontSize: 11,
+    lineHeight: 16,
     color: colors.text.tertiary,
   },
   pct: {
     fontFamily: 'Barlow-Bold',
     fontSize: 12,
+    lineHeight: 16,
   },
   count: {
     fontFamily: 'Inter-Regular',
     fontSize: 11,
+    lineHeight: 16,
     color: colors.text.tertiary,
   },
   track: {

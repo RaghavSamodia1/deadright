@@ -1,7 +1,7 @@
 export const colors = {
   brand: {
-    flame: '#C08050',
-    flameDim: 'rgba(192,128,80,0.15)',
+    flame: '#E2661F',
+    flameDim: 'rgba(226,102,31,0.15)',
   },
 
   side: {
@@ -10,31 +10,31 @@ export const colors = {
     // reasoning as the cards: colour is reserved for status, so the split bar
     // shouldn't spend any. A 2.4:1 step between the halves keeps them readable
     // at a glance, and neither reads as the better side to pick.
-    a: '#E4E1DB',
+    a: '#E8B33C',
     // Bone clears 4.5:1 as text on every surface, so unlike the old violet it
     // needs no separate lifted variant — aLift is kept as an alias for callers.
-    aLift: '#E4E1DB',
-    aDim: 'rgba(228,225,219,0.12)',
-    b: '#8C8F99',
-    bDim: 'rgba(140,143,153,0.15)',
+    aLift: '#E8B33C',
+    aDim: 'rgba(232,179,60,0.15)',
+    b: '#4FA8A0',
+    bDim: 'rgba(79,168,160,0.15)',
   },
 
   semantic: {
-    win: '#749C7C',
-    winDim: 'rgba(116,156,124,0.15)',
+    win: '#63B972',
+    winDim: 'rgba(99,185,114,0.15)',
     loss: '#9C9CA3',
     awaiting: '#F7C846',
     awaitingDim: 'rgba(247,200,70,0.15)',
-    disputed: '#CF7B74',
-    disputedDim: 'rgba(207,123,116,0.15)',
+    disputed: '#FC574E',
+    disputedDim: 'rgba(252,87,78,0.15)',
     controversial: '#B6B6BE',
-    live: '#749C7C',
+    live: '#63B972',
   },
 
   card: {
     amber: '#F7C846',
-    coral: '#CF7B74',
-    mint: '#749C7C',
+    coral: '#FC574E',
+    mint: '#63B972',
     light: '#F0F0F0',
     navy: '#161618',
   },
@@ -80,7 +80,7 @@ export const colors = {
     // #5A697D failed WCAG AA on every surface (2.75:1 on surface-2).
     // Lightened to clear 4.5:1 on base, surface-1 and surface-2.
     tertiary: '#93939A',
-    brand: '#C08050',
+    brand: '#E2661F',
     link: '#F7C846',
     inverse: '#0A0A0B',
   },
@@ -89,14 +89,14 @@ export const colors = {
     primary: '#F7C846',
     pressed: '#DCA832',
     disabled: '#2C2C31',
-    destructive: '#CF7B74',
+    destructive: '#FC574E',
   },
 
   cred: {
     ring: '#F7C846',
     track: '#2A2A2E',
-    positive: '#749C7C',
-    negative: '#CF7B74',
+    positive: '#63B972',
+    negative: '#FC574E',
   },
 } as const;
 

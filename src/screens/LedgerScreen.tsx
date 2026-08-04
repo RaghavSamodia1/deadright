@@ -144,7 +144,7 @@ export function LedgerScreen({ navigation }: any) {
 function toTxn(e: any, uid: string | null): Txn {
   const incoming = e.to_user === uid;
   const other = incoming ? e.from : e.to;
-  const otherHandle = other?.handle ? `@${other.handle}` : 'someone';
+  const otherHandle = other?.handle ? other.handle : 'Someone';
   return {
     id: e.id,
     title: e.violation_id

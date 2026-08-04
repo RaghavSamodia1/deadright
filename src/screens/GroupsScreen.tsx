@@ -56,7 +56,7 @@ export function GroupsScreen({ navigation }: any) {
             <ListRow
               key={g.id}
               title={`${g.emoji ?? '👥'}  ${g.name}`}
-              subtitle={plural(g.members?.length ?? 0, 'member')}
+              subtitle={plural(g.members?.length ?? 0, 'Member')}
               showChevron
               onPress={() => navigation.navigate('Group', { id: g.id, name: g.name })}
             />
@@ -70,7 +70,7 @@ export function GroupsScreen({ navigation }: any) {
               <ListRow
                 key={p.id}
                 title={p.name}
-                subtitle={p.handle ? `@${p.handle}` : ''}
+                subtitle={p.handle ? p.handle : ''}
                 showChevron
                 onPress={() => navigation.navigate('FriendProfile', { handle: p.handle, id: p.id })}
               />

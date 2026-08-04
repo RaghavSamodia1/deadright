@@ -101,7 +101,7 @@ export async function claimHandle(handle: string, displayName: string) {
   if (error) {
     // 23505 = unique_violation on profiles.handle
     if ((error as { code?: string }).code === '23505') {
-      throw new Error(`@${clean} is taken — try another.`);
+      throw new Error(`${clean} is taken — try another.`);
     }
     throw error;
   }

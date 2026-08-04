@@ -34,7 +34,7 @@ export function BetDetailScreen({ navigation, route }: any) {
     id: 'mock',
     title: 'Arsenal win the league this season',
     status: 'awaiting',
-    author: { handle: '@marcus', initials: 'MC' },
+    author: { handle: 'Marcus', initials: 'MC' },
     group: 'Sunday League',
     sideAPercent: 62,
     sideACount: 5,
@@ -278,8 +278,8 @@ function describeEvent(e: any, myUserId?: string | null, isOrdinal = false): str
     e.actor_id && e.actor_id === myUserId
       ? 'You'
       : e.actor?.handle
-        ? `@${e.actor.handle}`
-        : e.actor?.display_name ?? (e.payload?.handle ? `@${e.payload.handle}` : 'Someone');
+        ? e.actor.handle
+        : e.actor?.display_name ?? (e.payload?.handle ? e.payload.handle : 'Someone');
   switch (e.kind) {
     case 'created': return `${who} opened this`;
     // An ordinal bet stores side 'a' purely to mark participation, so naming a

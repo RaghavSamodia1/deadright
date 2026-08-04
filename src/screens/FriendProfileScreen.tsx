@@ -8,7 +8,7 @@ import { useQuery, useAction } from '../hooks/useQuery';
 
 // Friend profile — their Cred + your head-to-head record.
 export function FriendProfileScreen({ navigation, route }: any) {
-  const handle = route?.params?.handle ?? '@marcus';
+  const handle = route?.params?.handle ?? 'Marcus';
   const [sheetOpen, setSheetOpen] = React.useState(false);
 
   // Look the person up by handle so we can act on them (block, head-to-head).

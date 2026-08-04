@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, spacing } from '../../tokens';
 import { Avatar } from '../Avatar/Avatar';
+import { Icon } from '../Icon/Icon';
 
 type NavVariant = 'home' | 'back' | 'modal';
 
@@ -55,7 +56,7 @@ export function NavHeader({
               accessibilityRole="button"
               accessibilityLabel="Go back"
             >
-              <Text style={styles.backArrow}>←</Text>
+              <Icon name="back" size={18} color={colors.text.secondary} strokeWidth={2} />
             </Pressable>
           )}
           {variant === 'modal' && onBack && (
@@ -69,9 +70,7 @@ export function NavHeader({
             </Pressable>
           )}
           {variant === 'home' && (
-            <Text style={styles.brandName}>
-              DeadRight<Text style={styles.brandEmoji}></Text>
-            </Text>
+            <Text style={styles.brandName}>DeadRight</Text>
           )}
         </View>
 
@@ -141,11 +140,6 @@ const styles = StyleSheet.create({
     height: 34,
     justifyContent: 'center',
   },
-  backArrow: {
-    fontFamily: 'Barlow-Bold',
-    fontSize: 20,
-    color: colors.text.secondary,
-  },
   textAction: {
     fontFamily: 'Inter-Regular',
     fontSize: 15,
@@ -156,9 +150,6 @@ const styles = StyleSheet.create({
     fontSize: 19,
     color: colors.interactive.primary,
     letterSpacing: -0.4,
-  },
-  brandEmoji: {
-    fontSize: 15,
   },
   title: {
     fontFamily: 'Barlow-Bold',

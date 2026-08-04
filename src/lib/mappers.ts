@@ -19,7 +19,7 @@ export function toBetCard(b: any, myUserId?: string | null): BetCardData {
     title: b.title,
     status: toBetStatus(b, myUserId),
     author: {
-      handle: creator.handle ? `@${creator.handle}` : '@someone',
+      handle: name || 'Someone',
       initials: (name || '??').slice(0, 2).toUpperCase(),
       avatarUri: creator.avatar_url ?? undefined,
     },

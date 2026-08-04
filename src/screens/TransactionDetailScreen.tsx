@@ -27,7 +27,7 @@ export function TransactionDetailScreen({ navigation, route }: any) {
   const amount = entry ? (incoming ? entry.amount_cents : -entry.amount_cents) / 100 : 20;
   const positive = amount >= 0;
   const other = entry ? (incoming ? entry.from : entry.to) : null;
-  const otherHandle = other?.handle ? `@${other.handle}` : '—';
+  const otherHandle = other?.handle ? other.handle : '—';
   const isJar = !!entry?.violation_id;
   const isPending = entry?.status === 'pending';
 

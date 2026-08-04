@@ -150,7 +150,7 @@ export function CreateBetScreen({ navigation }: any) {
     id: 'preview',
     title: sharpened || statement || 'Your call goes here…',
     status: 'awaiting',
-    author: { handle: '@you', initials: 'RS' },
+    author: { handle: 'You', initials: 'RS' },
     group: groups.find((g) => g.id === group)?.name,
     sideAPercent: 50, sideACount: 0, sideBCount: 0, participantCount: 1,
     stake:

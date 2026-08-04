@@ -18,9 +18,9 @@ import { isBackendConfigured } from '../lib/supabase';
 import { Icon } from '../components';
 
 const MOCK_VIOLATIONS = [
-  { id: '1', member: { handle: '@marcus', initials: 'MJ' }, rule: 'Swearing', amount: '+$1.00', timestamp: '2h ago', disputable: true },
-  { id: '2', member: { handle: '@raghav', initials: 'RS' }, rule: 'Late to plans', amount: '+$5.00', timestamp: '1d ago', ownedUp: true },
-  { id: '3', member: { handle: '@abi', initials: 'AK' }, rule: 'Phone at dinner', amount: '+$2.00', timestamp: '2d ago' },
+  { id: '1', member: { handle: 'Marcus', initials: 'MJ' }, rule: 'Swearing', amount: '+$1.00', timestamp: '2h ago', disputable: true },
+  { id: '2', member: { handle: 'Raghav', initials: 'RS' }, rule: 'Late to plans', amount: '+$5.00', timestamp: '1d ago', ownedUp: true },
+  { id: '3', member: { handle: 'Abi', initials: 'AK' }, rule: 'Phone at dinner', amount: '+$2.00', timestamp: '2d ago' },
 ];
 
 /**
@@ -151,7 +151,7 @@ function toViolationRow(v: any) {
   return {
     id: v.id,
     member: {
-      handle: v.violator?.handle ? `@${v.violator.handle}` : '@someone',
+      handle: v.violator?.handle ? v.violator.handle : 'Someone',
       initials: name.slice(0, 2).toUpperCase(),
     },
     rule: v.rule?.label ?? 'Rule',

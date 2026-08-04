@@ -25,7 +25,7 @@ export function ProfileScreen({ navigation }: any) {
   const [tab, setTab] = useState<Tab>('all');
 
   const { data: profile } = useQuery(getMyProfile, {
-    handle: 'you',
+    handle: 'You',
     display_name: 'You',
     cred_score: 500,
     current_streak: 0,
@@ -56,7 +56,7 @@ export function ProfileScreen({ navigation }: any) {
       id: 'h1',
       title: "England reach the Euros final",
       status: 'win',
-      author: { handle: '@you', initials: 'RS' },
+      author: { handle: 'You', initials: 'RS' },
       group: 'Sunday League',
       sideAPercent: 55, sideACount: 6, sideBCount: 5, participantCount: 11,
       stake: '£10', deadline: new Date(Date.now() - 1000 * 60 * 60 * 48),
@@ -65,7 +65,7 @@ export function ProfileScreen({ navigation }: any) {
       id: 'h2',
       title: "It rains at the BBQ on Saturday",
       status: 'loss',
-      author: { handle: '@you', initials: 'RS' },
+      author: { handle: 'You', initials: 'RS' },
       group: 'Flatmates',
       sideAPercent: 40, sideACount: 2, sideBCount: 3, participantCount: 5,
       deadline: new Date(Date.now() - 1000 * 60 * 60 * 72),
@@ -102,7 +102,7 @@ export function ProfileScreen({ navigation }: any) {
         {/* Cred hero */}
         <View style={styles.hero}>
           <CredRing percent={percentile} score={cred} size={148} strokeWidth={10} />
-          <Text style={styles.handle}>@{profile.handle}</Text>
+          <Text style={styles.handle}>{profile.handle}</Text>
           <Text style={styles.sub}>
             {myStats.total > 0
               ? `${myStats.wins}W · ${myStats.losses}L · Your word is your bond`

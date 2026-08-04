@@ -24,25 +24,25 @@ export function FeedScreen({ navigation }: any) {
   const MOCK: BetCardData[] = [
     {
       id: '1', title: 'Arsenal win the league this season', status: 'awaiting',
-      author: { handle: '@marcus', initials: 'MC' }, group: 'Sunday League',
+      author: { handle: 'Marcus', initials: 'MC' }, group: 'Sunday League',
       sideAPercent: 62, sideACount: 5, sideBCount: 3, participantCount: 8,
       stake: '£10', deadline: new Date(Date.now() + 1000 * 60 * 60 * 26),
     },
     {
       id: '2', title: 'Priya finishes the marathon under 4h', status: 'live',
-      author: { handle: '@priya', initials: 'PR' }, group: 'Flatmates',
+      author: { handle: 'Priya', initials: 'PR' }, group: 'Flatmates',
       sideAPercent: 48, sideACount: 4, sideBCount: 4, participantCount: 8,
       deadline: new Date(Date.now() + 1000 * 60 * 90),
     },
     {
       id: '3', title: 'It snows in London before December', status: 'disputed',
-      author: { handle: '@deej', initials: 'DJ' }, group: 'Sunday League',
+      author: { handle: 'Deej', initials: 'DJ' }, group: 'Sunday League',
       sideAPercent: 30, sideACount: 3, sideBCount: 7, participantCount: 10,
       deadline: new Date(Date.now() - 1000 * 60 * 60 * 5),
     },
     {
       id: '4', title: 'England win the toss on Saturday', status: 'win',
-      author: { handle: '@abi', initials: 'AB' }, group: 'Flatmates',
+      author: { handle: 'Abi', initials: 'AB' }, group: 'Flatmates',
       sideAPercent: 51, sideACount: 6, sideBCount: 5, participantCount: 11,
       stake: '☕', deadline: new Date(Date.now() - 1000 * 60 * 60 * 30),
     },

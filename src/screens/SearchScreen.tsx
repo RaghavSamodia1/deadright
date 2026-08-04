@@ -36,7 +36,7 @@ export function SearchScreen({ navigation }: any) {
         ...people.map((p: any) => ({
           kind: 'person' as const,
           id: p.handle,
-          title: `@${p.handle}`,
+          title: p.handle,
           sub: `${p.display_name ?? ''} · Cred ${p.cred_score}`,
         })),
         ...bets.map((b: any) => ({
@@ -51,7 +51,7 @@ export function SearchScreen({ navigation }: any) {
             kind: 'group' as const,
             id: g.id,
             title: g.name,
-            sub: plural(g.members?.length ?? 0, 'member'),
+            sub: plural(g.members?.length ?? 0, 'Member'),
           })),
       ];
     },
@@ -92,7 +92,7 @@ export function SearchScreen({ navigation }: any) {
               subtitle={r.sub}
               left={
                 r.kind === 'person' ? (
-                  <Avatar size="sm" initials={r.title.replace('@', '').slice(0, 2).toUpperCase()} tint="a" />
+                  <Avatar size="sm" initials={r.title.slice(0, 2).toUpperCase()} tint="a" />
                 ) : (
                   <Icon name={r.kind === 'bet' ? 'target' : 'users'} size={16} color={colors.text.tertiary} strokeWidth={1.9} />
                 )

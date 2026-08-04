@@ -25,7 +25,7 @@ export function BlockedUsersScreen({ navigation }: any) {
             return (
               <ListRow
                 key={b.blocked_id}
-                title={b.blocked?.handle ? `@${b.blocked.handle}` : 'Blocked user'}
+                title={b.blocked?.handle ? b.blocked.handle : 'Blocked user'}
                 subtitle={b.blocked?.display_name ?? undefined}
                 left={<Avatar size="sm" initials={name.slice(0, 2).toUpperCase()} tint="neutral" />}
                 right={

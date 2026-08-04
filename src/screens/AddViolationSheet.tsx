@@ -9,9 +9,9 @@ import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 
 const MOCK_MEMBERS = [
-  { id: 'm1', handle: '@marcus', initials: 'MJ' },
-  { id: 'm2', handle: '@abi', initials: 'AK' },
-  { id: 'm3', handle: '@dave', initials: 'DJ' },
+  { id: 'm1', handle: 'Marcus', initials: 'MJ' },
+  { id: 'm2', handle: 'Abi', initials: 'AK' },
+  { id: 'm3', handle: 'Dave', initials: 'DJ' },
 ];
 
 const MOCK_RULES = [
@@ -37,7 +37,7 @@ export function AddViolationSheet({ visible, onDismiss, groupId }: AddViolationS
       const g: any = await getGroup(groupId);
       return (g.members ?? []).map((m: any) => ({
         id: m.user_id,
-        handle: m.profile?.handle ? `@${m.profile.handle}` : '@member',
+        handle: m.profile?.handle ? m.profile.handle : 'Member',
         initials: (m.profile?.display_name ?? m.profile?.handle ?? '??')
           .slice(0, 2)
           .toUpperCase(),

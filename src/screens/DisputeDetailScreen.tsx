@@ -35,7 +35,7 @@ export function DisputeDetailScreen({ navigation, route }: any) {
   );
 
   const raiserHandle = dispute?.raiser?.handle
-    ? `@${dispute.raiser.handle}`
+    ? dispute.raiser.handle
     : dispute?.raiser?.display_name ?? 'Someone';
 
   // Live: other members voting should move the bar while you watch.
@@ -95,7 +95,7 @@ export function DisputeDetailScreen({ navigation, route }: any) {
         </View>
         <View style={[styles.claim, { borderColor: colors.side.b }]}>
           {/* getDispute already joins the raiser; this was the literal string
-              "@deej · SIDE B", so every dispute was attributed to a mock user. */}
+              "deej · SIDE B", so every dispute was attributed to a mock user. */}
           <Text style={[styles.claimSide, { color: colors.side.b }]}>
             {raiserHandle}
             {dispute?.reason ? ` · ${REASON_LABEL[dispute.reason] ?? dispute.reason}` : ''}
@@ -157,8 +157,8 @@ export function DisputeDetailScreen({ navigation, route }: any) {
 
         <Text style={styles.q}>ACTIVITY</Text>
         <View>
-          <TimelineEvent text="@abi voted Side A" timestamp="10m ago" tone="default" />
-          <TimelineEvent text="@jk voted Side B" timestamp="25m ago" tone="side-b" />
+          <TimelineEvent text="Abi voted Side A" timestamp="10m ago" tone="default" />
+          <TimelineEvent text="JK voted Side B" timestamp="25m ago" tone="side-b" />
           <TimelineEvent
             text={`${raiserHandle} raised the dispute`}
             timestamp={dispute?.created_at ? relativeTime(dispute.created_at) : ''}

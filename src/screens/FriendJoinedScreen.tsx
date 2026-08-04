@@ -5,7 +5,7 @@ import { ScreenBackground, Avatar, Button } from '../components';
 
 // Peak — a friend joined from your invite. Violet (side-a).
 export function FriendJoinedScreen({ navigation, route }: any) {
-  const handle = route?.params?.handle ?? '@abi';
+  const handle = route?.params?.handle ?? 'Abi';
   const initials = route?.params?.initials ?? 'AB';
 
   return (

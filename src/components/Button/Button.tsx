@@ -44,7 +44,7 @@ const VARIANT_STYLES: Record<ButtonVariant, { bg: string; text: string; pressedB
     // readable control in the app. Navy on coral is 5.90:1. The pressed shade
     // moved too: navy on the old #D94040 was 4.25:1, still short of AA.
     text: colors.text.inverse,
-    pressedBg: '#E04A42',
+    pressedBg: '#B96A64',
   },
   ghost: {
     bg: 'transparent',

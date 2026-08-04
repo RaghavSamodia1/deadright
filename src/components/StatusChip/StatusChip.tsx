@@ -35,7 +35,7 @@ const STATUS_CONFIG: Record<
   },
   live: {
     label: 'LIVE',
-    bg: 'rgba(99,185,114,0.15)',
+    bg: 'rgba(116,156,124,0.15)',
     text: colors.semantic.live,
     dot: colors.semantic.live,
   },
@@ -46,7 +46,7 @@ const STATUS_CONFIG: Record<
   },
   win: {
     label: 'YOU WON 🏆',
-    bg: 'rgba(99,185,114,0.2)',
+    bg: 'rgba(116,156,124,0.2)',
     text: colors.semantic.win,
   },
   loss: {
@@ -56,7 +56,7 @@ const STATUS_CONFIG: Record<
   },
   disputed: {
     label: 'DISPUTED ⚖️',
-    bg: 'rgba(252,87,78,0.12)',
+    bg: 'rgba(207,123,116,0.12)',
     text: colors.semantic.disputed,
   },
   controversial: {

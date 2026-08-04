@@ -35,6 +35,7 @@ function formatCountdown(ms: number): string {
 }
 
 function getTimerColor(ms: number): string {
+  if (ms <= 0) return colors.text.tertiary;
   const minutes = ms / 60000;
   if (minutes <= 5) return colors.semantic.disputed; // coral — critical
   if (minutes <= 60) return colors.semantic.awaiting; // amber — warning
@@ -78,14 +79,18 @@ export function Timer({ deadline, size = 'sm', style, onExpire, ink }: TimerProp
     return () => clearInterval(interval);
   }, [deadline]);
 
+  const expired = ms <= 0;
   const s = SIZE_MAP[size];
+  // Expired reads as a label, not a countdown, so it drops to body size.
+  const fontSize = expired ? Math.min(s.fontSize, 12) : s.fontSize;
+  const lineHeight = expired ? 16 : s.lineHeight;
   const color = ink ?? getTimerColor(ms);
 
   return (
     <Text
       style={[
         styles.text,
-        { fontSize: s.fontSize, lineHeight: s.lineHeight, color },
+        { fontSize, lineHeight, color, fontFamily: expired ? 'Inter-Regular' : 'SpaceMono-Bold' },
         style,
       ]}
     >

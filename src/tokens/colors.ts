@@ -1,7 +1,7 @@
 export const colors = {
   brand: {
-    flame: '#E2661F',
-    flameDim: 'rgba(226,102,31,0.15)',
+    flame: '#C08050',
+    flameDim: 'rgba(192,128,80,0.15)',
   },
 
   side: {
@@ -20,21 +20,21 @@ export const colors = {
   },
 
   semantic: {
-    win: '#63B972',
-    winDim: 'rgba(99,185,114,0.15)',
+    win: '#749C7C',
+    winDim: 'rgba(116,156,124,0.15)',
     loss: '#9C9CA3',
     awaiting: '#F7C846',
     awaitingDim: 'rgba(247,200,70,0.15)',
-    disputed: '#FC574E',
-    disputedDim: 'rgba(252,87,78,0.15)',
+    disputed: '#CF7B74',
+    disputedDim: 'rgba(207,123,116,0.15)',
     controversial: '#B6B6BE',
-    live: '#63B972',
+    live: '#749C7C',
   },
 
   card: {
     amber: '#F7C846',
-    coral: '#FC574E',
-    mint: '#63B972',
+    coral: '#CF7B74',
+    mint: '#749C7C',
     light: '#F0F0F0',
     navy: '#161618',
   },
@@ -80,7 +80,7 @@ export const colors = {
     // #5A697D failed WCAG AA on every surface (2.75:1 on surface-2).
     // Lightened to clear 4.5:1 on base, surface-1 and surface-2.
     tertiary: '#93939A',
-    brand: '#E2661F',
+    brand: '#C08050',
     link: '#F7C846',
     inverse: '#0A0A0B',
   },
@@ -89,14 +89,14 @@ export const colors = {
     primary: '#F7C846',
     pressed: '#DCA832',
     disabled: '#2C2C31',
-    destructive: '#FC574E',
+    destructive: '#CF7B74',
   },
 
   cred: {
     ring: '#F7C846',
     track: '#2A2A2E',
-    positive: '#63B972',
-    negative: '#FC574E',
+    positive: '#749C7C',
+    negative: '#CF7B74',
   },
 } as const;
 

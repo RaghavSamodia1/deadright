@@ -109,7 +109,7 @@ const TONES: Record<TileTone, { bg: string; border?: string; text: string; sub: 
   // labels use text.secondary. side.a on violet-tint was worse at 3.74:1 —
   // lifted to a brighter violet that keeps the hue and clears 5.40:1.
   'amber-tint': { bg: 'rgba(247,200,70,0.18)', border: 'rgba(247,200,70,0.4)', text: colors.semantic.awaiting, sub: colors.text.secondary },
-  'mint-tint': { bg: 'rgba(99,185,114,0.18)', border: 'rgba(99,185,114,0.45)', text: colors.semantic.win, sub: colors.text.secondary },
+  'mint-tint': { bg: 'rgba(116,156,124,0.18)', border: 'rgba(99,185,114,0.45)', text: colors.semantic.win, sub: colors.text.secondary },
 };
 
 const VALUE_SIZE: Record<TileSize, number> = { hero: 52, feature: 26, wide: 48, stat: 28, nav: 22, chart: 0 };

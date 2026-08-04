@@ -29,7 +29,7 @@ const TONES: Record<BannerTone, { bg: string; accent: string; text: string; sub:
   },
   info: {
     bg: colors.bg.surface2,
-    accent: colors.side.a,
+    accent: colors.semantic.awaiting,
     text: colors.text.primary,
     sub: colors.text.secondary,
   },

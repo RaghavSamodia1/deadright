@@ -113,8 +113,6 @@ const styles = StyleSheet.create({
   notice: {
     backgroundColor: colors.bg.surface1,
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border.default,
     padding: spacing[4],
     gap: spacing[2],
   },

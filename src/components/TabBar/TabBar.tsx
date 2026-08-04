@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -8,
-    backgroundColor: colors.side.b,
+    backgroundColor: colors.interactive.destructive,
     borderRadius: 999,
     minWidth: 16,
     height: 16,

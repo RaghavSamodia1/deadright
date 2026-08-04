@@ -32,8 +32,8 @@ const FONT_SIZE_MAP: Record<AvatarSize, number> = {
 };
 
 const TINT_MAP = {
-  a: colors.side.a,
-  b: colors.side.b,
+  a: '#4E4E57',
+  b: '#5A5A64',
   neutral: colors.bg.surface2,
 };
 

@@ -5,18 +5,18 @@ export const colors = {
   },
 
   side: {
-    // #6C63FF is the stock "AI product" violet. Shifted toward indigo so the
-    // palette reads chosen rather than defaulted.
-    a: '#5A6BE5',
-    // side.a is a *graphic* colour — bars, avatar fills, borders — where 3:1
-    // is the bar. As text it was never legible enough: the old #6C63FF was
-    // 4.00:1 on the dark card, which the earlier contrast pass missed because
-    // it audited fills and tints but not the side percentages. Use aLift for
-    // any violet text; it clears 4.5:1 on base, surface-1 and the violet tint.
-    aLift: '#8A97F5',
-    aDim: 'rgba(90,107,229,0.15)',
-    b: '#FC574E',
-    bDim: 'rgba(252,87,78,0.15)',
+    // The sides were a saturated blue and red, the last two colours not in the
+    // palette. They are neutral now — bone against slate — which is the same
+    // reasoning as the cards: colour is reserved for status, so the split bar
+    // shouldn't spend any. A 2.4:1 step between the halves keeps them readable
+    // at a glance, and neither reads as the better side to pick.
+    a: '#E4E1DB',
+    // Bone clears 4.5:1 as text on every surface, so unlike the old violet it
+    // needs no separate lifted variant — aLift is kept as an alias for callers.
+    aLift: '#E4E1DB',
+    aDim: 'rgba(228,225,219,0.12)',
+    b: '#8C8F99',
+    bDim: 'rgba(140,143,153,0.15)',
   },
 
   semantic: {

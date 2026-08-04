@@ -65,7 +65,7 @@ export function OTPInput({ onComplete, onChangeText, hasError = false }: OTPInpu
                 hasError && styles.boxError,
               ]}
             >
-              <Text style={[styles.digit, hasError && { color: colors.side.b }]}>
+              <Text style={[styles.digit, hasError && { color: colors.interactive.destructive }]}>
                 {char ?? ''}
               </Text>
             </View>
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border.strong,
   },
   boxError: {
-    borderColor: colors.side.b,
+    borderColor: colors.interactive.destructive,
     backgroundColor: colors.semantic.disputedDim,
   },
   digit: {

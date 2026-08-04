@@ -69,17 +69,6 @@ export function HomeScreen({ navigation }: any) {
   const { data: groups, refetch: refetchGroups } = useQuery(getMyGroups, [] as any[]);
   const noGroups = isBackendConfigured && groups.length === 0;
 
-  // There is no friends table: a friend is someone you share a group with, so
-  // count distinct co-members across your groups and leave yourself out.
-  const friendCount = React.useMemo(() => {
-    const ids = new Set<string>();
-    (groups as any[]).forEach((g) =>
-      (g.members ?? []).forEach((m: any) => {
-        if (m.user_id && m.user_id !== profile?.id) ids.add(m.user_id);
-      }),
-    );
-    return ids.size;
-  }, [groups, profile?.id]);
 
   // Someone else calling a bet or joining a side should show up without a
   // navigate-away-and-back.
@@ -195,7 +184,7 @@ export function HomeScreen({ navigation }: any) {
               onPress={() => navigation.navigate('Ledger')}
             />
             <BentoTile
-              size="nav" tone="navy" value={`${friendCount}`} label="Friends" icon="users"
+              size="nav" tone="navy" label="Search" icon="search"
               onPress={() => navigation.navigate('Search')}
             />
           </View>

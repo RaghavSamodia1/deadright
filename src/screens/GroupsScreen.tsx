@@ -3,6 +3,7 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, ListRow, EmptyState, Button } from '../components';
 import { getMyGroups } from '../api/groups';
+import { getMyProfile } from '../api/profile';
 import { useQuery } from '../hooks/useQuery';
 import { plural } from '../lib/plural';
 
@@ -16,10 +17,28 @@ import { plural } from '../lib/plural';
  */
 export function GroupsScreen({ navigation }: any) {
   const { data: groups, loading, error } = useQuery(getMyGroups, [] as any[]);
+  const { data: me } = useQuery(getMyProfile, null as any);
+
+  // There is no friends table — a friend is someone you share a group with, so
+  // the roster is derived from group membership and de-duplicated across them.
+  const people = React.useMemo(() => {
+    const byId = new Map<string, { id: string; handle: string; name: string }>();
+    (groups as any[]).forEach((g) =>
+      (g.members ?? []).forEach((m: any) => {
+        if (!m.user_id || m.user_id === me?.id || byId.has(m.user_id)) return;
+        byId.set(m.user_id, {
+          id: m.user_id,
+          handle: m.profile?.handle ?? '',
+          name: m.profile?.display_name ?? m.profile?.handle ?? 'Someone',
+        });
+      }),
+    );
+    return [...byId.values()];
+  }, [groups, me?.id]);
 
   return (
     <ScreenBackground tone="base">
-      <NavHeader variant="back" title="Groups" onBack={() => navigation.goBack()} />
+      <NavHeader variant="back" title="Groups & people" onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {error ? (
           <View style={styles.notice}>
@@ -44,6 +63,21 @@ export function GroupsScreen({ navigation }: any) {
           ))
         )}
 
+        {people.length > 0 && (
+          <>
+            <Text style={styles.section}>PEOPLE</Text>
+            {people.map((p) => (
+              <ListRow
+                key={p.id}
+                title={p.name}
+                subtitle={p.handle ? `@${p.handle}` : ''}
+                showChevron
+                onPress={() => navigation.navigate('FriendProfile', { handle: p.handle, id: p.id })}
+              />
+            ))}
+          </>
+        )}
+
         <Button
           label="New group"
           onPress={() => navigation.navigate('CreateGroup')}
@@ -63,12 +97,17 @@ export function GroupsScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   content: { padding: spacing.screenGutter, gap: spacing[3], paddingBottom: spacing[8] },
+  section: {
+    fontFamily: 'Barlow-SemiBold',
+    fontSize: 11,
+    letterSpacing: 2,
+    color: colors.semantic.awaiting,
+    marginTop: spacing[3],
+  },
   cta: { marginTop: spacing[3] },
   notice: {
     backgroundColor: colors.bg.surface1,
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border.default,
     padding: spacing[4],
     gap: spacing[2],
   },

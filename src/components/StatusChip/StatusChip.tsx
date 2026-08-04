@@ -61,7 +61,7 @@ const STATUS_CONFIG: Record<
   },
   controversial: {
     label: 'CONTROVERSIAL',
-    bg: 'rgba(159,84,255,0.12)',
+    bg: 'rgba(182,182,190,0.12)',
     text: colors.semantic.controversial,
   },
 };

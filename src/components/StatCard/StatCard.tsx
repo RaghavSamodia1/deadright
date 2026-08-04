@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
 
-export type StatCardTone = 'navy' | 'amber' | 'mint' | 'coral' | 'violet';
+export type StatCardTone = 'navy' | 'amber' | 'mint' | 'coral' ;
 
 interface StatCardProps {
   /** The big number — "847", "75%", "5×" */
@@ -22,7 +22,6 @@ const TONES: Record<StatCardTone, { bg: string; text: string; sub: string }> = {
   amber: { bg: colors.card.amber, text: colors.text.inverse, sub: 'rgba(10,10,11,0.6)' },
   mint: { bg: colors.card.mint, text: colors.text.inverse, sub: 'rgba(10,10,11,0.6)' },
   coral: { bg: colors.card.coral, text: colors.text.primary, sub: 'rgba(240,240,240,0.65)' },
-  violet: { bg: colors.card.violet, text: colors.text.primary, sub: 'rgba(240,240,240,0.65)' },
 };
 
 /**

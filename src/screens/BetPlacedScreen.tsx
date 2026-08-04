@@ -1,16 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { spacing } from '../tokens';
+import { colors, spacing } from '../tokens';
 import { ScreenBackground, Stamp, Button } from '../components';
 
-// Peak — bet published. Violet (side-a) celebration.
+// Peak — bet published. Amber: the bet is now waiting on its deadline.
 export function BetPlacedScreen({ navigation }: any) {
   return (
-    <ScreenBackground tone="side-a">
+    <ScreenBackground tone="awaiting">
       <View style={styles.root}>
         <View style={styles.center}>
           <Text style={styles.emoji}>🎯</Text>
-          <Stamp label="LOCKED IN" color="#FFFFFF" rotate={-8} fontSize={48} />
+          <Stamp label="LOCKED IN" color={colors.text.inverse} rotate={-8} fontSize={48} />
           <Text style={styles.sub}>Your bet is live. The clock’s ticking — everyone’s been pinged.</Text>
         </View>
         <View style={styles.footer}>

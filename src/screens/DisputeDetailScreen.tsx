@@ -157,7 +157,7 @@ export function DisputeDetailScreen({ navigation, route }: any) {
 
         <Text style={styles.q}>ACTIVITY</Text>
         <View>
-          <TimelineEvent text="@abi voted Side A" timestamp="10m ago" tone="side-a" />
+          <TimelineEvent text="@abi voted Side A" timestamp="10m ago" tone="default" />
           <TimelineEvent text="@jk voted Side B" timestamp="25m ago" tone="side-b" />
           <TimelineEvent
             text={`${raiserHandle} raised the dispute`}

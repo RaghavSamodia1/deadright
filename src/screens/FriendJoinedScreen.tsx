@@ -9,7 +9,7 @@ export function FriendJoinedScreen({ navigation, route }: any) {
   const initials = route?.params?.initials ?? 'AB';
 
   return (
-    <ScreenBackground tone="side-a">
+    <ScreenBackground tone="flame">
       <View style={styles.root}>
         <View style={styles.center}>
           <Avatar size="xl" initials={initials} tint="a" />

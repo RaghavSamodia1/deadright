@@ -201,7 +201,7 @@ export function HomeScreen({ navigation }: any) {
             onPress={() => navigation.navigate('JoinGroup')}
           />
           <BentoTile
-            size="nav" tone="violet-tint" label="Pools" icon="party"
+            size="nav" tone="navy" label="Pools" icon="party"
             onPress={() => navigation.navigate('Pools')}
           />
         </View>

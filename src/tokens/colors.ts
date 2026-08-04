@@ -27,9 +27,7 @@ export const colors = {
     awaitingDim: 'rgba(247,200,70,0.15)',
     disputed: '#FC574E',
     disputedDim: 'rgba(252,87,78,0.15)',
-    // Lightened again: on the neutral card without a violet fill behind the
-    // chip it was 3.58:1. Now 5.56:1.
-    controversial: '#B47CFF',
+    controversial: '#B6B6BE',
     live: '#63B972',
   },
 
@@ -38,12 +36,6 @@ export const colors = {
     coral: '#FC574E',
     mint: '#63B972',
     light: '#F0F0F0',
-    // Darker than side.a so off-white clears 4.5:1 (raw #6C63FF was 3.79:1),
-    // and darker again so a *muted* second tier fits too: at #5F57E0 off-white
-    // only just passed at 4.69 and there was no headroom left under it.
-    // Card-vs-page drops to 2.60:1, which is fine — the card's 1px border is
-    // what defines its edge, not the fill.
-    violet: '#4A43C6',
     navy: '#161618',
   },
 
@@ -89,8 +81,7 @@ export const colors = {
     // Lightened to clear 4.5:1 on base, surface-1 and surface-2.
     tertiary: '#93939A',
     brand: '#E2661F',
-    // Link violet only reached 4.00:1 on surface-1; lightened to 4.65:1.
-    link: '#8A97F5',
+    link: '#F7C846',
     inverse: '#0A0A0B',
   },
 

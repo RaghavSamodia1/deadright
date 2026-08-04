@@ -10,7 +10,7 @@ export type BackgroundTone =
   | 'win' // mint — Called It Win peak
   | 'awaiting' // amber — Rank Up peak
   | 'dispute' // coral — Time's Up / dispute peaks
-  | 'side-a' // violet — Bet Placed peak
+  // violet — Bet Placed peak
   | 'flame'; // brand orange — onboarding slide 1 / streak peak
 
 interface ScreenBackgroundProps {
@@ -26,7 +26,6 @@ const TONES: Record<BackgroundTone, { bg: string; glowColor: string }> = {
   win: { bg: colors.card.mint, glowColor: '#FFFFFF' },
   awaiting: { bg: colors.card.amber, glowColor: '#FFFFFF' },
   dispute: { bg: colors.card.coral, glowColor: '#FFD9D6' },
-  'side-a': { bg: colors.card.violet, glowColor: '#C9C5FF' },
   flame: { bg: colors.brand.flame, glowColor: '#FFC9A8' },
 };
 

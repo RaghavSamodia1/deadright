@@ -51,7 +51,9 @@ export function GroupScreen({ navigation, route }: any) {
   );
 
   const openBets = bets.filter((b) => b.status === 'active' || b.status === 'live').length;
-  const settled = bets.filter((b) => b.status === 'win' || b.status === 'loss').length;
+  const settled = bets.filter(
+    (b) => b.status === 'win' || b.status === 'loss' || b.status === 'settled',
+  ).length;
 
   return (
     <ScreenBackground tone="base">

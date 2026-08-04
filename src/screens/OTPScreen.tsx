@@ -5,6 +5,7 @@ import { ScreenBackground, NavHeader, OTPInput, Button } from '../components';
 import { verifyOtp, sendOtp, verifyEmailOtp, sendEmailOtp } from '../api/auth';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 
 export function OTPScreen({ navigation, route }: any) {
   // `phone` carries the email address too when method === 'email'.
@@ -36,7 +37,7 @@ export function OTPScreen({ navigation, route }: any) {
           <Text style={styles.title}>Enter the code</Text>
           <Text style={styles.sub}>Sent to {target}</Text>
           <OTPInput onComplete={submit} onChangeText={setCode} hasError={!!error} />
-          {error && <Text style={styles.error}>{error.message}</Text>}
+          {error && <Text style={styles.error}>{humanError(error)}</Text>}
           <Text
             style={styles.resend}
             onPress={() => (isBackendConfigured ? resend(target) : null)}

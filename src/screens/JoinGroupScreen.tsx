@@ -5,6 +5,7 @@ import { ScreenBackground, NavHeader, TextInput, AvatarStack, Button } from '../
 import { joinGroupByCode } from '../api/groups';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 
 // Join a group by its 6-char code (join_group_by_code RPC).
 export function JoinGroupScreen({ navigation }: any) {
@@ -30,7 +31,7 @@ export function JoinGroupScreen({ navigation }: any) {
             onChangeText={(t) => setCode(t.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
             autoCapitalize="characters"
             autoFocus
-            error={error ? error.message : undefined}
+            error={error ? humanError(error) : undefined}
           />
 
           {found && (

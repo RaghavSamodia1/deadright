@@ -6,6 +6,7 @@ import { claimHandle } from '../api/auth';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { humanError } from '../lib/errors';
 
 export function ProfileSetupScreen({ navigation }: any) {
   const [name, setName] = useState('');
@@ -43,7 +44,7 @@ export function ProfileSetupScreen({ navigation }: any) {
             onChangeText={(t) => setHandle(t.replace(/[^a-z0-9_]/gi, '').toLowerCase())}
             autoCapitalize="none"
             helper="This is how friends find and call you out."
-            error={error ? error.message : undefined}
+            error={error ? humanError(error) : undefined}
           />
         </View>
         <Button

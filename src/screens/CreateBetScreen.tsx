@@ -21,6 +21,7 @@ import { getSettings } from '../api/settings';
 import { currencySymbol, formatMoney, parseAmountToCents } from '../lib/money';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 
 type BetType = 'binary' | 'overunder' | 'ordinal';
 const TYPE_OPTS: { value: BetType; label: string }[] = [
@@ -323,7 +324,7 @@ export function CreateBetScreen({ navigation }: any) {
             <Text style={styles.q}>Lock it in?</Text>
             <BetCard bet={preview} onPress={() => {}} />
             <Text style={styles.hint}>Once you publish, the clock starts and everyone gets pinged.</Text>
-            {publishError && <Text style={styles.error}>{publishError.message}</Text>}
+            {publishError && <Text style={styles.error}>{humanError(publishError)}</Text>}
           </>
         )}
       </ScrollView>

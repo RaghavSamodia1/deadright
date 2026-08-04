@@ -5,6 +5,7 @@ import { ScreenBackground, NavHeader, TextInput, Button } from '../components';
 import { createPool } from '../api/pools';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 
 const MAX_OPTIONS = 6;
 
@@ -78,7 +79,7 @@ export function CreatePoolScreen({ navigation, route }: any) {
           </Pressable>
         )}
 
-        {error && <Text style={styles.error}>{error.message}</Text>}
+        {error && <Text style={styles.error}>{humanError(error)}</Text>}
 
         <Button
           label="Create pool & get link"

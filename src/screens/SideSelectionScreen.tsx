@@ -5,6 +5,7 @@ import { ScreenBackground, NavHeader, Button } from '../components';
 import { joinSide } from '../api/bets';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 
 type Side = 'a' | 'b' | null;
 
@@ -56,7 +57,7 @@ export function SideSelectionScreen({ navigation, route }: any) {
             loading={loading}
             fullWidth
           />
-          {error && <Text style={styles.error}>{error.message}</Text>}
+          {error && <Text style={styles.error}>{humanError(error)}</Text>}
           <Text style={styles.warn}>Once locked, you can’t switch — but everyone sees if you try</Text>
         </View>
       </View>

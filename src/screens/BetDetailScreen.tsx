@@ -25,6 +25,7 @@ import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
 import { formatMoney } from '../lib/money';
 import { Icon } from '../components';
+import { humanError } from '../lib/errors';
 
 // V2-04 Bet Detail (design-v2.md §5) — BetCard + stat strip + timeline + action.
 export function BetDetailScreen({ navigation, route }: any) {
@@ -157,7 +158,7 @@ export function BetDetailScreen({ navigation, route }: any) {
           ))}
         </View>
 
-        {error && <Text style={styles.error}>Couldn’t load this bet: {error.message}</Text>}
+        {error && <Text style={styles.error}>Couldn’t load this bet: {humanError(error)}</Text>}
 
         {/* An outcome has been proposed — the other side either agrees or
             contests it. Without this the state machine dead-ends. */}
@@ -247,7 +248,7 @@ export function BetDetailScreen({ navigation, route }: any) {
           onChangeText={setDetail}
           multiline
           maxChars={140}
-          error={disputeError ? disputeError.message : undefined}
+          error={disputeError ? humanError(disputeError) : undefined}
         />
         <Button
           label="Send to the group"

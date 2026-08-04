@@ -6,6 +6,7 @@ import { ScreenBackground, NavHeader, Button, EmptyState } from '../components';
 import { getOptions, submitRanking } from '../api/ordinals';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 
 type Option = { id: string; label: string };
 
@@ -115,7 +116,7 @@ export function RankPickerScreen({ navigation, route }: any) {
           </View>
         ))}
 
-        {error && <Text style={styles.error}>{error.message}</Text>}
+        {error && <Text style={styles.error}>{humanError(error)}</Text>}
 
         <Button label="Lock in my order" onPress={lockIn} loading={loading} fullWidth style={styles.cta} />
         <Text style={styles.footnote}>

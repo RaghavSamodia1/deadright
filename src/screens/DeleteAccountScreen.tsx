@@ -5,6 +5,7 @@ import { ScreenBackground, NavHeader, TextInput, Button } from '../components';
 import { deleteAccount } from '../api/auth';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 
 // Destructive, irreversible — requires typing DELETE to confirm.
 export function DeleteAccountScreen({ navigation }: any) {
@@ -38,7 +39,7 @@ export function DeleteAccountScreen({ navigation }: any) {
             value={confirm}
             onChangeText={setConfirm}
             autoCapitalize="characters"
-            error={error ? error.message : undefined}
+            error={error ? humanError(error) : undefined}
           />
         </View>
 

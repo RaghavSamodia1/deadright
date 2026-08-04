@@ -5,6 +5,7 @@ import { ScreenBackground, NavHeader, Avatar, TextInput, Button } from '../compo
 import { getMyProfile, updateProfile } from '../api/profile';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 
 export function ProfileEditScreen({ navigation }: any) {
   const { data: profile } = useQuery(getMyProfile, {
@@ -73,7 +74,7 @@ export function ProfileEditScreen({ navigation }: any) {
           multiline
           maxChars={80}
           showCounter
-          error={error ? error.message : undefined}
+          error={error ? humanError(error) : undefined}
         />
         <Button label="Save changes" onPress={submit} loading={loading} fullWidth />
       </ScrollView>

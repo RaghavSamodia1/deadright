@@ -5,6 +5,7 @@ import { ScreenBackground, NavHeader, TextInput, ChoiceChip, Button } from '../c
 import { createGroup } from '../api/groups';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 
 const EMOJIS = ['⚽', '🏠', '🍻', '🎮', '💼', '🎓', '🏀', '🎾'];
 
@@ -43,7 +44,7 @@ export function CreateGroupScreen({ navigation }: any) {
             value={name}
             onChangeText={setName}
             maxChars={30}
-            error={error ? error.message : undefined}
+            error={error ? humanError(error) : undefined}
           />
         </View>
         <Button

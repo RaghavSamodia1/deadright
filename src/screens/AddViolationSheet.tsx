@@ -7,6 +7,7 @@ import { getJarRules, addViolation } from '../api/jar';
 import { getGroup } from '../api/groups';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 
 const MOCK_MEMBERS = [
   { id: 'm1', handle: 'Marcus', initials: 'MJ' },
@@ -114,7 +115,7 @@ export function AddViolationSheet({ visible, onDismiss, groupId }: AddViolationS
 
       <Text style={[styles.note, error ? { color: colors.interactive.destructive } : null]}>
         {error
-          ? error.message
+          ? humanError(error)
           : member && selectedRule
             ? 'They can dispute within 24h. Fair’s fair.'
             : 'They get 24h to dispute — same rules as bets.'}

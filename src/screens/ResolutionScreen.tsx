@@ -6,6 +6,7 @@ import { proposeOutcome } from '../api/resolution';
 import { useAction, useQuery } from '../hooks/useQuery';
 import { isBackendConfigured, uidOrNull } from '../lib/supabase';
 import { getBet } from '../api/bets';
+import { humanError } from '../lib/errors';
 
 // No push: bet_side is enum ('a','b') and winning_side takes one of them, so a
 // draw has nowhere to go. Offering it recorded Side B as the winner, which
@@ -87,7 +88,7 @@ export function ResolutionScreen({ navigation, route }: any) {
           variant="secondary"
           fullWidth
         />
-        {error && <Text style={styles.error}>{error.message}</Text>}
+        {error && <Text style={styles.error}>{humanError(error)}</Text>}
         <Button label="Submit resolution" onPress={submit} loading={loading} fullWidth />
       </ScrollView>
     </ScreenBackground>

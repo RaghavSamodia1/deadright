@@ -8,6 +8,7 @@ export type BetStatus =
   | 'awaiting'
   | 'win'
   | 'loss'
+  | 'settled'
   | 'disputed'
   | 'controversial';
 
@@ -24,9 +25,13 @@ interface StatusChipProps {
   style?: ViewStyle;
 }
 
+// Badges are for bets that still want something from you; a resolved bet is
+// history and gets plain text. "YOU WON" in a filled pill was the loudest
+// treatment in the feed spent on the one status nobody needs to act on — and
+// the second person made the card shout at its reader.
 const STATUS_CONFIG: Record<
   BetStatus,
-  { label: string; bg: string; text: string; dot?: string }
+  { label: string; bg: string; text: string; dot?: string; quiet?: boolean }
 > = {
   active: {
     label: 'ACTIVE',
@@ -45,14 +50,23 @@ const STATUS_CONFIG: Record<
     text: colors.semantic.awaiting,
   },
   win: {
-    label: 'YOU WON',
-    bg: 'rgba(99,185,114,0.2)',
+    label: 'Won',
+    bg: 'transparent',
     text: colors.semantic.win,
+    quiet: true,
+  },
+  // Resolved, but not yours to win or lose — you were watching.
+  settled: {
+    label: 'Settled',
+    bg: 'transparent',
+    text: colors.text.tertiary,
+    quiet: true,
   },
   loss: {
-    label: 'YOU LOST',
-    bg: colors.bg.surface2,
+    label: 'Lost',
+    bg: 'transparent',
     text: colors.text.tertiary,
+    quiet: true,
   },
   disputed: {
     label: 'DISPUTED',
@@ -72,11 +86,18 @@ export function StatusChip({ status, isCreator = false, ink, style }: StatusChip
   const fg = ink?.primary ?? config.text;
 
   return (
-    <View style={[styles.chip, { backgroundColor: bg }, style]}>
+    <View
+      style={[
+        styles.chip,
+        { backgroundColor: bg },
+        config.quiet && styles.quietChip,
+        style,
+      ]}
+    >
       {config.dot && (
         <View style={[styles.dot, { backgroundColor: ink?.primary ?? config.dot }]} />
       )}
-      <Text style={[styles.label, { color: fg }]}>
+      <Text style={[styles.label, config.quiet && styles.quietLabel, { color: fg }]}>
         {isCreator && status === 'active' ? 'CREATOR' : config.label}
       </Text>
     </View>
@@ -103,5 +124,16 @@ const styles = StyleSheet.create({
     fontSize: 9,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
+  },
+  // No pill, so the label needs no inset and keeps its own case.
+  quietChip: {
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+  quietLabel: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 12,
+    letterSpacing: 0,
+    textTransform: 'none',
   },
 });

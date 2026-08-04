@@ -23,6 +23,7 @@ import { useRealtime } from '../hooks/useRealtime';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
 import { plural } from '../lib/plural';
+import { humanError } from '../lib/errors';
 
 // v2 bento hub (design-v2.md §2) — no bottom nav; tiles are the navigation.
 export function HomeScreen({ navigation }: any) {
@@ -210,7 +211,7 @@ export function HomeScreen({ navigation }: any) {
         {feedError ? (
           <View style={styles.notice}>
             <Text style={styles.noticeTitle}>Couldn’t load your feed</Text>
-            <Text style={styles.noticeBody}>{feedError.message}</Text>
+            <Text style={styles.noticeBody}>{humanError(feedError)}</Text>
           </View>
         ) : noGroups ? (
           <View style={styles.firstRun}>

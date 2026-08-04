@@ -13,6 +13,7 @@ import {
 import { getJarRules, proposeRule, settleJar } from '../api/jar';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 
 const MOCK_RULES = [
   { id: 'swear', emoji: '🤬', label: 'Swearing', amount_cents: 100 },
@@ -125,7 +126,7 @@ export function JarRulesScreen({ navigation, route }: any) {
           value={label}
           onChangeText={setLabel}
           maxChars={40}
-          error={error ? error.message : undefined}
+          error={error ? humanError(error) : undefined}
         />
         <Text style={styles.label}>Icon</Text>
         <View style={styles.chipWrap}>

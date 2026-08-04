@@ -6,6 +6,7 @@ import { getMyGroups } from '../api/groups';
 import { getMyProfile } from '../api/profile';
 import { useQuery } from '../hooks/useQuery';
 import { plural } from '../lib/plural';
+import { humanError } from '../lib/errors';
 
 /**
  * Every group you're in.
@@ -43,7 +44,7 @@ export function GroupsScreen({ navigation }: any) {
         {error ? (
           <View style={styles.notice}>
             <Text style={styles.noticeTitle}>Couldn’t load your groups</Text>
-            <Text style={styles.noticeBody}>{error.message}</Text>
+            <Text style={styles.noticeBody}>{humanError(error)}</Text>
           </View>
         ) : groups.length === 0 ? (
           <EmptyState

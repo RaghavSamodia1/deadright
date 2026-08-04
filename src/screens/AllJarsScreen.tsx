@@ -6,6 +6,7 @@ import { getJarsByGroup } from '../api/jar';
 import { useQuery } from '../hooks/useQuery';
 import { formatMoney } from '../lib/money';
 import { plural } from '../lib/plural';
+import { humanError } from '../lib/errors';
 
 /**
  * Every group's Cookie Jar in one list.
@@ -26,7 +27,7 @@ export function AllJarsScreen({ navigation }: any) {
         {error ? (
           <View style={styles.notice}>
             <Text style={styles.noticeTitle}>Couldn’t load your jars</Text>
-            <Text style={styles.noticeBody}>{error.message}</Text>
+            <Text style={styles.noticeBody}>{humanError(error)}</Text>
           </View>
         ) : jars.length === 0 ? (
           <EmptyState

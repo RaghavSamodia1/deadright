@@ -56,7 +56,11 @@ function toBetStatus(b: any, myUserId?: string | null): BetStatus {
       const mySide =
         b.my_side ??
         (b.participants ?? []).find((p: any) => p.user_id === myUserId)?.side;
-      if (!b.winning_side || !mySide) return 'win';
+      // No side of mine means this one wasn't mine to win: I created it
+      // without taking a side, or I'm a group member who only watched. This
+      // used to fall through to 'win', so every resolved bet in the feed
+      // congratulated whoever opened it.
+      if (!mySide || !b.winning_side) return 'settled';
       return b.winning_side === mySide ? 'win' : 'loss';
     }
     case 'cancelled':

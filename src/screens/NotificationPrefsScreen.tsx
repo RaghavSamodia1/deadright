@@ -5,6 +5,7 @@ import { ScreenBackground, NavHeader, SettingsRow, SettingsSection } from '../co
 import { getSettings, updateSettings, type UserSettings } from '../api/settings';
 import { useQuery } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 
 const DEFAULTS = {
   notify_new_bets: true,
@@ -39,7 +40,7 @@ export function NotificationPrefsScreen({ navigation }: any) {
     <ScreenBackground tone="base" glow={false}>
       <NavHeader variant="back" title="Notifications" onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.content}>
-        {error && <Text style={styles.error}>Couldn’t load settings: {error.message}</Text>}
+        {error && <Text style={styles.error}>Couldn’t load settings: {humanError(error)}</Text>}
 
         <SettingsSection title="Bets">
           <SettingsRow icon="target" label="New bets you're in" toggle toggleValue={value('notify_new_bets')} onToggle={set('notify_new_bets')} />

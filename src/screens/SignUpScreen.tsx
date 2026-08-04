@@ -6,6 +6,7 @@ import { sendOtp, signInOrSignUp } from '../api/auth';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 import { links } from '../lib/links';
+import { humanError } from '../lib/errors';
 
 type Method = 'phone' | 'email';
 
@@ -95,7 +96,7 @@ export function SignUpScreen({ navigation }: any) {
                 autoComplete="password"
                 value={password}
                 onChangeText={setPassword}
-                error={error ? error.message : undefined}
+                error={error ? humanError(error) : undefined}
               />
             </>
           ) : (
@@ -106,7 +107,7 @@ export function SignUpScreen({ navigation }: any) {
               value={phone}
               onChangeText={setPhone}
               autoFocus
-              error={error ? error.message : undefined}
+              error={error ? humanError(error) : undefined}
               helper="Needs an SMS provider on the project."
             />
           )}

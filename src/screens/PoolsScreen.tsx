@@ -6,6 +6,7 @@ import { getMyPools } from '../api/pools';
 import { useQuery } from '../hooks/useQuery';
 import { plural } from '../lib/plural';
 import { relativeTime } from '../lib/plural';
+import { humanError } from '../lib/errors';
 
 /**
  * Your party pools.
@@ -28,7 +29,7 @@ export function PoolsScreen({ navigation }: any) {
         {error ? (
           <View style={styles.notice}>
             <Text style={styles.noticeTitle}>Couldn’t load your pools</Text>
-            <Text style={styles.noticeBody}>{error.message}</Text>
+            <Text style={styles.noticeBody}>{humanError(error)}</Text>
           </View>
         ) : pools.length === 0 ? (
           <EmptyState

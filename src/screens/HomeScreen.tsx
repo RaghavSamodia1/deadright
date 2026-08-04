@@ -179,11 +179,16 @@ export function HomeScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* Row 2 — mirrored: the column sits left and the large tile right, so
-            the grid doesn't read as three identical strips stacked up. Feature
-            is exactly two navs plus the gap, so the row lines up by
-            construction rather than by hand-tuned numbers. */}
+        {/* Row 2 — Groups takes the large tile: everything in the app lives
+            inside one, so it earns more than a third of a strip. */}
         <View style={styles.row}>
+          <BentoTile
+            size="feature" tone="navy" icon="users"
+            value={`${groups.length}`}
+            label={groups.length === 1 ? 'Group' : 'Groups'}
+            caption="Open them"
+            onPress={() => navigation.navigate('Groups')}
+          />
           <View style={styles.col}>
             <BentoTile
               size="nav" tone="mint-tint" value={`${money(summary.lifetimeCents)}`} label="Ledger" icon="ledger"
@@ -194,14 +199,6 @@ export function HomeScreen({ navigation }: any) {
               onPress={() => navigation.navigate('Search')}
             />
           </View>
-          <BentoTile
-            size="feature" tone="violet-tint" icon="party"
-            value="Party Pool" label="One link · no app needed"
-            // Opens the list, not the create flow: the tile used to be the
-            // only route to pools and always made a new one, so every pool you
-            // had already made was unreachable.
-            onPress={() => navigation.navigate('Pools')}
-          />
         </View>
 
         {/* Row 3 — the action strip. */}
@@ -215,8 +212,8 @@ export function HomeScreen({ navigation }: any) {
             onPress={() => navigation.navigate('JoinGroup')}
           />
           <BentoTile
-            size="nav" tone="navy" label="Group" icon="users"
-            onPress={() => navigation.navigate('CreateGroup')}
+            size="nav" tone="violet-tint" label="Pools" icon="party"
+            onPress={() => navigation.navigate('Pools')}
           />
         </View>
 
@@ -244,23 +241,7 @@ export function HomeScreen({ navigation }: any) {
           </View>
         ) : (
           <>
-            {/* Your groups — the only way back into a group after creating it */}
-            <View style={styles.sectionRow}>
-              <Text style={[styles.section, styles.sectionInRow]}>YOUR GROUPS</Text>
-              {/* On the header rather than a row of its own: as a standalone
-                  centred link it cost a full row of empty width and pushed
-                  NEEDS YOU off the first screen. */}
-
-            </View>
-            {groups.map((g: any) => (
-              <ListRow
-                key={g.id}
-                title={`${g.emoji ?? '👥'}  ${g.name}`}
-                subtitle={plural(g.members?.length ?? 0, 'member')}
-                showChevron
-                onPress={() => navigation.navigate('Group', { id: g.id, name: g.name })}
-              />
-            ))}
+            <View />
           </>
         )}
 

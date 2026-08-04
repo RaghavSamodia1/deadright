@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing } from '../../tokens';
+import { colors, radius, spacing } from '../../tokens';
 import { Avatar } from '../Avatar/Avatar';
 
 type NavVariant = 'home' | 'back' | 'modal';
@@ -40,10 +40,7 @@ export function NavHeader({
     <View
       style={[
         styles.container,
-        {
-          paddingTop: insets.top,
-          borderBottomColor: colors.border.subtle,
-        },
+        { paddingTop: insets.top },
         style,
       ]}
     >
@@ -113,10 +110,10 @@ export function NavHeader({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.bg.base,
-    borderBottomWidth: 1,
   },
   inner: {
     height: 46,
+    paddingBottom: 2,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.screenGutter,
@@ -135,6 +132,10 @@ const styles = StyleSheet.create({
     height: 34,
     alignItems: 'center',
     justifyContent: 'center',
+    // Same fill and corner as a bento tile, so the actions read as part of the
+    // grid rather than as loose glyphs above it.
+    backgroundColor: colors.bg.surface1,
+    borderRadius: radius.sm,
   },
   textBtn: {
     height: 34,

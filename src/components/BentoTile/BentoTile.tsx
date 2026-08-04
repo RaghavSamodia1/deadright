@@ -108,9 +108,9 @@ const TONES: Record<TileTone, { bg: string; border?: string; text: string; sub: 
   // text.tertiary under AA (4.35:1 on amber-tint, 4.29:1 on mint-tint), so the
   // labels use text.secondary. side.a on violet-tint was worse at 3.74:1 —
   // lifted to a brighter violet that keeps the hue and clears 5.40:1.
-  'amber-tint': { bg: 'rgba(247,200,70,0.12)', border: 'rgba(247,200,70,0.4)', text: colors.semantic.awaiting, sub: colors.text.secondary },
-  'mint-tint': { bg: 'rgba(99,185,114,0.12)', border: 'rgba(99,185,114,0.45)', text: colors.semantic.win, sub: colors.text.secondary },
-  'violet-tint': { bg: 'rgba(90,107,229,0.15)', border: 'rgba(90,107,229,0.45)', text: colors.side.aLift, sub: colors.text.secondary },
+  'amber-tint': { bg: 'rgba(247,200,70,0.18)', border: 'rgba(247,200,70,0.4)', text: colors.semantic.awaiting, sub: colors.text.secondary },
+  'mint-tint': { bg: 'rgba(99,185,114,0.18)', border: 'rgba(99,185,114,0.45)', text: colors.semantic.win, sub: colors.text.secondary },
+  'violet-tint': { bg: 'rgba(90,107,229,0.22)', border: 'rgba(90,107,229,0.45)', text: colors.side.aLift, sub: colors.text.secondary },
 };
 
 const VALUE_SIZE: Record<TileSize, number> = { hero: 52, feature: 26, wide: 48, stat: 28, nav: 22, chart: 0 };
@@ -153,8 +153,6 @@ export function BentoTile({
       padding: Math.round(spacing[4] * scale),
       borderRadius: dims.r,
       backgroundColor: t.bg,
-      borderWidth: t.border ? 1 : 0,
-      borderColor: t.border,
     },
     style,
   ];

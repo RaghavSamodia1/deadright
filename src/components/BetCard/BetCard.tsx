@@ -31,38 +31,15 @@ interface BetCardProps {
   style?: ViewStyle;
 }
 
-// Maps status → card fill and the ink pair that stays legible on it. Nothing
-// here may fall back to the global text tokens: those assume a dark surface,
-// and on these fills they drop as low as 1.00:1 (see colors.cardInk).
-type CardInk = { primary: string; muted: string; chip: string };
-
-const STATUS_CARD_STYLE: Record<BetStatus, { bg: string; ink: CardInk } | null> = {
-  active: null,
-  live: null,
-  awaiting: { bg: colors.card.amber, ink: colors.cardInk.onLight },
-  win: { bg: colors.card.mint, ink: colors.cardInk.onLight },
-  loss: null,
-  // Off-white on coral is only 2.79:1 — navy on coral is 5.90:1.
-  disputed: { bg: colors.card.coral, ink: colors.cardInk.onLight },
-  controversial: null,
-};
-
-/** Inks for the default dark card, so every branch below has a full set. */
-const SURFACE_INK = {
-  primary: colors.text.primary,
-  muted: colors.text.tertiary,
-  chip: colors.bg.surface2,
-};
-
+// Status used to repaint the whole card — amber for awaiting, mint for a win,
+// coral for disputed. A feed of those reads as a shout, and a win is the least
+// useful thing to spend the loudest colour on. The chip carries status now and
+// every card sits on the same surface, so colour means something when it does
+// appear. (colors.cardInk still exists: the jar and bento tiles are genuinely
+// filled and need ink that survives on them.)
 export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) {
-  const override = STATUS_CARD_STYLE[bet.status];
-  const cardBg = override?.bg ?? colors.bg.surface1;
-  const ink = override?.ink ?? SURFACE_INK;
-  const titleColor = ink.primary;
-  // Was a 0.65-alpha blend of the title colour, which on the coral card came
-  // out at 2.62:1. The muted ink is a measured value instead of a guess.
-  const metaColor = ink.muted;
-  const dotColor = override ? ink.muted : colors.border.default;
+  const titleColor = colors.text.primary;
+  const metaColor = colors.text.tertiary;
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -75,7 +52,7 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
       style={({ pressed }) => [
         styles.card,
         {
-          backgroundColor: cardBg,
+          backgroundColor: colors.bg.surface1,
           opacity: pressed ? 0.92 : 1,
           transform: [{ scale: pressed ? 0.985 : 1 }],
         },
@@ -93,7 +70,7 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
             <Text style={[styles.groupLabel, { color: metaColor }]}>{bet.group}</Text>
           )}
         </View>
-        <StatusChip status={bet.status} isCreator={bet.isCreator} ink={override ? ink : undefined} />
+        <StatusChip status={bet.status} isCreator={bet.isCreator} />
       </View>
 
       {/* Bet title */}
@@ -110,7 +87,7 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
           sideAPercent={bet.sideAPercent}
           sideACount={bet.sideACount}
           sideBCount={bet.sideBCount}
-          ink={override ? ink : undefined}
+         
         />
       )}
 
@@ -121,7 +98,7 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
         </Text>
         {bet.stake && (
           <>
-            <View style={[styles.dot, { backgroundColor: dotColor }]} />
+            <View style={styles.dot} />
             <Text style={[styles.meta, { color: metaColor }]}>{bet.stake}</Text>
           </>
         )}
@@ -130,7 +107,6 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
         <Timer
           deadline={bet.deadline}
           size="sm"
-          ink={override ? ink.primary : undefined}
           style={styles.timer}
         />
       </View>
@@ -141,10 +117,8 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
 const styles = StyleSheet.create({
   card: {
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border.default,
-    padding: spacing[4],
-    gap: 12,
+    padding: spacing[3],
+    gap: 8,
   },
   authorRow: {
     flexDirection: 'row',
@@ -180,6 +154,7 @@ const styles = StyleSheet.create({
   dot: {
     width: 1,
     height: 12,
+    backgroundColor: colors.border.default,
   },
   timer: { marginLeft: 'auto' },
 });

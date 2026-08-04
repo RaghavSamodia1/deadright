@@ -56,12 +56,12 @@ const STATUS_CONFIG: Record<
   },
   disputed: {
     label: 'DISPUTED ⚖️',
-    bg: 'rgba(252,87,78,0.2)',
+    bg: 'rgba(252,87,78,0.12)',
     text: colors.semantic.disputed,
   },
   controversial: {
     label: 'CONTROVERSIAL',
-    bg: 'rgba(150,80,255,0.2)',
+    bg: 'rgba(159,84,255,0.12)',
     text: colors.semantic.controversial,
   },
 };

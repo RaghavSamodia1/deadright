@@ -27,7 +27,9 @@ export const colors = {
     awaitingDim: 'rgba(247,200,70,0.15)',
     disputed: '#FC574E',
     disputedDim: 'rgba(252,87,78,0.15)',
-    controversial: '#9F54FF', // was #9650FF (4.36:1) — now 4.63:1 on base
+    // Lightened again: on the neutral card without a violet fill behind the
+    // chip it was 3.58:1. Now 5.56:1.
+    controversial: '#B47CFF',
     live: '#63B972',
   },
 
@@ -67,9 +69,9 @@ export const colors = {
 
   bg: {
     base: '#0A0A0B',
-    surface1: '#161618',
-    surface2: '#1F1F22',
-    surface3: '#2A2A2E',
+    surface1: '#212125',
+    surface2: '#2A2A2F',
+    surface3: '#34343A',
     overlay: 'rgba(0,0,0,0.72)',
     sheet: '#131315',
   },

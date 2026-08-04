@@ -30,6 +30,7 @@ import {
   DisputeDetailScreen,
   FriendProfileScreen,
   GroupScreen,
+  GroupsScreen,
   CreateGroupScreen,
   JoinGroupScreen,
   ShareInviteScreen,
@@ -109,6 +110,7 @@ export function RootNavigator() {
       {/* Social & groups */}
       <Stack.Screen name="FriendProfile" component={FriendProfileScreen} />
       <Stack.Screen name="Group" component={GroupScreen} />
+      <Stack.Screen name="Groups" component={GroupsScreen} />
       <Stack.Screen name="AlertDetail" component={AlertDetailScreen} />
       <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
 

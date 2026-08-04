@@ -35,6 +35,7 @@ export { DisputeDetailScreen } from './DisputeDetailScreen';
 // ── Social & groups ──────────────────────────────────────────────────────────
 export { FriendProfileScreen } from './FriendProfileScreen';
 export { GroupScreen } from './GroupScreen';
+export { GroupsScreen } from './GroupsScreen';
 export { CreateGroupScreen } from './CreateGroupScreen';
 export { JoinGroupScreen } from './JoinGroupScreen';
 export { ShareInviteScreen } from './ShareInviteScreen';

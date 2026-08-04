@@ -22,10 +22,10 @@ type Txn = {
 
 export function LedgerScreen({ navigation }: any) {
   const MOCK_TXNS: Txn[] = [
-    { id: '1', title: 'Won vs @marcus', group: 'Sunday League', amount: 20, when: '2h ago' },
-    { id: '2', title: 'Lost vs @priya', group: 'Flatmates', amount: -10, when: 'Yesterday' },
+    { id: '1', title: 'Won vs Marcus', group: 'Sunday League', amount: 20, when: '2h ago' },
+    { id: '2', title: 'Lost vs Priya', group: 'Flatmates', amount: -10, when: 'Yesterday' },
     { id: '3', title: 'Cookie Jar — swearing', group: 'Flatmates', amount: -1, when: '2d ago' },
-    { id: '4', title: 'Won vs @deej', group: 'Sunday League', amount: 15, when: '3d ago' },
+    { id: '4', title: 'Won vs Deej', group: 'Sunday League', amount: 15, when: '3d ago' },
   ];
 
   const { data: summary } = useQuery(

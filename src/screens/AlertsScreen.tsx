@@ -28,7 +28,7 @@ type Alert = {
 export function AlertsScreen({ navigation }: any) {
   const MOCK: Alert[] = [
     { id: '1', avatar: { initials: 'MC', tint: 'a' }, text: 'Marcus opened "Arsenal top 4". Pick your side.', meta: 'Sunday League · 20m ago', unread: true, action: 'join' },
-    { id: '2', avatar: { initials: 'PR', tint: 'b' }, text: 'Your bet vs @priya is ready to resolve.', meta: 'Flatmates · 2h ago', unread: true, action: 'resolve' },
+    { id: '2', avatar: { initials: 'PR', tint: 'b' }, text: 'Your bet vs Priya is ready to resolve.', meta: 'Flatmates · 2h ago', unread: true, action: 'resolve' },
     { id: '3', avatar: { initials: 'DJ', tint: 'neutral' }, text: 'Deej disputed the result of "BBQ rain".', meta: 'Flatmates · 5h ago', action: 'view-dispute' },
     { id: '4', avatar: { initials: 'AB', tint: 'a' }, text: 'Abi joined your group.', meta: 'Sunday League · Yesterday' },
   ];

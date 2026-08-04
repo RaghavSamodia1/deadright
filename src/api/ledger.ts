@@ -46,7 +46,7 @@ export async function getLedgerSummary() {
   return { lifetimeCents: lifetime, thisMonthCents: thisMonth, pendingCents: pending };
 }
 
-/** Mark a pending entry settled ("@sam paid you"). Either party can mark. */
+/** Mark a pending entry settled ("Sam paid you"). Either party can mark. */
 export async function markSettled(entryId: string) {
   const { error } = await supabase
     .from('ledger_entries')

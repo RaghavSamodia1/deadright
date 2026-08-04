@@ -5,7 +5,7 @@ import { colors, spacing } from '../../tokens';
 export type TimelineTone = 'default' | 'side-a' | 'side-b' | 'win' | 'dispute' | 'awaiting';
 
 interface TimelineEventProps {
-  /** "@abi joined Side A" — supports the 👀 side-switch events */
+  /** "Abi joined Side A" — also carries the side-switch events */
   text: string;
   timestamp: string;
   tone?: TimelineTone;

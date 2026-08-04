@@ -58,7 +58,7 @@ export function AlertsScreen({ navigation }: any) {
         }
       >
         {alerts.length === 0 ? (
-          <EmptyState emoji="🔔" title="You're all caught up" body="New calls, resolutions and disputes land here." />
+          <EmptyState icon="bell" title="You're all caught up" body="New calls, resolutions and disputes land here." />
         ) : (
           alerts.map((a) => (
             <NotificationRow

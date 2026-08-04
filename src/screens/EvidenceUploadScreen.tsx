@@ -96,8 +96,8 @@ export function EvidenceUploadScreen({ navigation, route }: any) {
         onDismiss={() => setSheetOpen(false)}
         title="Add evidence"
         options={[
-          { label: '📷  Take a photo', onPress: async () => add(await takePhoto()) },
-          { label: '🖼  Choose from library', onPress: async () => add(await pickFromLibrary()) },
+          { label: ' Take a photo', onPress: async () => add(await takePhoto()) },
+          { label: ' Choose from library', onPress: async () => add(await pickFromLibrary()) },
         ]}
       />
     </ScreenBackground>

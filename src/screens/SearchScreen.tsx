@@ -6,6 +6,7 @@ import { searchProfiles, searchBets } from '../api/profile';
 import { getMyGroups } from '../api/groups';
 import { useQuery } from '../hooks/useQuery';
 import { plural } from '../lib/plural';
+import { Icon } from '../components';
 
 type Filter = 'all' | 'bets' | 'people' | 'groups';
 
@@ -77,12 +78,12 @@ export function SearchScreen({ navigation }: any) {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {query.trim().length === 0 ? (
           <EmptyState
-            emoji="🔎"
+            icon="search"
             title="Find bets, people, groups"
             body="Search anything you've called — or someone to call out."
           />
         ) : results.length === 0 ? (
-          <EmptyState emoji="🤷" title="Nothing found" body={`No matches for "${query}".`} />
+          <EmptyState icon="shrug" title="Nothing found" body={`No matches for "${query}".`} />
         ) : (
           results.map((r) => (
             <ListRow
@@ -93,7 +94,7 @@ export function SearchScreen({ navigation }: any) {
                 r.kind === 'person' ? (
                   <Avatar size="sm" initials={r.title.replace('@', '').slice(0, 2).toUpperCase()} tint="a" />
                 ) : (
-                  <Text style={styles.kindIcon}>{r.kind === 'bet' ? '🎯' : '👥'}</Text>
+                  <Icon name={r.kind === 'bet' ? 'target' : 'users'} size={16} color={colors.text.tertiary} strokeWidth={1.9} />
                 )
               }
               showChevron

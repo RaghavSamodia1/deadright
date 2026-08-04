@@ -42,18 +42,18 @@ export function NotificationPrefsScreen({ navigation }: any) {
         {error && <Text style={styles.error}>Couldn’t load settings: {error.message}</Text>}
 
         <SettingsSection title="Bets">
-          <SettingsRow icon="🎯" label="New bets you're in" toggle toggleValue={value('notify_new_bets')} onToggle={set('notify_new_bets')} />
-          <SettingsRow icon="⚖️" label="Resolutions & agreements" toggle toggleValue={value('notify_resolutions')} onToggle={set('notify_resolutions')} />
-          <SettingsRow icon="🔥" label="Disputes & votes" toggle toggleValue={value('notify_disputes')} onToggle={set('notify_disputes')} />
+          <SettingsRow icon="target" label="New bets you're in" toggle toggleValue={value('notify_new_bets')} onToggle={set('notify_new_bets')} />
+          <SettingsRow icon="scales" label="Resolutions & agreements" toggle toggleValue={value('notify_resolutions')} onToggle={set('notify_resolutions')} />
+          <SettingsRow icon="flame" label="Disputes & votes" toggle toggleValue={value('notify_disputes')} onToggle={set('notify_disputes')} />
         </SettingsSection>
 
         <SettingsSection title="Social">
-          <SettingsRow icon="🍪" label="Cookie Jar activity" toggle toggleValue={value('notify_jar')} onToggle={set('notify_jar')} />
-          <SettingsRow icon="🏆" label="Cred & rank changes" toggle toggleValue={value('notify_cred')} onToggle={set('notify_cred')} />
+          <SettingsRow icon="jar" label="Cookie Jar activity" toggle toggleValue={value('notify_jar')} onToggle={set('notify_jar')} />
+          <SettingsRow icon="trophy" label="Cred & rank changes" toggle toggleValue={value('notify_cred')} onToggle={set('notify_cred')} />
         </SettingsSection>
 
         <SettingsSection title="Other">
-          <SettingsRow icon="📣" label="Product news" toggle toggleValue={value('notify_marketing')} onToggle={set('notify_marketing')} />
+          <SettingsRow icon="megaphone" label="Product news" toggle toggleValue={value('notify_marketing')} onToggle={set('notify_marketing')} />
         </SettingsSection>
 
         <Text style={styles.note}>

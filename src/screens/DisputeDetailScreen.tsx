@@ -80,7 +80,7 @@ export function DisputeDetailScreen({ navigation, route }: any) {
       <NavHeader variant="back" title="Dispute" onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.banner}>
-          <Text style={styles.bannerText}>⚖️ Disputed — the group decides</Text>
+          <Text style={styles.bannerText}>Disputed — the group decides</Text>
         </View>
         <Text style={styles.statement}>"{title}"</Text>
 
@@ -123,7 +123,7 @@ export function DisputeDetailScreen({ navigation, route }: any) {
             accessibilityRole="button"
             accessibilityLabel="Add photo evidence"
           >
-            <Text style={styles.addProofIcon}>📷</Text>
+            <Text style={styles.addProofIcon}></Text>
             <Text style={styles.addProofLabel}>Add proof</Text>
           </Pressable>
         </View>
@@ -141,7 +141,7 @@ export function DisputeDetailScreen({ navigation, route }: any) {
 
         {/* Vote buttons */}
         {myVote ? (
-          <Text style={styles.voted}>You voted Side {String(myVote).toUpperCase()} ✓</Text>
+          <Text style={styles.voted}>You voted Side {String(myVote).toUpperCase()}</Text>
         ) : (
           <View style={styles.voteRow}>
             <Button label="Vote A" onPress={() => submitVote('a')} loading={voting} style={styles.voteBtn} />
@@ -173,8 +173,8 @@ export function DisputeDetailScreen({ navigation, route }: any) {
         onDismiss={() => setSheetOpen(false)}
         title="Add proof"
         options={[
-          { label: '📷  Take a photo', onPress: async () => addProof(await takePhoto()) },
-          { label: '🖼  Choose from library', onPress: async () => addProof(await pickFromLibrary()) },
+          { label: ' Take a photo', onPress: async () => addProof(await takePhoto()) },
+          { label: ' Choose from library', onPress: async () => addProof(await pickFromLibrary()) },
         ]}
       />
     </ScreenBackground>

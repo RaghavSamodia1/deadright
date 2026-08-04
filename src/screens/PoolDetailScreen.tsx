@@ -8,6 +8,7 @@ import { ScreenBackground, NavHeader, Button, ListRow } from '../components';
 import { getPool, getPoolResults, poolShareUrl, setPoolStatus, settlePool } from '../api/pools';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { Icon } from '../components';
 
 const DEMO = {
   id: 'demo',
@@ -65,7 +66,7 @@ export function PoolDetailScreen({ navigation, route }: any) {
         onBack={() => navigation.goBack()}
         rightActions={[
           {
-            icon: <Text style={styles.icon}>↗</Text>,
+            icon: <Icon name="external" size={19} color={colors.text.secondary} strokeWidth={1.9} />,
             onPress: share,
             accessibilityLabel: 'Share pool',
           },

@@ -67,7 +67,7 @@ export function GroupCard({
 
       {selected && (
         <View style={styles.check}>
-          <Text style={styles.checkMark}>✓</Text>
+          <Text style={styles.checkMark}></Text>
         </View>
       )}
     </Pressable>

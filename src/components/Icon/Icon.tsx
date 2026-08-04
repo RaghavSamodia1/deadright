@@ -27,7 +27,34 @@ export type IconName =
   | 'scales'
   | 'search'
   | 'chevron'
-  | 'arrow';
+  | 'arrow'
+  | 'back'
+  | 'person'
+  | 'lock'
+  | 'ban'
+  | 'camera'
+  | 'image'
+  | 'rules'
+  | 'target'
+  | 'chart'
+  | 'coin'
+  | 'megaphone'
+  | 'gear'
+  | 'check'
+  | 'cross'
+  | 'external'
+  | 'halo'
+  | 'shrug'
+  | 'ladder'
+  | 'inbox'
+  | 'refresh'
+  | 'moon'
+  | 'heart'
+  | 'share'
+  | 'doc'
+  | 'info'
+  | 'exit'
+  | 'trash';
 
 interface IconProps {
   name: IconName;
@@ -116,6 +143,145 @@ export function Icon({ name, size = 24, color = '#F0F0F0', strokeWidth = 2 }: Ic
         </>
       )}
       {name === 'chevron' && <Path d="M9 5l7 7-7 7" {...stroke} />}
+      {name === 'back' && <Path d="M20 12H5M12 5l-7 7 7 7" {...stroke} />}
+      {name === 'refresh' && (
+        <>
+          <Path d="M21 12a9 9 0 1 1-3-6.7" {...stroke} />
+          <Path d="M21 4v5h-5" {...stroke} />
+        </>
+      )}
+      {name === 'moon' && <Path d="M20 14A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20 14z" {...stroke} />}
+      {name === 'heart' && (
+        <Path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9z" {...stroke} />
+      )}
+      {name === 'share' && (
+        <>
+          <Path d="M12 15V3M8 7l4-4 4 4" {...stroke} />
+          <Path d="M5 13v7h14v-7" {...stroke} />
+        </>
+      )}
+      {name === 'doc' && (
+        <>
+          <Path d="M6 3h9l4 4v14H6V3z" {...stroke} />
+          <Path d="M15 3v4h4" {...stroke} />
+        </>
+      )}
+      {name === 'info' && (
+        <>
+          <Circle cx="12" cy="12" r="9" {...stroke} />
+          <Path d="M12 11v5" {...stroke} />
+          <Circle cx="12" cy="7.75" r="1" fill={color} />
+        </>
+      )}
+      {name === 'exit' && (
+        <>
+          <Path d="M14 4H5v16h9" {...stroke} />
+          <Path d="M18 12H9M15 8l4 4-4 4" {...stroke} />
+        </>
+      )}
+      {name === 'trash' && (
+        <>
+          <Path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" {...stroke} />
+        </>
+      )}
+      {name === 'person' && (
+        <>
+          <Circle cx="12" cy="8" r="4" {...stroke} />
+          <Path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" {...stroke} />
+        </>
+      )}
+      {name === 'lock' && (
+        <>
+          <Path d="M5 11h14v10H5V11z" {...stroke} />
+          <Path d="M8 11V7a4 4 0 0 1 8 0v4" {...stroke} />
+        </>
+      )}
+      {name === 'ban' && (
+        <>
+          <Circle cx="12" cy="12" r="9" {...stroke} />
+          <Path d="M5.6 5.6l12.8 12.8" {...stroke} />
+        </>
+      )}
+      {name === 'camera' && (
+        <>
+          <Path d="M3 8h4l2-3h6l2 3h4v12H3V8z" {...stroke} />
+          <Circle cx="12" cy="13" r="4" {...stroke} />
+        </>
+      )}
+      {name === 'image' && (
+        <>
+          <Path d="M3 5h18v14H3V5z" {...stroke} />
+          <Circle cx="8.5" cy="10" r="1.5" {...stroke} />
+          <Path d="M21 16l-5-5-8 8" {...stroke} />
+        </>
+      )}
+      {name === 'rules' && (
+        <>
+          <Path d="M6 3h9l4 4v14H6V3z" {...stroke} />
+          <Path d="M15 3v4h4M9 12h6M9 16h6" {...stroke} />
+        </>
+      )}
+      {name === 'target' && (
+        <>
+          <Circle cx="12" cy="12" r="9" {...stroke} />
+          <Circle cx="12" cy="12" r="4" {...stroke} />
+          <Circle cx="12" cy="12" r="1" fill={color} />
+        </>
+      )}
+      {name === 'chart' && (
+        <>
+          <Path d="M4 20V10M10 20V4M16 20v-7M22 20H2" {...stroke} />
+        </>
+      )}
+      {name === 'coin' && (
+        <>
+          <Circle cx="12" cy="12" r="9" {...stroke} />
+          <Path d="M12 7v10M9.5 9.5h4a2 2 0 0 1 0 4h-3a2 2 0 0 0 0 4h4" {...stroke} />
+        </>
+      )}
+      {name === 'megaphone' && (
+        <>
+          <Path d="M3 11v2a1 1 0 0 0 1 1h3l7 4V6L7 10H4a1 1 0 0 0-1 1z" {...stroke} />
+          <Path d="M18 9a4 4 0 0 1 0 6" {...stroke} />
+        </>
+      )}
+      {name === 'gear' && (
+        <>
+          <Circle cx="12" cy="12" r="3" {...stroke} />
+          <Path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.2 2.2M16.9 16.9l2.2 2.2M19.1 4.9l-2.2 2.2M7.1 16.9l-2.2 2.2" {...stroke} />
+        </>
+      )}
+      {name === 'check' && <Path d="M4 12.5l5 5L20 6.5" {...stroke} />}
+      {name === 'cross' && <Path d="M6 6l12 12M18 6L6 18" {...stroke} />}
+      {name === 'external' && (
+        <>
+          <Path d="M13 4h7v7" {...stroke} />
+          <Path d="M20 4l-9 9M19 14v6H4V5h6" {...stroke} />
+        </>
+      )}
+      {name === 'halo' && (
+        <>
+          <Circle cx="12" cy="13" r="6" {...stroke} />
+          <Path d="M7 5.5a10 10 0 0 1 10 0" {...stroke} />
+        </>
+      )}
+      {name === 'shrug' && (
+        <>
+          <Circle cx="12" cy="8" r="3.5" {...stroke} />
+          <Path d="M5 20c0-3 2-5 4-5M19 20c0-3-2-5-4-5M3 14l2-2M21 14l-2-2" {...stroke} />
+        </>
+      )}
+      {name === 'ladder' && (
+        <>
+          <Path d="M7 3v18M17 3v18M7 8h10M7 13h10M7 18h10" {...stroke} />
+        </>
+      )}
+      {name === 'inbox' && (
+        <>
+          <Path d="M3 13h5l1.5 3h5L16 13h5" {...stroke} />
+          <Path d="M5 5h14l2 8v6H3v-6l2-8z" {...stroke} />
+        </>
+      )}
       {name === 'arrow' && <Path d="M4 12h15M13 6l6 6-6 6" {...stroke} />}
     </Svg>
   );

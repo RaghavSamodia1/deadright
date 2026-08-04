@@ -70,7 +70,7 @@ export function RankPickerScreen({ navigation, route }: any) {
       <ScreenBackground tone="base">
         <NavHeader variant="back" title="Rank" onBack={() => navigation.goBack()} />
         <EmptyState
-          emoji="🪜"
+          icon="ladder"
           title="Nothing to rank"
           body="This bet has no options yet — the creator adds them before anyone can predict an order."
         />

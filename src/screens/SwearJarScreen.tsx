@@ -15,6 +15,7 @@ import { getJar, getJarRules, ownUp } from '../api/jar';
 import { getMyGroups } from '../api/groups';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
+import { Icon } from '../components';
 
 const MOCK_VIOLATIONS = [
   { id: '1', member: { handle: '@marcus', initials: 'MJ' }, rule: 'Swearing', amount: '+$1.00', timestamp: '2h ago', disputable: true },
@@ -69,7 +70,7 @@ export function SwearJarScreen({ navigation, route }: any) {
       <ScreenBackground tone="base">
         <NavHeader variant="back" title="Cookie Jar" onBack={() => navigation.goBack()} />
         <EmptyState
-          emoji="🍪"
+          icon="jar"
           title="Jars live in groups"
           body="Create or join a group first — then the jar, its rules and the settle-up all belong to that group."
           ctaLabel="Create a group"
@@ -89,7 +90,7 @@ export function SwearJarScreen({ navigation, route }: any) {
         onBack={() => navigation.goBack()}
         rightActions={[
           {
-            icon: <Text style={styles.rulesIcon}>📜</Text>,
+            icon: <Icon name="rules" size={20} color={colors.text.secondary} strokeWidth={1.9} />,
             onPress: () => navigation.navigate('JarRules', { groupId, groupName }),
             accessibilityLabel: 'Jar rules',
           },
@@ -117,7 +118,7 @@ export function SwearJarScreen({ navigation, route }: any) {
 
         <View style={styles.actions}>
           <Button label="ADD VIOLATION" onPress={() => setAddVisible(true)} fullWidth />
-          <Button label="Own up 😇" onPress={selfReport} loading={owningUp} variant="secondary" fullWidth />
+          <Button label="Own up" onPress={selfReport} loading={owningUp} variant="secondary" fullWidth />
         </View>
 
         <Text style={styles.sectionTitle}>RECENT VIOLATIONS</Text>

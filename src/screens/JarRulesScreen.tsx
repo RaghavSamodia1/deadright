@@ -69,7 +69,7 @@ export function JarRulesScreen({ navigation, route }: any) {
               key={r.id}
               left={
                 <View style={styles.emojiBox}>
-                  <Text style={styles.emoji}>{r.emoji ?? '🍪'}</Text>
+                  <Text style={styles.emoji}>{r.emoji ?? ''}</Text>
                 </View>
               }
               title={r.label}
@@ -85,7 +85,7 @@ export function JarRulesScreen({ navigation, route }: any) {
 
         {groupId && (
           <Button
-            label="Settle the jar 🍕"
+            label="Settle the jar"
             // Settling empties the pot for the whole group and writes ledger
             // entries — never do that on a single tap.
             onPress={() =>

@@ -47,7 +47,7 @@ export function GroupsScreen({ navigation }: any) {
           </View>
         ) : groups.length === 0 ? (
           <EmptyState
-            emoji="👥"
+            icon="users"
             title={loading ? 'Loading…' : 'No groups yet'}
             body="Everything lives inside a group — bets, the Cookie Jar, the ledger. Make one, or join with a friend's code."
           />

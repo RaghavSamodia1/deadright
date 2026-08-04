@@ -4,9 +4,9 @@ import { colors, spacing } from '../tokens';
 import { ScreenBackground, ProgressDots, Button } from '../components';
 
 const SLIDES = [
-  { emoji: '🎯', title: 'Call it now.', body: 'Bet you won’t. I’m calling it. Capture the moment before it happens.' },
-  { emoji: '⚖️', title: 'Settle it fair.', body: 'When the dust settles, both sides agree who was right. Disputes go to a group vote.' },
-  { emoji: '🏆', title: 'Build your Cred.', body: 'Every call you nail builds your reputation. No money — your word is the stake.' },
+  { emoji: '', title: 'Call it now.', body: 'Bet you won’t. I’m calling it. Capture the moment before it happens.' },
+  { emoji: '', title: 'Settle it fair.', body: 'When the dust settles, both sides agree who was right. Disputes go to a group vote.' },
+  { emoji: '', title: 'Build your Cred.', body: 'Every call you nail builds your reputation. No money — your word is the stake.' },
 ];
 
 export function OnboardingScreen({ navigation }: any) {

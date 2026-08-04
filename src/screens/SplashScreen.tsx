@@ -14,7 +14,7 @@ export function SplashScreen({ navigation }: any) {
     <ScreenBackground tone="base">
       <View style={styles.center}>
         <Text style={styles.brand}>
-          DeadRight<Text style={styles.flame}> 🔥</Text>
+          DeadRight<Text style={styles.flame}></Text>
         </Text>
         <Text style={styles.tagline}>Your word is your bond.</Text>
       </View>

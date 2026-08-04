@@ -24,7 +24,7 @@ export function SuggestionCard({ suggestion, onAccept, onReject, loading = false
       <Text style={styles.overline}>SUGGESTED</Text>
       <Text style={styles.text}>"{suggestion}"</Text>
       <View style={styles.actions}>
-        <Button label="Use this ✓" onPress={onAccept} size="sm" disabled={loading} />
+        <Button label="Use this" onPress={onAccept} size="sm" disabled={loading} />
         <Button label="Keep mine" onPress={onReject} size="sm" variant="secondary" disabled={loading} />
       </View>
     </View>

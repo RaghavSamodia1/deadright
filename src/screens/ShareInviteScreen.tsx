@@ -28,7 +28,7 @@ export function ShareInviteScreen({ navigation, route }: any) {
 
   const share = () =>
     Share.share({
-      message: `Join ${name} on DeadRight 🔥\n\nInvite code: ${code}\n\nOpen the app, tap "I have an invite code" and enter it.`,
+      message: `Join ${name} on DeadRight\n\nInvite code: ${code}\n\nOpen the app, tap "I have an invite code" and enter it.`,
     });
 
   return (

@@ -69,7 +69,7 @@ export function FriendProfileScreen({ navigation, route }: any) {
           <Text style={[styles.h2hNum, { color: colors.semantic.loss }]}>{h2h.losses} them</Text>
         </View>
 
-        <Button label="Call them out 🔥" onPress={() => navigation.navigate('CreateBet')} fullWidth style={styles.cta} />
+        <Button label="Call them out" onPress={() => navigation.navigate('CreateBet')} fullWidth style={styles.cta} />
       </ScrollView>
 
       <ActionSheet
@@ -78,7 +78,7 @@ export function FriendProfileScreen({ navigation, route }: any) {
         title={handle}
         options={[
           {
-            label: `🚫  Block ${handle}`,
+            label: ` Block ${handle}`,
             destructive: true,
             onPress: async () => {
               if (!person?.id) return;

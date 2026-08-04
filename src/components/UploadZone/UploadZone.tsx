@@ -21,7 +21,7 @@ export function UploadZone({ onPick, items = [], onRemove, hint = 'Tap to add ph
   return (
     <View style={[styles.wrap, style]}>
       <Pressable onPress={onPick} style={styles.zone} accessibilityRole="button" accessibilityLabel="Add evidence">
-        <Text style={styles.icon}>📷</Text>
+        <Text style={styles.icon}></Text>
         <Text style={styles.hint}>{hint}</Text>
       </Pressable>
 

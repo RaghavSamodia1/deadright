@@ -6,6 +6,7 @@ import { Avatar } from '../Avatar/Avatar';
 import { StatusChip, BetStatus } from '../StatusChip/StatusChip';
 import { SideBar } from '../SideBar/SideBar';
 import { Timer } from '../Timer/Timer';
+import { Icon } from '../Icon/Icon';
 
 export interface BetCardData {
   id: string;
@@ -93,9 +94,10 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Text style={[styles.meta, { color: metaColor }]}>
-          👥 {bet.participantCount}
-        </Text>
+        <View style={styles.metaGroup}>
+          <Icon name="users" size={13} color={metaColor} strokeWidth={2} />
+          <Text style={[styles.meta, { color: metaColor }]}>{bet.participantCount}</Text>
+        </View>
         {bet.stake && (
           <>
             <View style={styles.dot} />
@@ -157,4 +159,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border.default,
   },
   timer: { marginLeft: 'auto' },
+  metaGroup: { flexDirection: 'row', alignItems: 'center', gap: 4 },
 });

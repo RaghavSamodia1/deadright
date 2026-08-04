@@ -2,9 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
 import { Button } from '../Button/Button';
+import { Icon, type IconName } from '../Icon/Icon';
 
 interface EmptyStateProps {
-  emoji: string;
+  /** Drawn icon rather than an emoji — see components/Icon. */
+  icon: IconName;
   /** Accent colour for the illustration halo */
   tint?: string;
   title: string;
@@ -17,7 +19,7 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({
-  emoji,
+  icon,
   tint = colors.brand.flame,
   title,
   body,
@@ -30,7 +32,7 @@ export function EmptyState({
   return (
     <View style={[styles.container, style]}>
       <View style={[styles.halo, { backgroundColor: hexWithAlpha(tint, 0.12) }]}>
-        <Text style={styles.emoji}>{emoji}</Text>
+        <Icon name={icon} size={40} color={colors.text.tertiary} strokeWidth={1.6} />
       </View>
 
       <View style={styles.textBlock}>
@@ -74,7 +76,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emoji: { fontSize: 44 },
+
   textBlock: {
     alignItems: 'center',
     gap: spacing[2],

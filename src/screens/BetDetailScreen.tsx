@@ -24,6 +24,7 @@ import { useRealtime } from '../hooks/useRealtime';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
 import { formatMoney } from '../lib/money';
+import { Icon } from '../components';
 
 // V2-04 Bet Detail (design-v2.md §5) — BetCard + stat strip + timeline + action.
 export function BetDetailScreen({ navigation, route }: any) {
@@ -131,7 +132,7 @@ export function BetDetailScreen({ navigation, route }: any) {
         onBack={() => navigation.goBack()}
         rightActions={[
           {
-            icon: <Text style={styles.icon}>↗</Text>,
+            icon: <Icon name="external" size={19} color={colors.text.secondary} strokeWidth={1.9} />,
             onPress: () => navigation.navigate('ShareInvite', { id: bet.id }),
             accessibilityLabel: 'Share bet',
           },
@@ -177,7 +178,7 @@ export function BetDetailScreen({ navigation, route }: any) {
               fullWidth
             />
             <Button
-              label="Dispute it ⚖️"
+              label="Dispute it"
               onPress={() => setDisputeOpen(true)}
               variant="destructive"
               fullWidth
@@ -287,7 +288,7 @@ function describeEvent(e: any, myUserId?: string | null, isOrdinal = false): str
       return isOrdinal
         ? `${who} locked in a ranking`
         : `${who} joined Side ${String(e.payload?.side ?? '').toUpperCase()}`;
-    case 'side_switched': return `${who} switched sides 👀`;
+    case 'side_switched': return `${who} switched sides`;
     case 'went_live': return 'It kicked off — live now';
     case 'deadline_passed': return 'Deadline passed — needs resolving';
     case 'outcome_proposed': return `${who} proposed the outcome`;

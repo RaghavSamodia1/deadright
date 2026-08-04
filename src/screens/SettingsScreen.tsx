@@ -40,15 +40,15 @@ export function SettingsScreen({ navigation }: any) {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <SettingsSection title="Account">
-          <SettingsRow icon="👤" label="Profile" onPress={() => navigation.navigate('ProfileEdit')} />
-          <SettingsRow icon="🔔" label="Notifications" onPress={() => navigation.navigate('NotificationPrefs')} />
-          <SettingsRow icon="🔒" label="Privacy" onPress={() => navigation.navigate('Privacy')} />
-          <SettingsRow icon="🚫" label="Blocked users" onPress={() => navigation.navigate('BlockedUsers')} />
+          <SettingsRow icon="person" label="Profile" onPress={() => navigation.navigate('ProfileEdit')} />
+          <SettingsRow icon="bell" label="Notifications" onPress={() => navigation.navigate('NotificationPrefs')} />
+          <SettingsRow icon="lock" label="Privacy" onPress={() => navigation.navigate('Privacy')} />
+          <SettingsRow icon="ban" label="Blocked users" onPress={() => navigation.navigate('BlockedUsers')} />
         </SettingsSection>
 
         <SettingsSection title="Bets & Ledger">
           <SettingsRow
-            icon="⚖️"
+            icon="scales"
             label="Default resolution"
             value={settings.default_resolution === 'group_vote' ? 'Group vote' : 'Mutual'}
             onPress={async () => {
@@ -58,7 +58,7 @@ export function SettingsScreen({ navigation }: any) {
             }}
           />
           <SettingsRow
-            icon="💷"
+            icon="coin"
             label="Currency"
             value={CURRENCY_LABEL[settings.currency] ?? settings.currency}
             onPress={async () => {
@@ -69,14 +69,14 @@ export function SettingsScreen({ navigation }: any) {
             }}
           />
           <SettingsRow
-            icon="🔄"
+            icon="refresh"
             label="Auto-settle"
             toggle
             toggleValue={autoSettle}
             onToggle={toggleAutoSettle}
           />
           <SettingsRow
-            icon="🍪"
+            icon="jar"
             label="Cookie Jar defaults"
             value={`Cap $${(settings.jar_cap_cents / 100).toFixed(0)}`}
             onPress={() => navigation.navigate('JarRules')}
@@ -84,40 +84,40 @@ export function SettingsScreen({ navigation }: any) {
         </SettingsSection>
 
         <SettingsSection title="Appearance">
-          <SettingsRow icon="🌙" label="Theme" value="Dark" showChevron={false} />
+          <SettingsRow icon="moon" label="Theme" value="Dark" showChevron={false} />
         </SettingsSection>
 
         <SettingsSection title="About">
-          <SettingsRow icon="❤️" label="Rate DeadRight" onPress={() => {}} />
-          <SettingsRow icon="📤" label="Share the app" onPress={() => {}} />
+          <SettingsRow icon="heart" label="Rate DeadRight" onPress={() => {}} />
+          <SettingsRow icon="share" label="Share the app" onPress={() => {}} />
           {/* Both were no-ops. The App Store and Play both require a reachable
               privacy policy, and a dead row is worse than no row. */}
           <SettingsRow
-            icon="📄"
+            icon="doc"
             label="Privacy Policy"
             onPress={() => Linking.openURL(links.privacy)}
           />
           <SettingsRow
-            icon="📃"
+            icon="rules"
             label="Terms of Service"
             onPress={() => Linking.openURL(links.terms)}
           />
-          <SettingsRow icon="ℹ️" label="Version" value="1.0.0" showChevron={false} />
+          <SettingsRow icon="info" label="Version" value="1.0.0" showChevron={false} />
         </SettingsSection>
 
         <SettingsSection title="Danger Zone">
           {!demoMode && (
-            <SettingsRow icon="🚪" label="Sign out" onPress={() => signOut()} />
+            <SettingsRow icon="exit" label="Sign out" onPress={() => signOut()} />
           )}
           <SettingsRow
-            icon="🗑️"
+            icon="trash"
             label="Delete account"
             destructive
             onPress={() => navigation.navigate('DeleteAccount')}
           />
         </SettingsSection>
 
-        <Text style={styles.footer}>DeadRight · Your word is your bond. 🔥</Text>
+        <Text style={styles.footer}>DeadRight · Your word is your bond.</Text>
       </ScrollView>
     </ScreenBackground>
   );

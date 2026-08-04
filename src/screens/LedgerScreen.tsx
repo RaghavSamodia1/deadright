@@ -82,7 +82,7 @@ export function LedgerScreen({ navigation }: any) {
           <BentoTile
             size="hero"
             tone="mint"
-            emoji="💰"
+            icon="coin"
             value={money(netBalance)}
             label="Net this season"
             caption="All bookkeeping — no real money"

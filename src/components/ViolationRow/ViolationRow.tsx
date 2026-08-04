@@ -24,7 +24,7 @@ export function ViolationRow({ member, rule, amount, timestamp, ownedUp = false,
       <View style={styles.body}>
         <View style={styles.titleRow}>
           <Text style={styles.handle}>{member.handle}</Text>
-          {ownedUp && <Text style={styles.halo}>😇 owned up</Text>}
+          {ownedUp && <Text style={styles.halo}>owned up</Text>}
         </View>
         <Text style={styles.meta}>
           {rule} · {timestamp}

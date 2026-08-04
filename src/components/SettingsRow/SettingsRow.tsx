@@ -2,9 +2,10 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
 import { Toggle } from '../Toggle/Toggle';
+import { Icon, type IconName } from '../Icon/Icon';
 
 interface SettingsRowProps {
-  icon?: string; // emoji or glyph
+  icon?: IconName;
   label: string;
   /** Right-side value text — "GBP £", "Mutual" */
   value?: string;
@@ -42,7 +43,7 @@ export function SettingsRow({
     >
       {icon && (
         <View style={styles.iconBox}>
-          <Text style={styles.icon}>{icon}</Text>
+          <Icon name={icon} size={18} color={colors.text.secondary} strokeWidth={1.9} />
         </View>
       )}
 

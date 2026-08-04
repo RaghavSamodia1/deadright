@@ -13,8 +13,8 @@ import { getBet } from '../api/bets';
 // an outcome the model cannot represent than to record the wrong one.
 type Outcome = 'won' | 'lost';
 const OPTS: { value: Outcome; label: string }[] = [
-  { value: 'won', label: '✅ I was right' },
-  { value: 'lost', label: '❌ They were right' },
+  { value: 'won', label: 'I was right' },
+  { value: 'lost', label: 'They were right' },
 ];
 
 // Resolution — propose the outcome. Both sides must agree (agree_outcome RPC).

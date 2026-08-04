@@ -45,8 +45,8 @@ export function SideSelectionScreen({ navigation, route }: any) {
       <View style={styles.root}>
         <Text style={styles.statement}>"{title}"</Text>
         <View style={styles.options}>
-          <Option value="a" label="YES 👍" sub="You’re backing the call" color={colors.side.a} />
-          <Option value="b" label="NO 👎" sub="You’re fading it" color={colors.side.b} />
+          <Option value="a" label="YES" sub="You’re backing the call" color={colors.side.a} />
+          <Option value="b" label="NO" sub="You’re fading it" color={colors.side.b} />
         </View>
         <View style={styles.footer}>
           <Button
@@ -57,7 +57,7 @@ export function SideSelectionScreen({ navigation, route }: any) {
             fullWidth
           />
           {error && <Text style={styles.error}>{error.message}</Text>}
-          <Text style={styles.warn}>Once locked, you can’t switch — but everyone sees if you try 👀</Text>
+          <Text style={styles.warn}>Once locked, you can’t switch — but everyone sees if you try</Text>
         </View>
       </View>
     </ScreenBackground>

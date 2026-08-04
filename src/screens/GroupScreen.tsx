@@ -17,6 +17,7 @@ import { useQuery } from '../hooks/useQuery';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
 import { plural } from '../lib/plural';
+import { Icon } from '../components';
 
 // Group detail — members, the group's Cookie Jar, and its open bets.
 export function GroupScreen({ navigation, route }: any) {
@@ -60,7 +61,7 @@ export function GroupScreen({ navigation, route }: any) {
         onBack={() => navigation.goBack()}
         rightActions={[
           {
-            icon: <Text style={styles.icon}>＋</Text>,
+            icon: <Icon name="plus" size={20} color={colors.text.secondary} strokeWidth={2} />,
             onPress: () =>
               navigation.navigate('ShareInvite', { name, code: group?.invite_code }),
             accessibilityLabel: 'Invite',
@@ -82,7 +83,7 @@ export function GroupScreen({ navigation, route }: any) {
               gap, so it lines up with the column beside it. wide (150) left the
               column overhanging by ~76pt. */}
           <BentoTile
-            size="hero" tone="amber" emoji="🍪"
+            size="hero" tone="amber" icon="jar"
             value={`$${(jar.totalCents / 100).toFixed(2)}`}
             label={`${jar.violations.length} ${jar.violations.length === 1 ? 'violation' : 'violations'}`}
             caption="Open the jar →"
@@ -115,7 +116,7 @@ export function GroupScreen({ navigation, route }: any) {
           style={styles.cta}
         />
         <Button
-          label="Start a party pool 🎉"
+          label="Start a party pool"
           onPress={() => navigation.navigate('CreatePool', { groupId })}
           variant="secondary"
           fullWidth

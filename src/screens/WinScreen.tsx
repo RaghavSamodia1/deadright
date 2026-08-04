@@ -41,7 +41,7 @@ export function WinScreen({ navigation, route }: any) {
       <View style={styles.root}>
         <View style={styles.center}>
           <Stamp label="CALLED IT" color={colors.text.inverse} rotate={-12} fontSize={60} />
-          <Text style={styles.emoji}>🔥</Text>
+          <Text style={styles.emoji}></Text>
           <Text style={styles.sub}>You were dead right.</Text>
           {cred !== null && (
             <View style={styles.credPill}>
@@ -52,7 +52,7 @@ export function WinScreen({ navigation, route }: any) {
           )}
         </View>
         <View style={styles.footer}>
-          <Button label="Rub it in 😏" onPress={() => navigation.replace('ShareInvite')} variant="secondary" fullWidth />
+          <Button label="Rub it in" onPress={() => navigation.replace('ShareInvite')} variant="secondary" fullWidth />
           <Button label="Nice" onPress={() => navigation.popToTop?.() ?? navigation.navigate('Root')} fullWidth />
 
           {/* The backend allows undoing a resolution for 5 minutes; without

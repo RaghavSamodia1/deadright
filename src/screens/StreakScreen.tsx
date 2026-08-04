@@ -14,7 +14,7 @@ export function StreakScreen({ navigation, route }: any) {
     <ScreenBackground tone="flame">
       <View style={styles.root}>
         <View style={styles.center}>
-          <Text style={styles.emoji}>🔥</Text>
+          <Text style={styles.emoji}></Text>
           <Text style={styles.count}>{streak}×</Text>
           <Text style={styles.title}>On a heater</Text>
           <Text style={styles.sub}>{streak} calls right in a row. Don’t quit while you’re ahead.</Text>

@@ -30,7 +30,7 @@ export function AllJarsScreen({ navigation }: any) {
           </View>
         ) : jars.length === 0 ? (
           <EmptyState
-            emoji="🍪"
+            icon="jar"
             title={loading ? 'Loading…' : 'No jars yet'}
             body="Jars live inside groups. Make or join one, then set the rules everyone has to keep."
           />

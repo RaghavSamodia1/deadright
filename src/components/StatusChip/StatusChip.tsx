@@ -45,7 +45,7 @@ const STATUS_CONFIG: Record<
     text: colors.semantic.awaiting,
   },
   win: {
-    label: 'YOU WON 🏆',
+    label: 'YOU WON',
     bg: 'rgba(99,185,114,0.2)',
     text: colors.semantic.win,
   },
@@ -55,7 +55,7 @@ const STATUS_CONFIG: Record<
     text: colors.text.tertiary,
   },
   disputed: {
-    label: 'DISPUTED ⚖️',
+    label: 'DISPUTED',
     bg: 'rgba(252,87,78,0.12)',
     text: colors.semantic.disputed,
   },

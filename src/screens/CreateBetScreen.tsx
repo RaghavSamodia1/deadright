@@ -37,11 +37,11 @@ const DEADLINE_OPTS: { value: Deadline; label: string }[] = [
 ];
 type Stake = 'brag' | 'coffee' | 'beer' | 'money' | 'custom';
 const STAKE_OPTS: { value: Stake; label: string }[] = [
-  { value: 'brag', label: '🏆 Bragging rights' },
-  { value: 'coffee', label: '☕ Coffee' },
-  { value: 'beer', label: '🍺 Round' },
-  { value: 'money', label: '💷 A tenner' },
-  { value: 'custom', label: '✏️ Custom amount' },
+  { value: 'brag', label: 'Bragging rights' },
+  { value: 'coffee', label: 'Coffee' },
+  { value: 'beer', label: 'Round' },
+  { value: 'money', label: 'A tenner' },
+  { value: 'custom', label: 'Custom amount' },
 ];
 /** The preset money option. Custom overrides this with whatever they type. */
 const TENNER_CENTS = 1000;
@@ -331,7 +331,7 @@ export function CreateBetScreen({ navigation }: any) {
       <View style={styles.footer}>
         <Button label={step === 0 ? 'Cancel' : 'Back'} onPress={back} variant="ghost" />
         <Button
-          label={step === STEPS.length - 1 ? 'Send it 🔥' : 'Next'}
+          label={step === STEPS.length - 1 ? 'Send it' : 'Next'}
           onPress={next}
           disabled={!canNext}
           loading={publishing}

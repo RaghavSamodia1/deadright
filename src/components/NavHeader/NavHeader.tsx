@@ -70,7 +70,7 @@ export function NavHeader({
           )}
           {variant === 'home' && (
             <Text style={styles.brandName}>
-              DeadRight<Text style={styles.brandEmoji}> 🔥</Text>
+              DeadRight<Text style={styles.brandEmoji}></Text>
             </Text>
           )}
         </View>

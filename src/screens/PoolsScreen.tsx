@@ -32,7 +32,7 @@ export function PoolsScreen({ navigation }: any) {
           </View>
         ) : pools.length === 0 ? (
           <EmptyState
-            emoji="🎉"
+            icon="party"
             title={loading ? 'Loading…' : 'No pools yet'}
             body="A pool is one link you send round a room. Everyone picks from their phone — no app, no signup."
           />
@@ -53,7 +53,7 @@ export function PoolsScreen({ navigation }: any) {
         )}
 
         <Button
-          label="Start a pool 🎉"
+          label="Start a pool"
           onPress={() => navigation.navigate('CreatePool')}
           fullWidth
           style={styles.cta}

@@ -98,7 +98,7 @@ export function AddViolationSheet({ visible, onDismiss, groupId }: AddViolationS
 
       <Text style={styles.label}>Which rule?</Text>
       {rules.length === 0 ? (
-        <Text style={styles.note}>No rules yet — add one from the 📜 rules screen first.</Text>
+        <Text style={styles.note}>No rules yet — add one from the rules screen first.</Text>
       ) : (
         <View style={styles.ruleWrap}>
           {rules.map((r: any) => (

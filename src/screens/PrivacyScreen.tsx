@@ -35,13 +35,13 @@ export function PrivacyScreen({ navigation }: any) {
       <NavHeader variant="back" title="Privacy" onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.content}>
         <SettingsSection title="Visibility">
-          <SettingsRow icon="🔒" label="Private profile" toggle toggleValue={value('private_profile')} onToggle={set('private_profile')} />
-          <SettingsRow icon="📒" label="Show my ledger to groups" toggle toggleValue={value('show_ledger')} onToggle={set('show_ledger')} />
-          <SettingsRow icon="🔍" label="Discoverable by handle" toggle toggleValue={value('discoverable')} onToggle={set('discoverable')} />
+          <SettingsRow icon="lock" label="Private profile" toggle toggleValue={value('private_profile')} onToggle={set('private_profile')} />
+          <SettingsRow icon="ledger" label="Show my ledger to groups" toggle toggleValue={value('show_ledger')} onToggle={set('show_ledger')} />
+          <SettingsRow icon="search" label="Discoverable by handle" toggle toggleValue={value('discoverable')} onToggle={set('discoverable')} />
         </SettingsSection>
 
         <SettingsSection title="Safety">
-          <SettingsRow icon="🚫" label="Blocked users" onPress={() => navigation.navigate('BlockedUsers')} />
+          <SettingsRow icon="ban" label="Blocked users" onPress={() => navigation.navigate('BlockedUsers')} />
         </SettingsSection>
 
         <Text style={styles.note}>

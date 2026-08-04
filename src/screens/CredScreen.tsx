@@ -90,7 +90,7 @@ export function CredScreen({ navigation }: any) {
         <Text style={styles.section}>RECENT CHANGES</Text>
         {history.length === 0 ? (
           <EmptyState
-            emoji="📈"
+            icon="chart"
             title="Nothing yet"
             body="Settle a few bets and your Cred history shows up here."
           />

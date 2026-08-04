@@ -17,7 +17,7 @@ const TABS: Array<{ name: TabName; label: string; icon: string }> = [
   { name: 'feed', label: 'Feed', icon: '⌂' },
   { name: 'search', label: 'Search', icon: '⌕' },
   { name: 'create', label: '', icon: '+' },
-  { name: 'alerts', label: 'Alerts', icon: '🔔' },
+  { name: 'alerts', label: 'Alerts', icon: 'bell' },
   { name: 'profile', label: 'Profile', icon: '◉' },
 ];
 

@@ -86,7 +86,7 @@ export function FeedScreen({ navigation }: any) {
         }
       >
         {shown.length === 0 ? (
-          <EmptyState emoji="🎯" title="No bets here" body="Nothing matches this filter yet." />
+          <EmptyState icon="target" title="No bets here" body="Nothing matches this filter yet." />
         ) : (
           shown.map((bet) => (
             <BetCard key={bet.id} bet={bet} onPress={(b) => navigation.navigate('BetDetail', { id: b.id })} />

@@ -26,7 +26,7 @@ export function DeleteAccountScreen({ navigation }: any) {
       <View style={styles.root}>
         <View style={styles.body}>
           <View style={styles.warnBox}>
-            <Text style={styles.warnTitle}>⚠️ This can’t be undone</Text>
+            <Text style={styles.warnTitle}>This can’t be undone</Text>
             <Text style={styles.warnText}>
               Your bets, Cred score, ledger history and groups you own will be permanently removed.
             </Text>

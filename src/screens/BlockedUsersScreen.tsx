@@ -15,7 +15,7 @@ export function BlockedUsersScreen({ navigation }: any) {
       <ScrollView contentContainerStyle={styles.content}>
         {blocked.length === 0 ? (
           <EmptyState
-            emoji="🚫"
+            icon="ban"
             title="No one’s blocked"
             body="People you block can’t bet you, add you to groups, or see your profile."
           />

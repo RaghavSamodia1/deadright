@@ -21,7 +21,7 @@ export function JarCard({ total, groupName, contributionCount, capProgress, capL
   return (
     <View style={[styles.card, style]}>
       <View style={styles.topRow}>
-        <Text style={styles.emoji}>🍪</Text>
+        <Text style={styles.emoji}></Text>
         <View style={styles.groupChip}>
           <Text style={styles.groupLabel}>{groupName.toUpperCase()}</Text>
         </View>

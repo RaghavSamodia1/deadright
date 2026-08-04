@@ -16,6 +16,7 @@ import { getFeed } from '../api/bets';
 import { useQuery } from '../hooks/useQuery';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
+import { Icon } from '../components';
 
 type Tab = 'all' | 'wins' | 'losses';
 
@@ -90,7 +91,7 @@ export function ProfileScreen({ navigation }: any) {
         onBack={() => navigation.goBack()}
         rightActions={[
           {
-            icon: <Text style={styles.icon}>⚙</Text>,
+            icon: <Icon name="gear" size={20} color={colors.text.secondary} strokeWidth={1.9} />,
             onPress: () => navigation.navigate('Settings'),
             accessibilityLabel: 'Settings',
           },

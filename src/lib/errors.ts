@@ -30,6 +30,8 @@ const MESSAGES: Record<string, string> = {
   sides_locked: 'Sides are locked on this bet.',
   undo_window_closed: 'Too late to undo that one.',
   unknown_option: 'That option isn’t part of this bet.',
+  wrong_password:
+    'That email already has an account, and this password doesn’t open it. Get in with a code instead.',
 };
 
 /** Looks like a raised code rather than prose: snake_case, no spaces. */

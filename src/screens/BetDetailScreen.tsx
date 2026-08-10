@@ -140,7 +140,9 @@ export function BetDetailScreen({ navigation, route }: any) {
         ]}
       />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets>
         <BetCard bet={bet} onPress={() => {}} />
 
         <StatsRow stats={stats} style={styles.statsRow} />

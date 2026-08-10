@@ -202,7 +202,8 @@ export function CreateBetScreen({ navigation }: any) {
       <NavHeader variant="modal" title={STEPS[step]} onBack={() => navigation.goBack()} />
       <ProgressDots total={STEPS.length} current={step} style={styles.dots} />
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets>
         {step === 0 && (
           <>
             <Text style={styles.q}>What's the bet?</Text>

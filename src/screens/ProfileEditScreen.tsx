@@ -54,7 +54,8 @@ export function ProfileEditScreen({ navigation }: any) {
           },
         ]}
       />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets>
         <Pressable style={styles.avatarWrap}>
           <Avatar size="xl" initials={handle.slice(0, 2).toUpperCase()} tint="a" />
           <Text style={styles.change}>Change photo</Text>

@@ -58,7 +58,9 @@ export function JarRulesScreen({ navigation, route }: any) {
     <ScreenBackground tone="base">
       <NavHeader variant="back" title="Jar Rules" onBack={() => navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets>
         <Text style={styles.intro}>
           Break a rule, pay the jar. Anyone can propose a rule; group admins remove them.
           Amounts are ledger-only — like every bet.

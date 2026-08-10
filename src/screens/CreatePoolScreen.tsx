@@ -40,7 +40,8 @@ export function CreatePoolScreen({ navigation, route }: any) {
   return (
     <ScreenBackground tone="base" glow={false}>
       <NavHeader variant="modal" title="New party pool" onBack={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets>
         <Text style={styles.blurb}>
           Everyone at the party picks from their phone — no app, no signup. You just share a link.
         </Text>

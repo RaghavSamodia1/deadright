@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Linking } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, TextInput, Button, SegmentedControl } from '../components';
-import { sendOtp, signInOrSignUp } from '../api/auth';
+import { sendOtp, sendEmailOtp, signInOrSignUp } from '../api/auth';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 import { links } from '../lib/links';
@@ -23,6 +23,12 @@ export function SignUpScreen({ navigation }: any) {
 
   const { run: sendPhone, loading: sendingPhone, error: phoneError } = useAction(sendOtp);
   const { run: emailAuth, loading: authing, error: emailError } = useAction(signInOrSignUp);
+  const { run: mailCode, loading: mailingCode } = useAction(sendEmailOtp);
+
+  // Set when the address already has an account this password doesn't open —
+  // usually one created by code before password auth existed, so there is no
+  // password to get right. Offers the way in that does work.
+  const stuck = emailError ? /wrong_password/.test(String(emailError.message)) : false;
 
   const isEmail = method === 'email';
   const valid = isEmail
@@ -52,9 +58,19 @@ export function SignUpScreen({ navigation }: any) {
   return (
     <ScreenBackground tone="base" glow={false}>
       <NavHeader variant="modal" onBack={() => navigation.goBack()} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      {/* A ScrollView rather than KeyboardAvoidingView. With behavior="padding"
+          the keyboard shrank this view while `body` kept flex:1, so its content
+          overflowed the box and painted straight over the footer — the password
+          field landed on top of the Continue button. Scrolling lets the content
+          keep its height, and automaticallyAdjustKeyboardInsets does the
+          keyboard inset natively (Android has adjustResize in the manifest). */}
+      <ScrollView
         style={styles.root}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+        showsVerticalScrollIndicator={false}
       >
         <View style={styles.body}>
           <Text style={styles.title}>
@@ -121,6 +137,19 @@ export function SignUpScreen({ navigation }: any) {
             loading={loading}
             fullWidth
           />
+          {stuck && (
+            <Button
+              label={mailingCode ? 'Sending…' : 'Email me a code instead'}
+              variant="secondary"
+              fullWidth
+              onPress={async () => {
+                const ok = await mailCode(email.trim().toLowerCase());
+                if (ok !== null) {
+                  navigation.navigate('OTP', { phone: email.trim().toLowerCase(), method: 'email' });
+                }
+              }}
+            />
+          )}
           <Text style={styles.legal}>
             By continuing you agree to our{' '}
             <Text style={styles.legalLink} onPress={() => Linking.openURL(links.terms)}>
@@ -133,14 +162,19 @@ export function SignUpScreen({ navigation }: any) {
             .
           </Text>
         </View>
-      </KeyboardAvoidingView>
+      </ScrollView>
     </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, padding: spacing.screenGutter },
-  body: { flex: 1, gap: spacing[4], paddingTop: spacing[6] },
+  root: { flex: 1 },
+  content: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    padding: spacing.screenGutter,
+  },
+  body: { gap: spacing[4], paddingTop: spacing[6] },
   title: {
     fontFamily: 'Barlow-Black',
     fontSize: 30,
@@ -154,7 +188,7 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     marginBottom: spacing[2],
   },
-  footer: { gap: spacing[3], paddingBottom: spacing[6] },
+  footer: { gap: spacing[3], paddingTop: spacing[6], paddingBottom: spacing[6] },
   legalLink: {
     color: colors.text.link,
     textDecorationLine: 'underline',

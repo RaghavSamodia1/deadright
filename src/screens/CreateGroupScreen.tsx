@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, TextInput, ChoiceChip, Button } from '../components';
 import { createGroup } from '../api/groups';
@@ -29,7 +29,14 @@ export function CreateGroupScreen({ navigation }: any) {
   return (
     <ScreenBackground tone="base" glow={false}>
       <NavHeader variant="modal" title="New group" onBack={() => navigation.goBack()} />
-      <View style={styles.root}>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.body}>
           <Text style={styles.q}>Pick an icon</Text>
           <View style={styles.emojiGrid}>
@@ -55,14 +62,19 @@ export function CreateGroupScreen({ navigation }: any) {
           fullWidth
           style={styles.cta}
         />
-      </View>
+      </ScrollView>
     </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, padding: spacing.screenGutter },
-  body: { flex: 1, gap: spacing[4], paddingTop: spacing[4] },
+  root: { flex: 1 },
+  content: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    padding: spacing.screenGutter,
+  },
+  body: { gap: spacing[4], paddingTop: spacing[4] },
   q: { fontFamily: 'Barlow-SemiBold', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: colors.semantic.awaiting },
   emojiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] },
   emojiChip: { minWidth: 52 },

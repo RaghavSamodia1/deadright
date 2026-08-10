@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, TextInput, AvatarStack, Button } from '../components';
 import { joinGroupByCode } from '../api/groups';
@@ -22,7 +22,14 @@ export function JoinGroupScreen({ navigation }: any) {
   return (
     <ScreenBackground tone="base" glow={false}>
       <NavHeader variant="modal" title="Join a group" onBack={() => navigation.goBack()} />
-      <View style={styles.root}>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.body}>
           <TextInput
             label="Invite code"
@@ -51,14 +58,19 @@ export function JoinGroupScreen({ navigation }: any) {
           fullWidth
           style={styles.cta}
         />
-      </View>
+      </ScrollView>
     </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, padding: spacing.screenGutter },
-  body: { flex: 1, gap: spacing[5], paddingTop: spacing[4] },
+  root: { flex: 1 },
+  content: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    padding: spacing.screenGutter,
+  },
+  body: { gap: spacing[5], paddingTop: spacing[4] },
   preview: {
     alignItems: 'center',
     gap: spacing[2],

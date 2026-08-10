@@ -49,7 +49,18 @@ export async function signInOrSignUp(email: string, password: string): Promise<S
   }
 
   const created = await supabase.auth.signUp({ email: clean, password });
-  if (created.error) throw created.error;
+  if (created.error) {
+    // The address has an account, but signInWithPassword just refused this
+    // password. Almost always that account was made passwordless (email code)
+    // before password auth existed, so there is no password to remember and
+    // retyping cannot help. Signal it so the screen can offer a code instead —
+    // otherwise the two calls contradict each other ("no such login" then
+    // "already registered") and the user has no way through.
+    if (/already registered|already exists|user_already_exists/i.test(created.error.message)) {
+      throw new Error('wrong_password');
+    }
+    throw created.error;
+  }
   if (!created.data.session) {
     throw new Error(
       'Account created — now confirm it from the email Supabase just sent, or ' +

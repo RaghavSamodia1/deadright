@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, OTPInput, Button } from '../components';
 import { verifyOtp, sendOtp, verifyEmailOtp, sendEmailOtp } from '../api/auth';
@@ -32,7 +32,14 @@ export function OTPScreen({ navigation, route }: any) {
   return (
     <ScreenBackground tone="base" glow={false}>
       <NavHeader variant="back" onBack={() => navigation.goBack()} />
-      <View style={styles.root}>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.body}>
           <Text style={styles.title}>Enter the code</Text>
           <Text style={styles.sub}>Sent to {target}</Text>
@@ -53,14 +60,19 @@ export function OTPScreen({ navigation, route }: any) {
           fullWidth
           style={styles.cta}
         />
-      </View>
+      </ScrollView>
     </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, padding: spacing.screenGutter },
-  body: { flex: 1, gap: spacing[4], paddingTop: spacing[6], alignItems: 'center' },
+  root: { flex: 1 },
+  content: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    padding: spacing.screenGutter,
+  },
+  body: { gap: spacing[4], paddingTop: spacing[6], alignItems: 'center' },
   title: {
     fontFamily: 'Barlow-Black',
     fontSize: 30,

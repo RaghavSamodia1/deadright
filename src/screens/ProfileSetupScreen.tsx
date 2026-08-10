@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, Avatar, TextInput, Button } from '../components';
 import { claimHandle } from '../api/auth';
@@ -27,7 +27,14 @@ export function ProfileSetupScreen({ navigation }: any) {
   return (
     <ScreenBackground tone="base" glow={false}>
       <NavHeader variant="back" title="Set up profile" onBack={() => navigation.goBack()} />
-      <View style={styles.root}>
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.body}>
           <Pressable style={styles.avatarWrap} accessibilityLabel="Add photo">
             <Avatar size="xl" initials={handle.slice(0, 2).toUpperCase() || '🙂'} tint="a" />
@@ -55,14 +62,19 @@ export function ProfileSetupScreen({ navigation }: any) {
           fullWidth
           style={styles.cta}
         />
-      </View>
+      </ScrollView>
     </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, padding: spacing.screenGutter },
-  body: { flex: 1, gap: spacing[4], paddingTop: spacing[5] },
+  root: { flex: 1 },
+  content: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    padding: spacing.screenGutter,
+  },
+  body: { gap: spacing[4], paddingTop: spacing[5] },
   avatarWrap: { alignSelf: 'center', marginBottom: spacing[4] },
   badge: {
     position: 'absolute',

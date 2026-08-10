@@ -75,7 +75,8 @@ export function SearchScreen({ navigation }: any) {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets>
         {query.trim().length === 0 ? (
           <EmptyState
             icon="search"

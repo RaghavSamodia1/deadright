@@ -61,7 +61,8 @@ export function ResolutionScreen({ navigation, route }: any) {
   return (
     <ScreenBackground tone="base" glow={false}>
       <NavHeader variant="back" title="Resolve" onBack={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets>
         <Text style={styles.statement}>"{title}"</Text>
 
         <Banner

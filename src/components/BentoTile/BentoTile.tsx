@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle, useWindowDimensions } from 'react-native';
+import { usePressScale, AnimatedPressable } from '../Motion/usePressScale';
+import { CountUp } from '../Motion/CountUp';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../tokens';
 import { Icon, type IconName } from '../Icon/Icon';
@@ -12,6 +14,13 @@ export type TileTone =
 interface BentoTileProps {
   size?: TileSize;
   tone?: TileTone;
+  /**
+   * Counts the value up on mount instead of printing it. For the figures that
+   * are the point of the tile — what's in the jar, what your cred is — where
+   * arriving at a number reads differently from simply showing one.
+   */
+  countUp?: number;
+  formatValue?: (n: number) => string;
   /** Big number/glyph — "$23.50", "847", "+" */
   value?: string;
   /** Overline label — "COOKIE JAR", "LEDGER →" */
@@ -122,6 +131,8 @@ export function BentoTile({
   size = 'stat',
   tone = 'navy',
   value,
+  countUp,
+  formatValue,
   label,
   caption,
   emoji,
@@ -158,6 +169,9 @@ export function BentoTile({
 
   const a11yLabel = [label, value, caption].filter(Boolean).join(', ');
 
+  // Hooks can't sit below the static early-return further down.
+  const press = usePressScale(0.97);
+
   const iconNode = icon ? (
     <Icon
       name={icon}
@@ -169,12 +183,21 @@ export function BentoTile({
     <Text style={isLarge ? styles.emojiLg : styles.emojiSm}>{emoji}</Text>
   ) : null;
 
+  const valueStyle = [
+    styles.value,
+    { color: t.text, fontSize: valueSize, lineHeight: valueSize * 1.08 },
+  ];
+
   const valueNode =
-    value != null && VALUE_SIZE[size] > 0 ? (
-      <Text
-        style={[styles.value, { color: t.text, fontSize: valueSize, lineHeight: valueSize * 1.08 }]}
+    countUp != null && VALUE_SIZE[size] > 0 ? (
+      <CountUp
+        value={countUp}
+        format={formatValue ?? ((n) => String(Math.round(n)))}
+        style={valueStyle}
         numberOfLines={1}
-      >
+      />
+    ) : value != null && VALUE_SIZE[size] > 0 ? (
+      <Text style={valueStyle} numberOfLines={1}>
         {value}
       </Text>
     ) : null;
@@ -232,14 +255,15 @@ export function BentoTile({
   }
 
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={handlePress}
-      style={({ pressed }) => [...tileStyle, { opacity: pressed ? 0.85 : 1 }]}
+      {...press.handlers}
+      style={[...tileStyle, press.style]}
       accessibilityRole="button"
       accessibilityLabel={a11yLabel}
     >
       {body}
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 

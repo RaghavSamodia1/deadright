@@ -6,6 +6,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { colors, spring } from '../../tokens';
+import { CountUp } from '../Motion/CountUp';
 
 interface SideBarProps {
   sideAPercent: number; // 0–100
@@ -51,7 +52,11 @@ export function SideBar({
         <View style={styles.labels}>
           <View style={styles.labelLeft}>
             <Text style={[styles.sideLabel, mutedStyle]}>Side A</Text>
-            <Text style={[styles.pct, { color: ink?.primary ?? colors.side.aLift }]}>{sideAPercent}%</Text>
+            <CountUp
+              value={sideAPercent}
+              format={(n) => `${Math.round(n)}%`}
+              style={[styles.pct, { color: ink?.primary ?? colors.side.aLift }]}
+            />
             {sideACount !== undefined && (
               <Text style={[styles.count, mutedStyle]}>{sideACount} {sideACount === 1 ? 'person' : 'people'}</Text>
             )}
@@ -60,7 +65,11 @@ export function SideBar({
             {sideBCount !== undefined && (
               <Text style={[styles.count, mutedStyle]}>{sideBCount} {sideBCount === 1 ? 'person' : 'people'}</Text>
             )}
-            <Text style={[styles.pct, { color: ink?.primary ?? colors.side.b }]}>{sideBPercent}%</Text>
+            <CountUp
+              value={sideBPercent}
+              format={(n) => `${Math.round(n)}%`}
+              style={[styles.pct, { color: ink?.primary ?? colors.side.b }]}
+            />
             <Text style={[styles.sideLabel, mutedStyle]}>Side B</Text>
           </View>
         </View>

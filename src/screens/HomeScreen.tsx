@@ -6,6 +6,7 @@ import {
   ScreenBackground,
   NavHeader,
   BentoTile,
+  Rise,
   BetCard,
   Icon,
   type BetCardData,
@@ -133,12 +134,14 @@ export function HomeScreen({ navigation }: any) {
         }
       >
         {/* Row 1 — Cookie Jar hero + cred/streak column */}
+        <Rise index={0}>
         <View style={styles.row}>
           <BentoTile
             size="hero"
             tone="amber"
             icon="jar"
-            value={`$${jarTotal.toFixed(2)}`}
+            countUp={jarTotal}
+            formatValue={(n) => `$${n.toFixed(2)}`}
             label={
               jarSummary.weekCount > 0
                 ? `${jarSummary.weekCount} this week`
@@ -158,7 +161,7 @@ export function HomeScreen({ navigation }: any) {
           </BentoTile>
           <View style={styles.col}>
             <BentoTile
-              size="stat" tone="navy" value={`${profile.cred_score}`} label="Cred" caption="Details"
+              size="stat" tone="navy" countUp={profile.cred_score} label="Cred" caption="Details"
               onPress={() => navigation.navigate('Cred')}
             />
             <BentoTile
@@ -169,8 +172,11 @@ export function HomeScreen({ navigation }: any) {
           </View>
         </View>
 
+        </Rise>
+
         {/* Row 2 — Groups takes the large tile: everything in the app lives
             inside one, so it earns more than a third of a strip. */}
+        <Rise index={1}>
         <View style={styles.row}>
           <BentoTile
             size="feature" tone="navy" icon="users"
@@ -191,7 +197,10 @@ export function HomeScreen({ navigation }: any) {
           </View>
         </View>
 
+        </Rise>
+
         {/* Row 3 — the action strip. */}
+        <Rise index={2}>
         <View style={styles.row}>
           <BentoTile
             size="nav" tone="amber" label="New bet" icon="plus"
@@ -206,6 +215,8 @@ export function HomeScreen({ navigation }: any) {
             onPress={() => navigation.navigate('Pools')}
           />
         </View>
+
+        </Rise>
 
         {/* Row 3 — bets, or the first-run path into the social loop */}
         {feedError ? (
@@ -256,12 +267,13 @@ export function HomeScreen({ navigation }: any) {
                 <Text style={styles.sectionAction}>See all</Text>
               </Pressable>
             </View>
-            {bets.map((bet) => (
-              <BetCard
-                key={bet.id}
-                bet={bet}
-                onPress={(b) => navigation.navigate('BetDetail', { id: b.id })}
-              />
+            {bets.map((bet, i) => (
+              <Rise key={bet.id} index={i}>
+                <BetCard
+                  bet={bet}
+                  onPress={(b) => navigation.navigate('BetDetail', { id: b.id })}
+                />
+              </Rise>
             ))}
           </>
         ))}

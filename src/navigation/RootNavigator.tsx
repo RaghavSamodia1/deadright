@@ -82,7 +82,10 @@ export function RootNavigator() {
   return (
     <Stack.Navigator
       initialRouteName={needsProfile ? 'ProfileSetup' : 'Root'}
-      screenOptions={{ headerShown: false }}
+      // Android's native-stack default is a fade-through, iOS pushes from the
+      // right. Same app, two different ideas about where a screen comes from —
+      // pinning it means back always reverses the way forward went.
+      screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
     >
       <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
 

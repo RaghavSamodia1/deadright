@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Text, StyleSheet, TextStyle } from 'react-native';
+import { StyleSheet, TextStyle } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  useReducedMotion,
+  withRepeat,
+  withTiming,
+  withSequence,
+  cancelAnimation,
+} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../tokens';
 
@@ -79,6 +88,32 @@ export function Timer({ deadline, size = 'sm', style, onExpire, ink }: TimerProp
     return () => clearInterval(interval);
   }, [deadline]);
 
+  // Under five minutes the countdown breathes. It is the same signal the colour
+  // already carries, but colour alone is a poor alarm — motion is what catches
+  // the eye on a card the reader has scrolled past twice.
+  const reduced = useReducedMotion();
+  const pulse = useSharedValue(1);
+  const critical = ms > 0 && ms <= 5 * 60000;
+
+  useEffect(() => {
+    if (reduced || !critical) {
+      cancelAnimation(pulse);
+      pulse.value = 1;
+      return;
+    }
+    pulse.value = withRepeat(
+      withSequence(
+        withTiming(0.45, { duration: 620 }),
+        withTiming(1, { duration: 620 }),
+      ),
+      -1,
+      false,
+    );
+    return () => cancelAnimation(pulse);
+  }, [critical, reduced]);
+
+  const pulseStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
+
   const expired = ms <= 0;
   const s = SIZE_MAP[size];
   // Expired reads as a label, not a countdown, so it drops to body size.
@@ -87,15 +122,16 @@ export function Timer({ deadline, size = 'sm', style, onExpire, ink }: TimerProp
   const color = ink ?? getTimerColor(ms);
 
   return (
-    <Text
+    <Animated.Text
       style={[
         styles.text,
         { fontSize, lineHeight, color, fontFamily: expired ? 'Inter-Regular' : 'SpaceMono-Bold' },
         style,
+        pulseStyle,
       ]}
     >
       {formatCountdown(ms)}
-    </Text>
+    </Animated.Text>
   );
 }
 

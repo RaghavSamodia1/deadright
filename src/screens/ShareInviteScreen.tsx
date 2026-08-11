@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Share, StyleSheet } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { links } from '../lib/links';
 import { colors, radius, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, InviteCodeCard, Button } from '../components';
 import { getMyGroups } from '../api/groups';
@@ -43,7 +44,7 @@ export function ShareInviteScreen({ navigation, route }: any) {
             <InviteCodeCard code={code} />
 
             <View style={styles.qr}>
-              <QRCode value={`deadright://join/${code}`} size={168} backgroundColor="#FFFFFF" color="#0A0A0B" />
+              <QRCode value={links.join(code)} size={168} backgroundColor="#FFFFFF" color="#0A0A0B" />
             </View>
             <Text style={styles.qrHint}>Point a camera at this to join</Text>
           </>

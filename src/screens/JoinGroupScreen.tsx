@@ -8,8 +8,11 @@ import { isBackendConfigured } from '../lib/supabase';
 import { humanError } from '../lib/errors';
 
 // Join a group by its 6-char code (join_group_by_code RPC).
-export function JoinGroupScreen({ navigation }: any) {
-  const [code, setCode] = useState('');
+export function JoinGroupScreen({ navigation, route }: any) {
+  // Arrives filled in when the screen was opened by an invite link.
+  const [code, setCode] = useState<string>(
+    (route?.params?.code ?? '').toString().toUpperCase(),
+  );
   const found = code.trim().length === 6;
   const { run: join, loading, error } = useAction(joinGroupByCode);
 

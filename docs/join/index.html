@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Join a group on DeadRight</title>
+<meta name="color-scheme" content="dark">
+<style>
+  :root {
+    --base: #0A0A0B;
+    --surface: #212125;
+    --border: #2A2A2F;
+    --text: #F0F0F0;
+    --muted: #9C9CA3;
+    --amber: #F7C846;
+    --flame: #E2661F;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--base);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  main { width: 100%; max-width: 380px; }
+  .brand {
+    font-weight: 900;
+    font-size: 20px;
+    letter-spacing: -0.4px;
+    color: var(--flame);
+    margin-bottom: 32px;
+  }
+  h1 {
+    font-size: 28px;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    margin: 0 0 10px;
+  }
+  p.sub { color: var(--muted); font-size: 15px; line-height: 1.5; margin: 0 0 24px; }
+  .code-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .code-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 10px;
+  }
+  .code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    /* The trailing letter-spacing would otherwise push it off-centre. */
+    text-indent: 6px;
+  }
+  a.btn, button.btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 0;
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .primary { background: var(--amber); color: #0A0A0B; }
+  .secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .hint { color: var(--muted); font-size: 13px; text-align: center; margin-top: 18px; line-height: 1.5; }
+  .dead { color: var(--muted); }
+</style>
+</head>
+<body>
+<main id="app">
+  <div class="brand">DeadRight</div>
+  <div id="content"></div>
+</main>
+
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  // Accept ?c=<code> and a trailing /<code>, matching how the pool page reads
+  // its token — either link shape works.
+  var code = params.get('c') || location.pathname.split('/').filter(Boolean).pop();
+  if (code && (code === 'join' || code === 'index.html')) code = null;
+
+  var el = document.getElementById('content');
+
+  if (!code) {
+    el.innerHTML =
+      '<h1>No code here</h1>' +
+      '<p class="sub dead">This invite link is missing its group code. ' +
+      'Ask whoever sent it for the six characters, then type them into the app.</p>';
+    return;
+  }
+
+  code = code.toUpperCase();
+
+  el.innerHTML =
+    '<h1>You’ve been invited</h1>' +
+    '<p class="sub">Open DeadRight and this code gets you in. No app yet? ' +
+    'Grab it, then enter the code on the join screen.</p>' +
+    '<div class="code-card">' +
+      '<div class="code-label">Invite code</div>' +
+      '<div class="code">' + code.replace(/[<>&]/g, '') + '</div>' +
+    '</div>' +
+    '<a class="btn primary" id="open">Open in DeadRight</a>' +
+    '<button class="btn secondary" id="copy">Copy code</button>' +
+    '<p class="hint">The button only works if DeadRight is installed. ' +
+    'Otherwise copy the code and enter it after you sign up.</p>';
+
+  document.getElementById('open').href = 'deadright://join/' + encodeURIComponent(code);
+
+  document.getElementById('copy').addEventListener('click', function () {
+    var btn = this;
+    var done = function () {
+      btn.textContent = 'Copied';
+      setTimeout(function () { btn.textContent = 'Copy code'; }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(done, function () {
+        btn.textContent = 'Copy failed — select it above';
+      });
+    } else {
+      btn.textContent = 'Select the code above to copy';
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@ import { View, Text, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
+import type { LinkingOptions } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { AuthProvider } from './src/lib/AuthContext';
@@ -49,13 +50,33 @@ class ErrorBoundary extends React.Component<
   }
 }
 
+/**
+ * Deep links. The app declared scheme "deadright" in app.json from the start
+ * but never handled one, so an invite QR opened the app onto Home at best and
+ * did nothing at all at worst. Both shapes route here: the scheme for phones
+ * that have the app, and the https page for cameras and everyone else.
+ */
+const linking: LinkingOptions<any> = {
+  prefixes: [
+    'deadright://',
+    'https://raghavsamodia1.github.io/deadright',
+  ],
+  config: {
+    screens: {
+      JoinGroup: 'join/:code',
+      PoolDetail: 'p/:id',
+      BetDetail: 'bet/:id',
+    },
+  },
+};
+
 export default function App() {
   return (
     <ErrorBoundary>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
           <AuthProvider>
-            <NavigationContainer theme={navTheme}>
+            <NavigationContainer theme={navTheme} linking={linking}>
               <StatusBar style="light" />
               <RootNavigator />
             </NavigationContainer>

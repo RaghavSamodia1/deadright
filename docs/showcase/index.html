@@ -223,16 +223,8 @@ h1 .flame{color:var(--flame)}
 
 /* The app's own surfaces keep their dark identity and gain a hairline, so
    they read as mounted specimens rather than as the page's own furniture. */
-/* App components keep the product's 12px corner. Page furniture — the rule
-   cards, the type table, the stack pills — takes a printed 2px, so a reader
-   can tell at a glance what is the app and what is the page talking about it. */
-.card,.tile,.p-chip-cluster,.jar-stage,.pool-stage,.p-tile{
-  border:1px solid #000;
-}
-.law,.feat,.demo,.scale,.pill{
-  border:1px solid #000;
-  border-radius:2px;
-}
+/* App components keep the product's 12px corner; page furniture takes a
+   printed 2px. Depth comes from the shadow the field casts, not an outline. */
 .phone{box-shadow:0 18px 40px rgba(20,20,15,.28)}
 
 /* ---------- bento ---------- */
@@ -393,6 +385,7 @@ footer .rule{height:1px;background:var(--rule);margin-bottom:22px}
 
 .p-phone{width:clamp(150px,20vw,208px)}
 .p-phone .phone{margin:0;box-shadow:0 40px 90px rgba(0,0,0,.6)}
+.hero-plates .rig{width:100%}
 .p-card{width:clamp(210px,25vw,282px)}
 .p-card .card{box-shadow:0 30px 70px rgba(0,0,0,.55)}
 .p-chip-cluster .floatie{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
@@ -488,7 +481,7 @@ h1 .flame{color:var(--flame)}
   padding-bottom:clamp(40px,7vw,88px);
 }
 .mast b{font-weight:600;color:var(--on);letter-spacing:2.2px;font-size:9.5px;font-family:var(--label)}
-.mast .centre{text-align:center;line-height:1.5;max-width:14ch}
+.mast .centre{text-align:center;line-height:1.6;max-width:26ch;justify-self:center}
 .mast .right{text-align:right}
 
 /* centred story masthead */
@@ -529,7 +522,7 @@ h1{
   line-height:.92;
   letter-spacing:-.04em;
 }
-h1 .flame{color:var(--on);opacity:.55}
+h1 .flame{color:var(--amber)}
 .hero .lede{
   color:var(--onq);
   margin:26px auto 0;
@@ -547,9 +540,7 @@ h1 .flame{color:var(--on);opacity:.55}
 .hero .note{color:var(--onq);margin:0 auto;text-align:center}
 
 /* plates: the app's dark UI mounted on a colour field */
-.card,.tile,.demo,.scale,.feat,.law,.p-chip-cluster,.jar-stage,.pool-stage,.pill{
-  border:1px solid rgba(0,0,0,.55);
-}
+
 .phone{box-shadow:0 22px 54px rgba(0,0,0,.36)}
 .law,.feat,.demo,.scale,.pill{border-radius:2px}
 
@@ -580,7 +571,15 @@ footer .rule{background:var(--onq);opacity:.4}
   font-family:var(--label);font-size:9px;letter-spacing:1.7px;text-transform:uppercase;
   color:var(--onq);text-align:center;
 }
-.hero-plates{margin-top:clamp(34px,5vw,58px)}
+.hero-plates{
+  margin-top:clamp(34px,5vw,58px);
+  /* bottom-aligned so the captions sit on one line even though the turning
+     device renders a little shorter than the flat prints beside it */
+  align-items:end;
+}
+/* the cover trio stays three-up at every width — they are prints on a cover,
+   not a responsive gallery, and one orphan on a second row reads as a mistake */
+@media(max-width:640px){.plates.trio.hero-plates{grid-template-columns:repeat(3,1fr);gap:10px}}
 /* the cover trio sits at slightly different heights, like pasted prints */
 .hero-plates .plate:nth-child(1){transform:translateY(14px)}
 .hero-plates .plate:nth-child(3){transform:translateY(22px)}
@@ -604,7 +603,7 @@ footer .rule{background:var(--onq);opacity:.4}
 .rig{perspective:1200px;perspective-origin:50% 45%;display:flex;justify-content:center}
 .rig-spin{
   transform-style:preserve-3d;
-  width:clamp(190px,26vw,262px);
+  width:100%;
   animation:rigIn 1.25s cubic-bezier(.19,1,.28,1) .1s both;
 }
 @keyframes rigIn{
@@ -760,7 +759,7 @@ footer .rule{background:var(--onq);opacity:.4}
   <div class="wrap">
     <nav class="mast">
       <b>DeadRight</b>
-      <span class="centre">A record of<br>who was right</span>
+      <span class="centre">A record of who was right</span>
       <span class="right">&#167; Index</span>
     </nav>
 

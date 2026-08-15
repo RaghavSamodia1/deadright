@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, spacing } from '../tokens';
 import {
@@ -16,7 +16,7 @@ import {
   type Stat,
   type TimelineTone,
 } from '../components';
-import { getBet } from '../api/bets';
+import { getBet, cancelBet } from '../api/bets';
 import { agreeOutcome, raiseDispute } from '../api/resolution';
 import type { DisputeReason } from '../types/database';
 import { useQuery, useAction } from '../hooks/useQuery';
@@ -125,6 +125,37 @@ export function BetDetailScreen({ navigation, route }: any) {
         }))
     : [{ text: 'Bet opened — the clock is running', timestamp: relativeTime(raw?.created_at ?? new Date().toISOString()), tone: 'side-a' as const }];
 
+  const { run: doCancel, error: cancelError } = useAction(cancelBet);
+
+  // Creator-only, and only while it is still open. After the deadline the
+  // routes are resolving or disputing — pulling a bet once the result is known
+  // is the move the app exists to prevent.
+  const canCancel = !!raw?.uid && raw?.creator_id === raw?.uid && raw?.status === 'active';
+
+  const confirmCancel = () =>
+    Alert.alert(
+      'Call this bet off?',
+      'It stays in the record as cancelled, and anyone who took a side is told.',
+      [
+        { text: 'Keep it', style: 'cancel' },
+        {
+          text: 'Call it off',
+          style: 'destructive',
+          onPress: async () => {
+            if (!betId) return;
+            const ok = await doCancel(betId);
+            // A failed cancel used to do nothing at all — the sheet closed, the
+            // bet stayed, and there was no way to tell whether it had worked.
+            if (ok === null) {
+              Alert.alert('Couldn’t call it off', humanError(cancelError));
+              return;
+            }
+            navigation.goBack();
+          },
+        },
+      ],
+    );
+
   return (
     <ScreenBackground tone="base">
       <NavHeader
@@ -132,6 +163,22 @@ export function BetDetailScreen({ navigation, route }: any) {
         title="Bet"
         onBack={() => navigation.goBack()}
         rightActions={[
+          ...(canCancel
+            ? [
+                {
+                  icon: (
+                    <Icon
+                      name="trash"
+                      size={18}
+                      color={colors.interactive.destructive}
+                      strokeWidth={1.9}
+                    />
+                  ),
+                  onPress: confirmCancel,
+                  accessibilityLabel: 'Call this bet off',
+                },
+              ]
+            : []),
           {
             icon: <Icon name="external" size={19} color={colors.text.secondary} strokeWidth={1.9} />,
             onPress: () => navigation.navigate('ShareInvite', { id: bet.id }),

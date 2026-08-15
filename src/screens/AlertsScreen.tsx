@@ -95,6 +95,7 @@ export function AlertsScreen({ navigation }: any) {
 const ACTION_FOR: Record<string, NotificationAction> = {
   bet_invite: 'join',
   bet_joined: null,
+  bet_cancelled: null,
   resolution_request: 'resolve',
   outcome_proposed: 'resolve',
   dispute_raised: 'view-dispute',

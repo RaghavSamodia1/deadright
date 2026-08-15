@@ -63,7 +63,10 @@ function toBetStatus(b: any, myUserId?: string | null): BetStatus {
       if (!mySide || !b.winning_side) return 'settled';
       return b.winning_side === mySide ? 'win' : 'loss';
     }
+    // Fell through to 'active' here, so a called-off bet still displayed as
+    // live and joinable.
     case 'cancelled':
+      return 'cancelled';
     case 'active':
     default:
       return 'active';

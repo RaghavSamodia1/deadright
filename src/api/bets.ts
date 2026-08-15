@@ -50,6 +50,8 @@ export async function getFeed(groupId?: string) {
        creator:profiles!bets_creator_id_fkey(handle, display_name, avatar_url),
        participants:bet_participants(user_id, side)`,
     )
+    // A called-off bet is history, not something the group still has to act on.
+    .neq('status', 'cancelled')
     .order('created_at', { ascending: false })
     .limit(30);
   if (groupId) q = q.eq('group_id', groupId);
@@ -114,4 +116,20 @@ export function subscribeToBetEvents(betId: string, onEvent: (e: BetEvent) => vo
     )
     .subscribe();
   return () => supabase.removeChannel(channel);
+}
+
+/**
+ * Call a bet off. Creator only, and only while it is still active — after the
+ * deadline the honest routes are resolving or disputing.
+ *
+ * Cancels rather than deletes: other people's participation and timeline hang
+ * off the row, and bets carry no delete policy by design.
+ */
+export async function cancelBet(betId: string, reason?: string): Promise<Bet> {
+  const { data, error } = await supabase.rpc('cancel_bet', {
+    p_bet: betId,
+    p_reason: reason ?? null,
+  });
+  if (error) throw error;
+  return data;
 }

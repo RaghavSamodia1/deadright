@@ -23,6 +23,7 @@ const MESSAGES: Record<string, string> = {
   not_member: 'You’re not a member of that group.',
   not_open: 'This is closed to new entries.',
   not_participant: 'You’re not in this bet, so you can’t resolve it.',
+  not_cancellable: 'Only an open bet can be called off — this one has moved on.',
   not_resolvable: 'This bet can’t be resolved yet.',
   not_resolver: 'Only someone in this bet can resolve it.',
   nothing_to_agree: 'Nothing here is waiting on you.',

@@ -10,7 +10,8 @@ export type BetStatus =
   | 'loss'
   | 'settled'
   | 'disputed'
-  | 'controversial';
+  | 'controversial'
+  | 'cancelled';
 
 interface StatusChipProps {
   status: BetStatus;
@@ -58,6 +59,12 @@ const STATUS_CONFIG: Record<
   // Resolved, but not yours to win or lose — you were watching.
   settled: {
     label: 'Settled',
+    bg: 'transparent',
+    text: colors.text.tertiary,
+    quiet: true,
+  },
+  cancelled: {
+    label: 'Called off',
     bg: 'transparent',
     text: colors.text.tertiary,
     quiet: true,

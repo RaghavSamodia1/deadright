@@ -18,6 +18,7 @@ import { addOptions } from '../api/ordinals';
 import { getMyGroups } from '../api/groups';
 import { sharpen } from '../api/sharpen';
 import { getSettings } from '../api/settings';
+import { getMyProfile } from '../api/profile';
 import { currencySymbol, formatMoney, parseAmountToCents } from '../lib/money';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
@@ -85,6 +86,13 @@ export function CreateBetScreen({ navigation, route }: any) {
   const { data: settings } = useQuery(getSettings, { currency: 'GBP' } as any);
   const symbol = currencySymbol(settings?.currency);
   const customCents = parseAmountToCents(customAmount);
+
+  // 'RS' was hardcoded here — the author's own initials shipped as everyone's
+  // preview avatar.
+  const { data: me } = useQuery(getMyProfile, null as any);
+  const myInitials = ((me as any)?.display_name ?? (me as any)?.handle ?? 'You')
+    .slice(0, 2)
+    .toUpperCase();
 
   const MOCK_GROUPS = [
     { id: 'g1', emoji: '⚽', name: 'Sunday League', memberCount: 8, members: [{ initials: 'MC' }, { initials: 'PR' }, { initials: 'DJ' }] },
@@ -163,14 +171,18 @@ export function CreateBetScreen({ navigation, route }: any) {
     id: 'preview',
     title: sharpened || statement || 'Your call goes here…',
     status: 'awaiting',
-    author: { handle: 'You', initials: 'RS' },
+    author: { handle: 'You', initials: myInitials },
     group: groups.find((g) => g.id === group)?.name,
     sideAPercent: 50, sideACount: 0, sideBCount: 0, participantCount: 1,
     stake:
       stake === 'custom'
         ? (customCents !== null ? formatMoney(customCents, settings?.currency) : undefined)
         : STAKE_OPTS.find((s) => s.value === stake)?.label.split(' ')[0],
-    deadline: new Date(Date.now() + 1000 * 60 * 60 * 24),
+    // The preview used a hardcoded 24h, so the Review card showed "23:59"
+    // whatever you picked — including a custom date three days out. The submit
+    // below always used the real value, so the card disagreed with the bet it
+    // was previewing at the one moment you check it.
+    deadline: new Date(Date.now() + DEADLINE_MS[deadline]),
   };
 
   useEffect(() => {

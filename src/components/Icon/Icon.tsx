@@ -29,6 +29,7 @@ export type IconName =
   | 'chevron'
   | 'arrow'
   | 'back'
+  | 'more'
   | 'person'
   | 'lock'
   | 'ban'
@@ -144,6 +145,13 @@ export function Icon({ name, size = 24, color = '#F0F0F0', strokeWidth = 2 }: Ic
       )}
       {name === 'chevron' && <Path d="M9 5l7 7-7 7" {...stroke} />}
       {name === 'back' && <Path d="M20 12H5M12 5l-7 7 7 7" {...stroke} />}
+      {name === 'more' && (
+        <>
+          <Circle cx="5" cy="12" r="1.6" fill={color} />
+          <Circle cx="12" cy="12" r="1.6" fill={color} />
+          <Circle cx="19" cy="12" r="1.6" fill={color} />
+        </>
+      )}
       {name === 'refresh' && (
         <>
           <Path d="M21 12a9 9 0 1 1-3-6.7" {...stroke} />

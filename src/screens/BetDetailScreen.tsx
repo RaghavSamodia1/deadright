@@ -10,6 +10,7 @@ import {
   TimelineEvent,
   Button,
   BottomSheet,
+  ActionSheet,
   ChoiceChipGroup,
   TextInput,
   type BetCardData,
@@ -125,6 +126,7 @@ export function BetDetailScreen({ navigation, route }: any) {
         }))
     : [{ text: 'Bet opened — the clock is running', timestamp: relativeTime(raw?.created_at ?? new Date().toISOString()), tone: 'side-a' as const }];
 
+  const [menuOpen, setMenuOpen] = React.useState(false);
   const { run: doCancel, error: cancelError } = useAction(cancelBet);
 
   // Creator-only, and only while it is still open. After the deadline the
@@ -163,19 +165,17 @@ export function BetDetailScreen({ navigation, route }: any) {
         title="Bet"
         onBack={() => navigation.goBack()}
         rightActions={[
+          // Cancelling lives behind the overflow, not on the bar. A one-tap
+          // destructive control next to Share is too easy to hit by accident,
+          // and calling a bet off is not a routine action.
           ...(canCancel
             ? [
                 {
                   icon: (
-                    <Icon
-                      name="trash"
-                      size={18}
-                      color={colors.interactive.destructive}
-                      strokeWidth={1.9}
-                    />
+                    <Icon name="more" size={18} color={colors.text.secondary} strokeWidth={1.9} />
                   ),
-                  onPress: confirmCancel,
-                  accessibilityLabel: 'Call this bet off',
+                  onPress: () => setMenuOpen(true),
+                  accessibilityLabel: 'More options',
                 },
               ]
             : []),
@@ -315,6 +315,14 @@ export function BetDetailScreen({ navigation, route }: any) {
           style={styles.cta}
         />
       </BottomSheet>
+      <ActionSheet
+        visible={menuOpen}
+        title="Bet options"
+        options={[
+          { label: 'Call this bet off', destructive: true, onPress: confirmCancel },
+        ]}
+        onDismiss={() => setMenuOpen(false)}
+      />
     </ScreenBackground>
   );
 }

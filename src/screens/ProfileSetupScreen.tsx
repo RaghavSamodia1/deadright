@@ -43,10 +43,10 @@ export function ProfileSetupScreen({ navigation }: any) {
             </View>
           </Pressable>
 
-          <TextInput label="Display name" placeholder="Raghav S" value={name} onChangeText={setName} />
+          <TextInput label="Display name" placeholder="Your name" value={name} onChangeText={setName} />
           <TextInput
             label="Handle"
-            placeholder="raghav"
+            placeholder="yourhandle"
             value={handle}
             onChangeText={(t) => setHandle(t.replace(/[^a-z0-9_]/gi, '').toLowerCase())}
             autoCapitalize="none"

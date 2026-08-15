@@ -25,9 +25,12 @@ import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
 import { plural } from '../lib/plural';
 import { humanError } from '../lib/errors';
+import { useCurrency } from '../hooks/useCurrency';
+import { formatMoney } from '../lib/money';
 
 // v2 bento hub (design-v2.md §2) — no bottom nav; tiles are the navigation.
 export function HomeScreen({ navigation }: any) {
+  const currency = useCurrency();
   const jarCap = 50;
 
   // Was a hardcoded 23.5 with a hardcoded "4 violations this week" — it showed
@@ -141,7 +144,7 @@ export function HomeScreen({ navigation }: any) {
             tone="amber"
             icon="jar"
             countUp={jarTotal}
-            formatValue={(n) => `$${n.toFixed(2)}`}
+            formatValue={(n) => formatMoney(Math.round(n * 100), currency)}
             label={
               jarSummary.weekCount > 0
                 ? `${jarSummary.weekCount} this week`

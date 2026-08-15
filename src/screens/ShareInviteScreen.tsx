@@ -15,16 +15,21 @@ import { useQuery } from '../hooks/useQuery';
 export function ShareInviteScreen({ navigation, route }: any) {
   const passedCode: string | undefined = route?.params?.code;
   const passedName: string | undefined = route?.params?.name;
+  const groupId: string | undefined = route?.params?.groupId;
 
-  // Opened from Home or a bet without params: fall back to the first group.
+  // Falling back to groups[0] whenever the code was missing meant every group
+  // shared the first group's code — and GroupScreen passes group?.invite_code,
+  // which is undefined until the group has loaded. Look the real one up by id
+  // when we have it, and only fall back with no id at all.
   const { data: groups } = useQuery(
-    async () => (passedCode ? [] : await getMyGroups()),
+    async () => (passedCode && !groupId ? [] : await getMyGroups()),
     [] as any[],
-    [passedCode],
+    [passedCode, groupId],
   );
 
-  const code = passedCode ?? groups?.[0]?.invite_code ?? '——————';
-  const name = passedName ?? groups?.[0]?.name ?? 'your group';
+  const mine = groupId ? (groups ?? []).find((g: any) => g.id === groupId) : undefined;
+  const code = mine?.invite_code ?? passedCode ?? (groupId ? undefined : groups?.[0]?.invite_code) ?? '——————';
+  const name = mine?.name ?? passedName ?? (groupId ? 'your group' : groups?.[0]?.name) ?? 'your group';
   const hasCode = code !== '——————';
 
   const share = () =>

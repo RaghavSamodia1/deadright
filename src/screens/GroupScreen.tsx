@@ -17,10 +17,13 @@ import { useQuery } from '../hooks/useQuery';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
 import { plural } from '../lib/plural';
+import { useCurrency } from '../hooks/useCurrency';
+import { formatMoney } from '../lib/money';
 import { Icon } from '../components';
 
 // Group detail — members, the group's Cookie Jar, and its open bets.
 export function GroupScreen({ navigation, route }: any) {
+  const currency = useCurrency();
   const groupId: string | undefined = route?.params?.id;
 
   const { data: group } = useQuery<any>(
@@ -65,7 +68,7 @@ export function GroupScreen({ navigation, route }: any) {
           {
             icon: <Icon name="plus" size={20} color={colors.text.secondary} strokeWidth={2} />,
             onPress: () =>
-              navigation.navigate('ShareInvite', { name, code: group?.invite_code }),
+              navigation.navigate('ShareInvite', { name, groupId, code: group?.invite_code }),
             accessibilityLabel: 'Invite',
           },
         ]}
@@ -86,7 +89,7 @@ export function GroupScreen({ navigation, route }: any) {
               column overhanging by ~76pt. */}
           <BentoTile
             size="hero" tone="amber" icon="jar"
-            value={`$${(jar.totalCents / 100).toFixed(2)}`}
+            value={formatMoney(jar.totalCents, currency)}
             label={`${jar.violations.length} ${jar.violations.length === 1 ? 'violation' : 'violations'}`}
             caption="Open the jar →"
             onPress={() =>

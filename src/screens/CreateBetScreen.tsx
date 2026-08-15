@@ -47,10 +47,19 @@ const STAKE_OPTS: { value: Stake; label: string }[] = [
 /** The preset money option. Custom overrides this with whatever they type. */
 const TENNER_CENTS = 1000;
 
-const STEPS = ['Statement', 'Type', 'Deadline', 'Stake', 'Group', 'Review'];
+const ALL_STEPS = ['Statement', 'Type', 'Deadline', 'Stake', 'Group', 'Review'];
 
-export function CreateBetScreen({ navigation }: any) {
+export function CreateBetScreen({ navigation, route }: any) {
+  // Started from inside a group: that group is the answer, so asking again is
+  // a step that can only be got wrong. The param was already being passed —
+  // this screen simply never read it.
+  const fromGroup: string | undefined = route?.params?.groupId;
+  const STEPS = fromGroup ? ALL_STEPS.filter((x) => x !== 'Group') : ALL_STEPS;
+
   const [step, setStep] = useState(0);
+  // Steps are addressed by name from here on. They used to be addressed by
+  // index, which silently mis-rendered the moment a step was dropped.
+  const at = (name: string) => STEPS[step] === name;
   const [statement, setStatement] = useState('');
   const [sharpened, setSharpened] = useState<string | null>(null);
   // The AI suggestion used to be fabricated on-device: it appended
@@ -66,9 +75,10 @@ export function CreateBetScreen({ navigation }: any) {
   // straight through the Group step created a bet with group_id null — a bet
   // nobody can see or take the other side of, in an app whose whole premise is
   // that everything lives in a group. The first group is now really selected.
-  const [group, setGroup] = useState<string>('');
+  const [group, setGroup] = useState<string>(fromGroup ?? '');
   const [rankOptions, setRankOptions] = useState<string[]>(['', '']);
   const [customAmount, setCustomAmount] = useState('');
+  const [customDays, setCustomDays] = useState('3');
 
   // Stakes are ledger-only, but they should still read in the user's own
   // currency rather than a hardcoded pound sign.
@@ -99,11 +109,14 @@ export function CreateBetScreen({ navigation }: any) {
 
   const { run: publish, loading: publishing, error: publishError } = useAction(createBet);
 
+  // "Pick a date" used to resolve to exactly 24h, so choosing it changed
+  // nothing and the bet quietly got tomorrow's deadline.
+  const customDaysNum = Math.max(1, Math.min(365, parseInt(customDays, 10) || 0));
   const DEADLINE_MS: Record<Deadline, number> = {
     '1h': 3600_000,
     '24h': 86_400_000,
     '1w': 604_800_000,
-    custom: 86_400_000,
+    custom: customDaysNum * 86_400_000,
   };
 
   const isMoneyStake = stake === 'money' || stake === 'custom';
@@ -134,19 +147,18 @@ export function CreateBetScreen({ navigation }: any) {
   };
 
   // A ranking bet needs at least two things to rank before it can go further.
-  const canNext =
-    step === 0
-      ? statement.trim().length > 4
-      : step === 1 && type === 'ordinal'
-        ? rankOptions.filter((o) => o.trim()).length >= 2
-        : // A custom stake with no usable number would post NaN cents.
-          step === 3 && stake === 'custom'
-          ? customCents !== null
-          : // A bet with no group has no audience and no opposing side, so the
-            // Group step is a real gate rather than a formality.
-            step === 4
-          ? !!group
-          : true;
+  const canNext = at('Statement')
+    ? statement.trim().length > 4
+    : at('Type') && type === 'ordinal'
+      ? rankOptions.filter((o) => o.trim()).length >= 2
+      : // A custom stake with no usable number would post NaN cents.
+        at('Stake') && stake === 'custom'
+        ? customCents !== null
+        : // A bet with no group has no audience and no opposing side, so the
+          // Group step is a real gate rather than a formality.
+          at('Group')
+        ? !!group
+        : true;
   const preview: BetCardData = {
     id: 'preview',
     title: sharpened || statement || 'Your call goes here…',
@@ -204,7 +216,7 @@ export function CreateBetScreen({ navigation }: any) {
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets>
-        {step === 0 && (
+        {at('Statement') && (
           <>
             <Text style={styles.q}>What's the bet?</Text>
             <TextInput
@@ -226,7 +238,7 @@ export function CreateBetScreen({ navigation }: any) {
           </>
         )}
 
-        {step === 1 && (
+        {at('Type') && (
           <>
             <Text style={styles.q}>How is it settled?</Text>
             <ChoiceChipGroup options={TYPE_OPTS} value={type} onChange={setType} />
@@ -261,14 +273,31 @@ export function CreateBetScreen({ navigation }: any) {
           </>
         )}
 
-        {step === 2 && (
+        {at('Deadline') && (
           <>
             <Text style={styles.q}>When do we know?</Text>
             <ChoiceChipGroup options={DEADLINE_OPTS} value={deadline} onChange={setDeadline} />
+            {deadline === 'custom' && (
+              <>
+                <TextInput
+                  label="Days from now"
+                  placeholder="3"
+                  keyboardType="number-pad"
+                  value={customDays}
+                  onChangeText={setCustomDays}
+                />
+                <Text style={styles.helper}>
+                  Settles {new Date(Date.now() + customDaysNum * 86_400_000).toLocaleDateString(
+                    undefined,
+                    { weekday: 'long', day: 'numeric', month: 'long' },
+                  )}
+                </Text>
+              </>
+            )}
           </>
         )}
 
-        {step === 3 && (
+        {at('Stake') && (
           <>
             <Text style={styles.q}>What’s at stake?</Text>
             <Text style={styles.hint}>No real money moves — it’s tracked on the ledger.</Text>
@@ -291,7 +320,7 @@ export function CreateBetScreen({ navigation }: any) {
           </>
         )}
 
-        {step === 4 && (
+        {at('Group') && (
           <>
             <Text style={styles.q}>Who’s in?</Text>
             {groups.length === 0 ? (
@@ -320,7 +349,7 @@ export function CreateBetScreen({ navigation }: any) {
           </>
         )}
 
-        {step === 5 && (
+        {at('Review') && (
           <>
             <Text style={styles.q}>Lock it in?</Text>
             <BetCard bet={preview} onPress={() => {}} />
@@ -345,6 +374,7 @@ export function CreateBetScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+  helper: { fontFamily: 'Inter-Regular', fontSize: 13, color: colors.text.tertiary },
   dots: { alignSelf: 'center', marginVertical: spacing[3] },
   content: { padding: spacing.screenGutter, gap: spacing[4], paddingBottom: spacing[8] },
   q: {

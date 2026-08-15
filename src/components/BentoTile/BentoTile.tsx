@@ -185,7 +185,14 @@ export function BentoTile({
 
   const valueStyle = [
     styles.value,
-    { color: t.text, fontSize: valueSize, lineHeight: valueSize * 1.08 },
+    {
+      color: t.text,
+      fontSize: valueSize,
+      lineHeight: valueSize * 1.08,
+      // Tracking has to scale with the type. A flat -1.5 was fine on the 44pt
+      // hero and crushed the digits together on the smaller stat tiles.
+      letterSpacing: valueSize * -0.035,
+    },
   ];
 
   const valueNode =
@@ -276,7 +283,6 @@ const styles = StyleSheet.create({
   emojiSm: { fontSize: 24, marginBottom: spacing[1] },
   value: {
     fontFamily: 'Barlow-Black',
-    letterSpacing: -1.5,
     includeFontPadding: false,
   },
   label: {

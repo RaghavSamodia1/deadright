@@ -226,7 +226,7 @@ export function CreateBetScreen({ navigation, route }: any) {
       <NavHeader variant="modal" title={STEPS[step]} onBack={() => navigation.goBack()} />
       <ProgressDots total={STEPS.length} current={step} style={styles.dots} />
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets>
         {at('Statement') && (
           <>
@@ -388,6 +388,10 @@ export function CreateBetScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   helper: { fontFamily: 'Inter-Regular', fontSize: 13, color: colors.text.tertiary },
   dots: { alignSelf: 'center', marginVertical: spacing[3] },
+  // Without flex:1 the ScrollView sizes to its content, so a taller step —
+  // the custom-amount field, the custom-date field — pushed the Back/Next
+  // footer down off the fold and made you scroll to reach it.
+  scroll: { flex: 1 },
   content: { padding: spacing.screenGutter, gap: spacing[4], paddingBottom: spacing[8] },
   q: {
     fontFamily: 'Barlow-Bold',

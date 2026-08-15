@@ -43,7 +43,7 @@ export function SearchScreen({ navigation }: any) {
           kind: 'bet' as const,
           id: b.id,
           title: b.title,
-          sub: `${b.group?.name ?? 'Personal'} · ${b.status}`,
+          sub: `${b.group_name ?? 'Personal'} · ${b.status}`,
         })),
         ...groups
           .filter((g: any) => g.name.toLowerCase().includes(q.toLowerCase()))

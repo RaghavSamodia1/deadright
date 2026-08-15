@@ -75,24 +75,19 @@ export async function getCredHistory(days = 30) {
 export async function searchProfiles(query: string) {
   const q = query.trim();
   if (q.length < 2) return [];
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, handle, display_name, avatar_url, cred_score')
-    .or(`handle.ilike.%${q}%,display_name.ilike.%${q}%`)
-    .limit(20);
+  // Goes through the RPC rather than the table: it honours the Discoverable
+  // setting and both directions of a block, and it does so in the database, so
+  // the rule cannot be sidestepped with the anon key that ships in the bundle.
+  const { data, error } = await supabase.rpc('search_profiles', { p_query: q });
   if (error) throw error;
-  return data;
+  return data ?? [];
 }
 
 /** Search bets you can see, by title. */
 export async function searchBets(query: string) {
   const q = query.trim();
   if (q.length < 2) return [];
-  const { data, error } = await supabase
-    .from('bets')
-    .select('id, title, status, deadline, group:groups(name)')
-    .ilike('title', `%${q}%`)
-    .limit(20);
+  const { data, error } = await supabase.rpc('search_bets', { p_query: q });
   if (error) throw error;
-  return data;
+  return data ?? [];
 }

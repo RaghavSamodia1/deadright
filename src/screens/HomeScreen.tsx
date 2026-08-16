@@ -219,6 +219,10 @@ export function HomeScreen({ navigation }: any) {
           />
         </View>
 
+          <BentoTile
+            size="nav" tone="navy" label="Settle it" icon="dice"
+            onPress={() => navigation.navigate('Settle')}
+          />
         </Rise>
 
         {/* Row 3 — bets, or the first-run path into the social loop */}
@@ -297,6 +301,10 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: spacing[3],
+    // The action strip carries four nav tiles now, so it has to fall onto a
+    // second line rather than push the fourth tile off the screen edge.
+    flexWrap: 'wrap',
+    rowGap: spacing[3],
   },
   col: {
     gap: spacing[3],

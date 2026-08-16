@@ -24,6 +24,7 @@ export { BetPlacedScreen } from './BetPlacedScreen';
 export { CreatePoolScreen } from './CreatePoolScreen';
 export { PoolDetailScreen } from './PoolDetailScreen';
 export { PoolsScreen } from './PoolsScreen';
+export { SettleScreen } from './SettleScreen';
 
 // ── Resolution & dispute ─────────────────────────────────────────────────────
 export { SideSelectionScreen } from './SideSelectionScreen';

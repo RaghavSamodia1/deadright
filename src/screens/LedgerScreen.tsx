@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, BentoTile, ListRow } from '../components';
-import { getLedger, getLedgerSummary } from '../api/ledger';
+import { getLedger, getLedgerSummary, getBalances, settleUpWith, type Balance } from '../api/ledger';
 import { getMyGroups } from '../api/groups';
 import { getJar } from '../api/jar';
-import { useQuery } from '../hooks/useQuery';
+import { useQuery, useAction } from '../hooks/useQuery';
+import { humanError } from '../lib/errors';
+import { plural } from '../lib/plural';
 import { uidOrNull } from '../lib/supabase';
 
 // V2-03 Ledger (design-v2.md §5) — balance hero + stat column + month chart + txns.
@@ -56,6 +58,31 @@ export function LedgerScreen({ navigation }: any) {
 
   // The jar tile mirrors your first group's pot — the jar is group-scoped, so
   // there's no such thing as a personal total.
+  const { data: balances, refetch: refetchBalances } = useQuery<Balance[]>(getBalances, []);
+  const { run: doSettle, error: settleError } = useAction(settleUpWith);
+
+  const confirmSettle = (b: Balance) => {
+    const theyOwe = b.netCents > 0;
+    Alert.alert(
+      `Square up with ${b.displayName}?`,
+      `${theyOwe ? 'They owe you' : 'You owe them'} ${money(Math.abs(b.netCents))} across ${plural(b.entries, 'open item')}. This marks them all settled — it doesn't move any money.`,
+      [
+        { text: 'Not yet', style: 'cancel' },
+        {
+          text: 'Mark settled',
+          onPress: async () => {
+            const ok = await doSettle(b.userId);
+            if (ok === null) {
+              Alert.alert('Couldn’t settle up', humanError(settleError));
+              return;
+            }
+            refetchBalances();
+          },
+        },
+      ],
+    );
+  };
+
   const { data: jar } = useQuery(
     async () => {
       const groups = await getMyGroups();
@@ -121,6 +148,27 @@ export function LedgerScreen({ navigation }: any) {
             ))}
           </View>
         </BentoTile>
+
+        {/* Who is up, who is down. The list below shows every transaction; this
+            is the only part most people actually want to read. */}
+        {balances.length > 0 && (
+          <>
+            <Text style={styles.section}>WHERE YOU STAND</Text>
+            {balances.map((b) => {
+              const theyOwe = b.netCents > 0;
+              return (
+                <ListRow
+                  key={b.userId}
+                  title={b.displayName}
+                  subtitle={`${theyOwe ? 'owes you' : 'you owe'} · ${plural(b.entries, 'open item')}`}
+                  value={money(Math.abs(b.netCents))}
+                  valueColor={theyOwe ? colors.semantic.win : colors.semantic.disputed}
+                  onPress={() => confirmSettle(b)}
+                />
+              );
+            })}
+          </>
+        )}
 
         {/* Transactions */}
         <Text style={styles.section}>RECENT</Text>

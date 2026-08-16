@@ -10,7 +10,16 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, {
+  Circle,
+  Rect,
+  Line,
+  Defs,
+  RadialGradient,
+  LinearGradient,
+  Stop,
+  G,
+} from 'react-native-svg';
 import { colors, radius, spacing, spring } from '../tokens';
 import {
   ScreenBackground,
@@ -126,9 +135,56 @@ function CoinToss() {
   return (
     <Stage label={side ?? 'Call it in the air'} cta="Toss" onPlay={toss} busy={busy}>
       <Animated.View style={[styles.coin, style]}>
-        <Text style={styles.coinFace}>{side === 'Tails' ? 'T' : 'H'}</Text>
+        <CoinFace letter={side === 'Tails' ? 'T' : 'H'} />
       </Animated.View>
     </Stage>
+  );
+}
+
+/**
+ * A struck coin rather than a flat disc: a milled rim, a radial gradient that
+ * puts the light source top-left, and an inset field line. A circle of solid
+ * amber reads as a placeholder for a coin — this reads as one.
+ */
+function CoinFace({ letter }: { letter: string }) {
+  const ticks = Array.from({ length: 48 }, (_, i) => {
+    const a = (i / 48) * Math.PI * 2;
+    const r1 = 62;
+    const r2 = 68;
+    return {
+      x1: 70 + Math.cos(a) * r1,
+      y1: 70 + Math.sin(a) * r1,
+      x2: 70 + Math.cos(a) * r2,
+      y2: 70 + Math.sin(a) * r2,
+    };
+  });
+
+  return (
+    <View style={styles.coinWrap}>
+      <Svg width={140} height={140} viewBox="0 0 140 140">
+        <Defs>
+          <RadialGradient id="coinFace" cx="36%" cy="30%" r="78%">
+            <Stop offset="0" stopColor="#FFEFBE" />
+            <Stop offset="0.55" stopColor="#F7C846" />
+            <Stop offset="1" stopColor="#C08A22" />
+          </RadialGradient>
+          <LinearGradient id="coinRim" x1="0" y1="0" x2="0.3" y2="1">
+            <Stop offset="0" stopColor="#FFDD7A" />
+            <Stop offset="1" stopColor="#96660F" />
+          </LinearGradient>
+        </Defs>
+
+        <Circle cx="70" cy="70" r="69" fill="url(#coinRim)" />
+        <G opacity={0.45}>
+          {ticks.map((t, i) => (
+            <Line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke="#7A5209" strokeWidth="2" />
+          ))}
+        </G>
+        <Circle cx="70" cy="70" r="61" fill="url(#coinFace)" />
+        <Circle cx="70" cy="70" r="52" fill="none" stroke="#A87A1B" strokeWidth="1.5" opacity={0.45} />
+      </Svg>
+      <Text style={styles.coinFace}>{letter}</Text>
+    </View>
   );
 }
 
@@ -142,11 +198,38 @@ const PIPS: Record<number, [number, number][]> = {
   6: [[28, 25], [72, 25], [28, 50], [72, 50], [28, 75], [72, 75]],
 };
 
-function Die({ value }: { value: number }) {
+/**
+ * Gradient ids are per-Svg, but two dice sit side by side and a duplicate id
+ * would have them share one gradient — hence the suffix.
+ */
+function Die({ value, id }: { value: number; id: string }) {
+  const body = `body${id}`;
+  const pip = `pip${id}`;
   return (
-    <Svg width="76" height="76" viewBox="0 0 100 100">
+    <Svg width="94" height="94" viewBox="0 0 100 100">
+      <Defs>
+        <LinearGradient id={body} x1="0" y1="0" x2="0.8" y2="1">
+          <Stop offset="0" stopColor="#FFEFBE" />
+          <Stop offset="0.45" stopColor="#F7C846" />
+          <Stop offset="1" stopColor="#CE982A" />
+        </LinearGradient>
+        {/* Light from the same corner as the coin, so the two read as one set */}
+        <RadialGradient id={pip} cx="34%" cy="28%" r="85%">
+          <Stop offset="0" stopColor="#4A4636" />
+          <Stop offset="1" stopColor="#08080A" />
+        </RadialGradient>
+      </Defs>
+
+      <Rect x="2" y="2" width="96" height="96" rx="21" fill={`url(#${body})`} />
+      <Rect
+        x="4.5" y="4.5" width="91" height="91" rx="18.5"
+        fill="none" stroke="#FFF6D6" strokeWidth="2.5" opacity={0.5}
+      />
       {(PIPS[value] ?? PIPS[1]).map(([cx, cy], i) => (
-        <Circle key={i} cx={cx} cy={cy} r="8.5" fill={colors.bg.base} />
+        <G key={i}>
+          <Circle cx={cx} cy={cy + 0.8} r="9" fill="#FFE9A8" opacity={0.5} />
+          <Circle cx={cx} cy={cy} r="9" fill={`url(#${pip})`} />
+        </G>
       ))}
     </Svg>
   );
@@ -204,8 +287,8 @@ function DiceRoll() {
       busy={busy}
     >
       <Animated.View style={[styles.diceRow, style]}>
-        <View style={styles.die}><Die value={dice[0]} /></View>
-        <View style={styles.die}><Die value={dice[1]} /></View>
+        <Die value={dice[0]} id="a" />
+        <Die value={dice[1]} id="b" />
       </Animated.View>
     </Stage>
   );
@@ -339,30 +422,18 @@ const styles = StyleSheet.create({
   },
   blurb: { fontFamily: 'Inter-Regular', fontSize: 13.5, lineHeight: 20, color: colors.text.secondary },
 
-  coin: {
-    width: 132,
-    height: 132,
-    borderRadius: 999,
-    backgroundColor: colors.semantic.awaiting,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  coin: { width: 140, height: 140 },
+  coinWrap: { width: 140, height: 140, alignItems: 'center', justifyContent: 'center' },
   coinFace: {
+    position: 'absolute',
     fontFamily: 'Barlow-Black',
-    fontSize: 58,
-    color: colors.bg.base,
+    fontSize: 54,
+    color: '#6B4A0C',
     includeFontPadding: false,
   },
 
   diceRow: { flexDirection: 'row', gap: spacing[3] },
-  die: {
-    width: 96,
-    height: 96,
-    borderRadius: radius.lg,
-    backgroundColor: colors.semantic.awaiting,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
 
   strawFace: { alignItems: 'center', gap: 6, minHeight: 96, justifyContent: 'center' },
   strawName: {

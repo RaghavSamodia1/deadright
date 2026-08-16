@@ -202,27 +202,41 @@ export function HomeScreen({ navigation }: any) {
 
         </Rise>
 
-        {/* Row 3 — the action strip. */}
+        {/* Row 3 — the action strip, two rows of three. */}
         <Rise index={2}>
-        <View style={styles.row}>
-          <BentoTile
-            size="nav" tone="amber" label="New bet" icon="plus"
-            onPress={() => navigation.navigate('CreateBet')}
-          />
-          <BentoTile
-            size="nav" tone="navy" label="Join code" icon="link"
-            onPress={() => navigation.navigate('JoinGroup')}
-          />
-          <BentoTile
-            size="nav" tone="navy" label="Pools" icon="party"
-            onPress={() => navigation.navigate('Pools')}
-          />
+        <View style={styles.strip}>
+          <View style={styles.row}>
+            <BentoTile
+              size="nav" tone="amber" label="New bet" icon="plus"
+              onPress={() => navigation.navigate('CreateBet')}
+            />
+            <BentoTile
+              size="nav" tone="navy" label="Join code" icon="link"
+              onPress={() => navigation.navigate('JoinGroup')}
+            />
+            <BentoTile
+              size="nav" tone="navy" label="Pools" icon="party"
+              onPress={() => navigation.navigate('Pools')}
+            />
+          </View>
+          {/* Settle it, plus two destinations that had no tile at all: the full
+              feed was only reachable through "See all", and alerts only through
+              the bell in the header. */}
+          <View style={styles.row}>
+            <BentoTile
+              size="nav" tone="navy" label="Settle it" icon="dice"
+              onPress={() => navigation.navigate('Settle')}
+            />
+            <BentoTile
+              size="nav" tone="navy" label="All bets" icon="inbox"
+              onPress={() => navigation.navigate('AllBets')}
+            />
+            <BentoTile
+              size="nav" tone="navy" label="Alerts" icon="bell"
+              onPress={() => navigation.navigate('Alerts')}
+            />
+          </View>
         </View>
-
-          <BentoTile
-            size="nav" tone="navy" label="Settle it" icon="dice"
-            onPress={() => navigation.navigate('Settle')}
-          />
         </Rise>
 
         {/* Row 3 — bets, or the first-run path into the social loop */}
@@ -301,11 +315,8 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: spacing[3],
-    // The action strip carries four nav tiles now, so it has to fall onto a
-    // second line rather than push the fourth tile off the screen edge.
-    flexWrap: 'wrap',
-    rowGap: spacing[3],
   },
+  strip: { gap: spacing[3] },
   col: {
     gap: spacing[3],
   },

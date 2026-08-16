@@ -131,10 +131,9 @@ const styles = StyleSheet.create({
     height: 34,
     alignItems: 'center',
     justifyContent: 'center',
-    // Same fill and corner as a bento tile, so the actions read as part of the
-    // grid rather than as loose glyphs above it.
-    backgroundColor: colors.bg.surface1,
-    borderRadius: radius.sm,
+    // No fill. The tinted square read as a button chrome the rest of the header
+    // does not have, and next to the round avatar it looked like two different
+    // control systems sharing a bar.
   },
   textBtn: {
     height: 34,

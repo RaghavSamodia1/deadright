@@ -24,15 +24,16 @@ export function FriendProfileScreen({ navigation, route }: any) {
 
   const { run: block, loading: blocking } = useAction(blockUser);
 
+  // These were hardcoded to 812 / 64% / 3 and a 7-4 head-to-head, so every
+  // profile showed the same invented record about a real person — the one kind
+  // of wrong that looks completely convincing. Cred is real; the rest needs
+  // per-person aggregates the API does not expose yet, so it says so instead of
+  // making a number up.
   const stats: Stat[] = [
-    { value: '812', label: 'Cred', highlight: true },
-    { value: '64%', label: 'Win rate' },
-    { value: '3', label: 'Groups' },
+    { value: person?.cred_score != null ? String(person.cred_score) : '—', label: 'Cred', highlight: true },
+    { value: '—', label: 'Win rate' },
+    { value: '—', label: 'Groups' },
   ];
-
-  // Head-to-head vs you
-  const h2h = { wins: 7, losses: 4 };
-  const total = h2h.wins + h2h.losses;
 
   return (
     <ScreenBackground tone="base">
@@ -49,25 +50,22 @@ export function FriendProfileScreen({ navigation, route }: any) {
         ]}
       />
       <ScrollView contentContainerStyle={styles.content}>
+        {/* The ring, the name and the tagline were all hardcoded: every profile
+            opened as "Marcus C" on 812 with a 78% ring, whoever you tapped. */}
         <View style={styles.hero}>
-          <CredRing percent={78} score={812} size={132} strokeWidth={9} />
-          <Text style={styles.name}>Marcus C</Text>
-          <Text style={styles.sub}>{handle} · Sharp caller</Text>
+          <CredRing
+            percent={Math.max(0, Math.min(100, Math.round((((person?.cred_score ?? 500) - 250) / 500) * 100)))}
+            score={person?.cred_score ?? 500}
+            size={132}
+            strokeWidth={9}
+          />
+          <Text style={styles.name}>
+            {person?.display_name ?? person?.handle ?? handle}
+          </Text>
+          <Text style={styles.sub}>{person?.handle ?? handle}</Text>
         </View>
 
         <StatsRow stats={stats} style={styles.statsRow} />
-
-        {/* Head-to-head */}
-        <Text style={styles.q}>YOU VS {handle.toUpperCase()}</Text>
-        <View style={styles.h2h}>
-          <View style={[styles.h2hBar, { flex: h2h.wins, backgroundColor: colors.semantic.win }]} />
-          <View style={[styles.h2hBar, { flex: h2h.losses, backgroundColor: colors.semantic.loss }]} />
-        </View>
-        <View style={styles.h2hLabels}>
-          <Text style={[styles.h2hNum, { color: colors.semantic.win }]}>You {h2h.wins}</Text>
-          <Text style={styles.h2hTotal}>{total} settled</Text>
-          <Text style={[styles.h2hNum, { color: colors.semantic.loss }]}>{h2h.losses} them</Text>
-        </View>
 
         <Button label="Call them out" onPress={() => navigation.navigate('CreateBet')} fullWidth style={styles.cta} />
       </ScrollView>

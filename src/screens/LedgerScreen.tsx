@@ -8,6 +8,8 @@ import { getJar } from '../api/jar';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { humanError } from '../lib/errors';
 import { plural } from '../lib/plural';
+import { useCurrency } from '../hooks/useCurrency';
+import { formatMoney } from '../lib/money';
 import { uidOrNull } from '../lib/supabase';
 
 // V2-03 Ledger (design-v2.md §5) — balance hero + stat column + month chart + txns.
@@ -23,6 +25,7 @@ type Txn = {
 };
 
 export function LedgerScreen({ navigation }: any) {
+  const currency = useCurrency();
   const MOCK_TXNS: Txn[] = [
     { id: '1', title: 'Won vs Marcus', group: 'Sunday League', amount: 20, when: '2h ago' },
     { id: '2', title: 'Lost vs Priya', group: 'Flatmates', amount: -10, when: 'Yesterday' },
@@ -93,11 +96,18 @@ export function LedgerScreen({ navigation }: any) {
     { totalCents: 2350 },
   );
 
-  const netBalance = summary.lifetimeCents / 100;
-  const pending = Math.round(summary.pendingCents / 100);
   const jarTotal = jar.totalCents / 100;
 
-  const money = (n: number) => `${n >= 0 ? '+' : '−'}$${Math.abs(n).toFixed(2)}`;
+  // The hero counted settled entries only, so it read +0.00 while the balances
+  // below said someone owed you a thousand. Settled is history; what you are up
+  // or down right now includes what is still open.
+  const openCents = balances.reduce((sum, b) => sum + b.netCents, 0);
+  const netCents = summary.lifetimeCents + openCents;
+
+  // Hardcoded "$" here while the tiles beside it used the real currency, and
+  // pending was printed as a bare number so £10 outstanding read as a count.
+  const money = (cents: number) =>
+    `${cents >= 0 ? '+' : '\u2212'}${formatMoney(Math.abs(cents), currency)}`;
 
   return (
     <ScreenBackground tone="base">
@@ -110,12 +120,16 @@ export function LedgerScreen({ navigation }: any) {
             size="hero"
             tone="mint"
             icon="coin"
-            value={money(netBalance)}
+            value={money(netCents)}
             label="Net this season"
             caption="All bookkeeping — no real money"
           />
           <View style={styles.col}>
-            <BentoTile size="stat" tone="amber-tint" value={`${pending}`} label="Pending" />
+            <BentoTile
+              size="stat" tone="amber-tint"
+              value={formatMoney(summary.pendingCents, currency)}
+              label="Pending"
+            />
             <BentoTile
               size="stat"
               tone="amber"

@@ -19,14 +19,16 @@ interface RiseProps {
 // Cards used to appear all at once, fully formed. A short stagger gives the eye
 // an order to read them in, which matters most on Home where nine bento tiles
 // land at the same moment.
-const STEP = 45;
+const STEP = 32;
 // Past about six the wait stops reading as choreography and starts reading as
 // the app being slow, so later items ride in with the sixth.
 const MAX_STEP = 6;
-const TRAVEL = 10;
+// 10 over 260ms read as a hop rather than a settle, especially with nine
+// tiles arriving in sequence. Shorter distance, longer ease.
+const TRAVEL = 5;
 
 /**
- * Fade-and-rise entrance. Deliberately small: 10pt of travel and 260ms, so it
+ * Fade-and-rise entrance. Deliberately small: 5pt of travel over 340ms, so it
  * registers as the screen settling rather than as an animation being performed.
  */
 export function Rise({ index = 0, children, style }: RiseProps) {
@@ -40,7 +42,7 @@ export function Rise({ index = 0, children, style }: RiseProps) {
     }
     progress.value = withDelay(
       Math.min(index, MAX_STEP) * STEP,
-      withTiming(1, { duration: 260, easing: Easing.out(Easing.cubic) }),
+      withTiming(1, { duration: 340, easing: Easing.out(Easing.quad) }),
     );
   }, [index, reduced]);
 

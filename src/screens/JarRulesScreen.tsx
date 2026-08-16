@@ -12,6 +12,8 @@ import {
 } from '../components';
 import { getJarRules, proposeRule, settleJar } from '../api/jar';
 import { useQuery, useAction } from '../hooks/useQuery';
+import { useCurrency } from '../hooks/useCurrency';
+import { formatMoney } from '../lib/money';
 import { isBackendConfigured } from '../lib/supabase';
 import { humanError } from '../lib/errors';
 
@@ -26,6 +28,7 @@ const AMOUNTS = [1, 2, 5, 10];
 
 /** Rules belong to a group's jar — proposing one writes to that group. */
 export function JarRulesScreen({ navigation, route }: any) {
+  const currency = useCurrency();
   const groupId: string | undefined = route?.params?.groupId;
   const [sheetOpen, setSheetOpen] = useState(false);
   const [label, setLabel] = useState('');
@@ -77,7 +80,7 @@ export function JarRulesScreen({ navigation, route }: any) {
               }
               title={r.label}
               subtitle="Anyone can report a break"
-              value={`$${(r.amount_cents / 100).toFixed(0)}`}
+              value={formatMoney(r.amount_cents, currency)}
               valueColor={colors.semantic.awaiting}
               showChevron={false}
             />
@@ -139,7 +142,7 @@ export function JarRulesScreen({ navigation, route }: any) {
         <Text style={styles.label}>Cost</Text>
         <View style={styles.chipWrap}>
           {AMOUNTS.map((a) => (
-            <ChoiceChip key={a} label={`$${a}`} selected={amount === a} onPress={() => setAmount(a)} />
+            <ChoiceChip key={a} label={formatMoney(a * 100, currency)} selected={amount === a} onPress={() => setAmount(a)} />
           ))}
         </View>
         <Button

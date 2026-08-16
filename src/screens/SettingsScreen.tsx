@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { Text, ScrollView, StyleSheet, Linking } from 'react-native';
 import { colors, spacing } from '../tokens';
-import { ScreenBackground, NavHeader, SettingsRow, SettingsSection } from '../components';
+import { ActionSheet, ScreenBackground, NavHeader, SettingsRow, SettingsSection } from '../components';
 import { useAuth } from '../lib/AuthContext';
 import { getSettings, updateSettings } from '../api/settings';
 import { useQuery } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 import { links } from '../lib/links';
 
+const CURRENCIES = ['GBP', 'USD', 'EUR', 'INR', 'AUD', 'CAD'];
+
 export function SettingsScreen({ navigation }: any) {
+  const [currencyOpen, setCurrencyOpen] = React.useState(false);
   const { signOut, demoMode } = useAuth();
   const { data: settings, refetch } = useQuery(getSettings, {
     auto_settle: false,
@@ -57,15 +60,15 @@ export function SettingsScreen({ navigation }: any) {
               refetch();
             }}
           />
+          {/* Tapping used to advance to the next currency in a hidden list of
+              four, so choosing one meant tapping until it came round and you
+              could not see what the options were. */}
           <SettingsRow
             icon="coin"
             label="Currency"
             value={CURRENCY_LABEL[settings.currency] ?? settings.currency}
-            onPress={async () => {
-              const order = ['GBP', 'USD', 'EUR', 'INR'];
-              const next = order[(order.indexOf(settings.currency) + 1) % order.length];
-              await updateSettings({ currency: next });
-              refetch();
+            onPress={() => {
+              setCurrencyOpen(true);
             }}
           />
           <SettingsRow
@@ -74,12 +77,6 @@ export function SettingsScreen({ navigation }: any) {
             toggle
             toggleValue={autoSettle}
             onToggle={toggleAutoSettle}
-          />
-          <SettingsRow
-            icon="jar"
-            label="Cookie Jar defaults"
-            value={`Cap $${(settings.jar_cap_cents / 100).toFixed(0)}`}
-            onPress={() => navigation.navigate('JarRules')}
           />
         </SettingsSection>
 
@@ -119,6 +116,19 @@ export function SettingsScreen({ navigation }: any) {
 
         <Text style={styles.footer}>DeadRight · Your word is your bond.</Text>
       </ScrollView>
+      <ActionSheet
+        visible={currencyOpen}
+        title="Currency"
+        options={CURRENCIES.map((code) => ({
+          label: CURRENCY_LABEL[code] ?? code,
+          primary: code === settings.currency,
+          onPress: async () => {
+            await updateSettings({ currency: code });
+            refetch();
+          },
+        }))}
+        onDismiss={() => setCurrencyOpen(false)}
+      />
     </ScreenBackground>
   );
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import {
   ScreenBackground,
@@ -77,9 +77,21 @@ export function GroupScreen({ navigation, route }: any) {
         <View style={styles.header}>
           <Text style={styles.emoji}>{group?.emoji ?? '👥'}</Text>
           <AvatarStack people={members} max={5} size="md" />
-          <Text style={styles.count}>
-            {plural(members.length, 'member')}
-          </Text>
+          {/* The stack showed at most five sets of initials and a count, so in a
+              group of any size there was nowhere to find out who is actually in
+              it. The count is the way in now. */}
+          <Pressable
+            onPress={() =>
+              navigation.navigate('GroupMembers', { id: groupId, name })
+            }
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="See all members"
+          >
+            <Text style={[styles.count, styles.countLink]}>
+              {plural(members.length, 'member')} ›
+            </Text>
+          </Pressable>
         </View>
 
         {/* Group tiles */}
@@ -137,6 +149,7 @@ const styles = StyleSheet.create({
   header: { alignItems: 'center', gap: spacing[2], paddingVertical: spacing[2] },
   emoji: { fontSize: 44 },
   count: { fontFamily: 'Inter-Regular', fontSize: 12, color: colors.text.tertiary },
+  countLink: { color: colors.semantic.awaiting },
   row: { flexDirection: 'row', gap: spacing[3] },
   col: { gap: spacing[3] },
   q: { fontFamily: 'Barlow-SemiBold', fontSize: 11, letterSpacing: 2, color: colors.semantic.awaiting, marginTop: spacing[3] },

@@ -63,3 +63,4 @@ export { BlockedUsersScreen } from './BlockedUsersScreen';
 export { RankUpScreen } from './RankUpScreen';
 export { StreakScreen } from './StreakScreen';
 export { FriendJoinedScreen } from './FriendJoinedScreen';
+export { GroupMembersScreen } from './GroupMembersScreen';

@@ -261,10 +261,18 @@ export function Icon({ name, size = 24, color = '#F0F0F0', strokeWidth = 2 }: Ic
           <Path d="M18 9a4 4 0 0 1 0 6" {...stroke} />
         </>
       )}
+      {/* Thin rays radiating off a small circle is a sun, which is what this
+          drew before. A cog's teeth are stubby and touch the rim. */}
       {name === 'gear' && (
         <>
-          <Circle cx="12" cy="12" r="3" {...stroke} />
-          <Path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.2 2.2M16.9 16.9l2.2 2.2M19.1 4.9l-2.2 2.2M7.1 16.9l-2.2 2.2" {...stroke} />
+          <Circle cx="12" cy="12" r="7" {...stroke} />
+          <Circle cx="12" cy="12" r="2.6" {...stroke} />
+          <Path
+            d="M12 3.2v2M12 18.8v2M3.2 12h2M18.8 12h2M5.8 5.8l1.4 1.4M16.8 16.8l1.4 1.4M18.2 5.8l-1.4 1.4M7.2 16.8l-1.4 1.4"
+            stroke={color}
+            strokeWidth={2.6}
+            strokeLinecap="butt"
+          />
         </>
       )}
       {name === 'check' && <Path d="M4 12.5l5 5L20 6.5" {...stroke} />}

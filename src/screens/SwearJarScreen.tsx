@@ -14,6 +14,8 @@ import { AddViolationSheet } from './AddViolationSheet';
 import { getJar, getJarRules, ownUp } from '../api/jar';
 import { getMyGroups } from '../api/groups';
 import { useQuery, useAction } from '../hooks/useQuery';
+import { useCurrency } from '../hooks/useCurrency';
+import { formatMoney } from '../lib/money';
 import { isBackendConfigured } from '../lib/supabase';
 import { Icon } from '../components';
 
@@ -29,6 +31,7 @@ const MOCK_VIOLATIONS = [
  * group. With no groups yet there's nothing to show, so we say so.
  */
 export function SwearJarScreen({ navigation, route }: any) {
+  const currency = useCurrency();
   const [addVisible, setAddVisible] = useState(false);
   const cap = 50;
 
@@ -99,7 +102,7 @@ export function SwearJarScreen({ navigation, route }: any) {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <JarCard
-          total={`$${total.toFixed(2)}`}
+          total={formatMoney(Math.round(total * 100), currency)}
           groupName={groupName}
           contributionCount={violations.length}
           capProgress={Math.min(total / cap, 1)}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { colors, spacing } from '../tokens';
+import { View, Text, ScrollView, StyleSheet, Platform, Pressable } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { colors, spacing, radius } from '../tokens';
 import {
   ScreenBackground,
   NavHeader,
@@ -79,7 +80,16 @@ export function CreateBetScreen({ navigation, route }: any) {
   const [group, setGroup] = useState<string>(fromGroup ?? '');
   const [rankOptions, setRankOptions] = useState<string[]>(['', '']);
   const [customAmount, setCustomAmount] = useState('');
-  const [customDays, setCustomDays] = useState('3');
+  // A real calendar. This was a "days from now" number field, which is a
+  // workaround for a date picker rather than a way to answer "when do we know?"
+  // — nobody thinks about a match or a deadline in days from today.
+  const [customDate, setCustomDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 3);
+    d.setHours(23, 59, 0, 0);
+    return d;
+  });
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   // Stakes are ledger-only, but they should still read in the user's own
   // currency rather than a hardcoded pound sign.
@@ -117,14 +127,13 @@ export function CreateBetScreen({ navigation, route }: any) {
 
   const { run: publish, loading: publishing, error: publishError } = useAction(createBet);
 
-  // "Pick a date" used to resolve to exactly 24h, so choosing it changed
-  // nothing and the bet quietly got tomorrow's deadline.
-  const customDaysNum = Math.max(1, Math.min(365, parseInt(customDays, 10) || 0));
+  // Clamp forward: a deadline in the past would arrive already expired.
+  const customMs = Math.max(60_000, customDate.getTime() - Date.now());
   const DEADLINE_MS: Record<Deadline, number> = {
     '1h': 3600_000,
     '24h': 86_400_000,
     '1w': 604_800_000,
-    custom: customDaysNum * 86_400_000,
+    custom: customMs,
   };
 
   const isMoneyStake = stake === 'money' || stake === 'custom';
@@ -291,19 +300,43 @@ export function CreateBetScreen({ navigation, route }: any) {
             <ChoiceChipGroup options={DEADLINE_OPTS} value={deadline} onChange={setDeadline} />
             {deadline === 'custom' && (
               <>
-                <TextInput
-                  label="Days from now"
-                  placeholder="3"
-                  keyboardType="number-pad"
-                  value={customDays}
-                  onChangeText={setCustomDays}
-                />
-                <Text style={styles.helper}>
-                  Settles {new Date(Date.now() + customDaysNum * 86_400_000).toLocaleDateString(
-                    undefined,
-                    { weekday: 'long', day: 'numeric', month: 'long' },
-                  )}
-                </Text>
+                <Pressable
+                  onPress={() => setPickerOpen(true)}
+                  style={styles.dateField}
+                  accessibilityRole="button"
+                  accessibilityLabel="Choose the deadline date"
+                >
+                  <Text style={styles.dateLabel}>Deadline</Text>
+                  <Text style={styles.dateValue}>
+                    {customDate.toLocaleDateString(undefined, {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </Text>
+                </Pressable>
+
+                {/* iOS renders inline and stays open; Android puts up its own
+                    dialog and closes itself, so it is only mounted on demand. */}
+                {(pickerOpen || Platform.OS === 'ios') && (
+                  <DateTimePicker
+                    value={customDate}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                    minimumDate={new Date()}
+                    themeVariant="dark"
+                    accentColor={colors.semantic.awaiting}
+                    onChange={(_event, picked) => {
+                      if (Platform.OS !== 'ios') setPickerOpen(false);
+                      if (!picked) return;
+                      // Keep the end-of-day time; the calendar only sets a date.
+                      const next = new Date(picked);
+                      next.setHours(23, 59, 0, 0);
+                      setCustomDate(next);
+                    }}
+                  />
+                )}
               </>
             )}
           </>
@@ -387,6 +420,20 @@ export function CreateBetScreen({ navigation, route }: any) {
 
 const styles = StyleSheet.create({
   helper: { fontFamily: 'Inter-Regular', fontSize: 13, color: colors.text.tertiary },
+  dateField: {
+    backgroundColor: colors.bg.surface1,
+    borderRadius: radius.md,
+    padding: spacing[4],
+    gap: 4,
+  },
+  dateLabel: {
+    fontFamily: 'Barlow-SemiBold',
+    fontSize: 11,
+    letterSpacing: 1.6,
+    textTransform: 'uppercase',
+    color: colors.semantic.awaiting,
+  },
+  dateValue: { fontFamily: 'Barlow-Bold', fontSize: 17, color: colors.text.primary },
   dots: { alignSelf: 'center', marginVertical: spacing[3] },
   // Without flex:1 the ScrollView sizes to its content, so a taller step —
   // the custom-amount field, the custom-date field — pushed the Back/Next

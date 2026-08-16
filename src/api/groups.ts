@@ -51,3 +51,21 @@ export async function leaveGroup(groupId: string) {
     .eq('user_id', uid!);
   if (error) throw error;
 }
+
+/**
+ * Promote or demote a member. Admin only, and the database refuses to demote
+ * the last admin — a group with nobody who can administer it cannot be repaired
+ * from inside the app.
+ */
+export async function setMemberRole(
+  groupId: string,
+  userId: string,
+  role: 'member' | 'admin',
+): Promise<void> {
+  const { error } = await supabase.rpc('set_member_role', {
+    p_group: groupId,
+    p_user: userId,
+    p_role: role,
+  });
+  if (error) throw error;
+}

@@ -15,6 +15,7 @@ const MESSAGES: Record<string, string> = {
   dispute_window_closed: 'The 24 hours to dispute this have run out.',
   incomplete_ranking: 'Rank every option before you submit.',
   invalid_code: 'That code doesn’t match any group.',
+  last_admin: 'A group needs at least one admin — promote someone else first.',
   invalid_rule: 'That rule isn’t valid for this jar.',
   no_such_bet: 'That bet no longer exists.',
   not_allowed: 'You don’t have permission to do that.',

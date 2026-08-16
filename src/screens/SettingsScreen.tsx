@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+// The picker was a hardcoded six that had drifted from the symbol table it
+// renders through, so adding a currency meant remembering two places.
+import { CURRENCY_CODES } from '../lib/money';
 import { Text, ScrollView, StyleSheet, Linking } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ActionSheet, ScreenBackground, NavHeader, SettingsRow, SettingsSection } from '../components';
@@ -8,7 +11,6 @@ import { useQuery } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 import { links } from '../lib/links';
 
-const CURRENCIES = ['GBP', 'USD', 'EUR', 'INR', 'AUD', 'CAD'];
 
 export function SettingsScreen({ navigation }: any) {
   const [currencyOpen, setCurrencyOpen] = React.useState(false);
@@ -119,7 +121,7 @@ export function SettingsScreen({ navigation }: any) {
       <ActionSheet
         visible={currencyOpen}
         title="Currency"
-        options={CURRENCIES.map((code) => ({
+        options={CURRENCY_CODES.map((code) => ({
           label: CURRENCY_LABEL[code] ?? code,
           primary: code === settings.currency,
           onPress: async () => {

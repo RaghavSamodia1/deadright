@@ -52,7 +52,8 @@
           "photosPermission": "DeadRight needs your photo library so you can attach evidence to a bet.",
           "cameraPermission": "DeadRight uses the camera so you can snap photo evidence when settling or disputing a bet."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "note": "Cred Score + Cookie Jar; no real money — ledger only."

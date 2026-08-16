@@ -10,7 +10,38 @@ const SYMBOLS: Record<string, string> = {
   INR: '₹',
   AUD: 'A$',
   CAD: 'C$',
+  NZD: 'NZ$',
+  SGD: 'S$',
+  HKD: 'HK$',
+  JPY: '¥',
+  CNY: 'CN¥',
+  CHF: 'CHF ',
+  SEK: 'kr ',
+  NOK: 'kr ',
+  DKK: 'kr ',
+  PLN: 'zł ',
+  ZAR: 'R',
+  AED: 'AED ',
+  SAR: 'SAR ',
+  BRL: 'R$',
+  MXN: 'MX$',
+  NGN: '₦',
+  KES: 'KSh ',
+  PHP: '₱',
+  THB: '฿',
+  IDR: 'Rp ',
+  MYR: 'RM',
+  VND: '₫',
+  TRY: '₺',
+  KRW: '₩',
+  ILS: '₪',
+  PKR: 'Rs ',
+  LKR: 'Rs ',
+  BDT: '৳',
 };
+
+/** Every code the picker offers, in the order it shows them. */
+export const CURRENCY_CODES = Object.keys(SYMBOLS);
 
 export function currencySymbol(code?: string | null): string {
   return SYMBOLS[(code ?? 'GBP').toUpperCase()] ?? (code ?? 'GBP').toUpperCase() + ' ';

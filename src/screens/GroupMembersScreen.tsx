@@ -1,9 +1,9 @@
 import React from 'react';
-import { Text, ScrollView, StyleSheet } from 'react-native';
+import { Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { colors, spacing } from '../tokens';
-import { ScreenBackground, NavHeader, ListRow, Avatar, EmptyState } from '../components';
-import { getGroup } from '../api/groups';
-import { useQuery } from '../hooks/useQuery';
+import { ScreenBackground, NavHeader, ListRow, Avatar, EmptyState, ActionSheet } from '../components';
+import { getGroup, setMemberRole } from '../api/groups';
+import { useQuery, useAction } from '../hooks/useQuery';
 import { uidOrNull } from '../lib/supabase';
 import { humanError } from '../lib/errors';
 import { plural } from '../lib/plural';
@@ -19,7 +19,7 @@ export function GroupMembersScreen({ navigation, route }: any) {
   const groupId: string | undefined = route?.params?.id;
   const groupName: string = route?.params?.name ?? 'Group';
 
-  const { data, loading, error } = useQuery<any>(
+  const { data, loading, error, refetch } = useQuery<any>(
     async () => {
       if (!groupId) return null;
       const [group, uid] = await Promise.all([getGroup(groupId), uidOrNull()]);
@@ -30,6 +30,22 @@ export function GroupMembersScreen({ navigation, route }: any) {
   );
 
   const members: any[] = data?.group?.members ?? [];
+  const iAmAdmin = members.some(
+    (m: any) => (m.profile?.id ?? m.user_id) === data?.uid && m.role === 'admin',
+  );
+
+  const [target, setTarget] = React.useState<any | null>(null);
+  const { run: doSetRole, error: roleError } = useAction(setMemberRole);
+
+  const changeRole = async (m: any, role: 'member' | 'admin') => {
+    const uid = m.profile?.id ?? m.user_id;
+    const ok = await doSetRole(groupId!, uid, role);
+    if (ok === null) {
+      Alert.alert('Couldn’t change that', humanError(roleError));
+      return;
+    }
+    refetch();
+  };
 
   return (
     <ScreenBackground tone="base">
@@ -66,10 +82,15 @@ export function GroupMembersScreen({ navigation, route }: any) {
                   value={m.role === 'admin' ? 'Admin' : undefined}
                   valueColor={colors.semantic.awaiting}
                   showChevron={!isMe}
+                  // An admin gets the role controls; everyone else just gets the
+                  // profile. Long-press keeps a destructive-ish action off the
+                  // path of simply looking someone up.
                   onPress={
-                    isMe || !p.handle
-                      ? undefined
-                      : () => navigation.navigate('FriendProfile', { handle: p.handle })
+                    iAmAdmin
+                      ? () => setTarget(m)
+                      : isMe || !p.handle
+                        ? undefined
+                        : () => navigation.navigate('FriendProfile', { handle: p.handle })
                   }
                 />
               );
@@ -77,6 +98,25 @@ export function GroupMembersScreen({ navigation, route }: any) {
           </>
         )}
       </ScrollView>
+      <ActionSheet
+        visible={!!target}
+        title={target?.profile?.display_name ?? target?.profile?.handle ?? 'Member'}
+        options={[
+          ...(target?.profile?.handle
+            ? [
+                {
+                  label: 'View profile',
+                  onPress: () =>
+                    navigation.navigate('FriendProfile', { handle: target.profile.handle }),
+                },
+              ]
+            : []),
+          target?.role === 'admin'
+            ? { label: 'Remove admin', destructive: true, onPress: () => changeRole(target, 'member') }
+            : { label: 'Make admin', primary: true, onPress: () => changeRole(target, 'admin') },
+        ]}
+        onDismiss={() => setTarget(null)}
+      />
     </ScreenBackground>
   );
 }

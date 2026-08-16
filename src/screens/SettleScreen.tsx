@@ -38,7 +38,7 @@ import {
  * record nothing: a coin toss is a way to stop arguing, not a result the ledger
  * should remember. Anything worth keeping is already a bet.
  */
-type Game = 'coin' | 'dice' | 'straw' | 'odds';
+type Game = 'coin' | 'dice' | 'picker' | 'odds';
 
 export function SettleScreen({ navigation }: any) {
   const [game, setGame] = useState<Game>('coin');
@@ -57,7 +57,7 @@ export function SettleScreen({ navigation }: any) {
           segments={[
             { value: 'coin' as Game, label: 'Coin' },
             { value: 'dice' as Game, label: 'Dice' },
-            { value: 'straw' as Game, label: 'Straw' },
+            { value: 'picker' as Game, label: 'Picker' },
             { value: 'odds' as Game, label: 'Odds' },
           ]}
           value={game}
@@ -66,7 +66,7 @@ export function SettleScreen({ navigation }: any) {
 
         {game === 'coin' && <CoinToss />}
         {game === 'dice' && <DiceRoll />}
-        {game === 'straw' && <ShortStraw />}
+        {game === 'picker' && <RandomPicker />}
         {game === 'odds' && <OddsAre />}
 
         <Text style={styles.foot}>
@@ -294,8 +294,8 @@ function DiceRoll() {
   );
 }
 
-// ── Short straw ──────────────────────────────────────────────────────────────
-function ShortStraw() {
+// ── Random picker ────────────────────────────────────────────────────────────
+function RandomPicker() {
   const [raw, setRaw] = useState('');
   const [picked, setPicked] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -336,16 +336,16 @@ function ShortStraw() {
         }}
         multiline
       />
-      <View style={styles.strawFace}>
-        <Text style={styles.strawName} numberOfLines={1}>
+      <View style={styles.pickFace}>
+        <Text style={styles.pickName} numberOfLines={1}>
           {picked ?? '—'}
         </Text>
         <Text style={styles.result}>
-          {picked && !busy ? 'draws the short straw' : `${names.length} in the hat`}
+          {picked && !busy ? 'gets picked' : `${names.length} in the running`}
         </Text>
       </View>
       <Button
-        label="Draw"
+        label="Pick"
         onPress={draw}
         disabled={busy || names.length < 2}
         fullWidth
@@ -435,8 +435,8 @@ const styles = StyleSheet.create({
   diceRow: { flexDirection: 'row', gap: spacing[3] },
 
 
-  strawFace: { alignItems: 'center', gap: 6, minHeight: 96, justifyContent: 'center' },
-  strawName: {
+  pickFace: { alignItems: 'center', gap: 6, minHeight: 96, justifyContent: 'center' },
+  pickName: {
     fontFamily: 'Barlow-Black',
     fontSize: 38,
     letterSpacing: -1,

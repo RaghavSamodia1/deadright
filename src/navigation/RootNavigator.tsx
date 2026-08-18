@@ -25,6 +25,7 @@ import {
   PoolsScreen,
   SettleScreen,
   GroupMembersScreen,
+  GroupSettingsScreen,
   SideSelectionScreen,
   ResolutionScreen,
   EvidenceUploadScreen,
@@ -108,6 +109,7 @@ export function RootNavigator() {
       <Stack.Screen name="Pools" component={PoolsScreen} />
       <Stack.Screen name="Settle" component={SettleScreen} />
       <Stack.Screen name="GroupMembers" component={GroupMembersScreen} />
+      <Stack.Screen name="GroupSettings" component={GroupSettingsScreen} />
 
       {/* Resolution & dispute */}
       <Stack.Screen name="Resolution" component={ResolutionScreen} />

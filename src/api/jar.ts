@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { JarRule, JarViolation } from '../types/database';
+import { totalsByCurrency, type CurrencyTotal } from '../lib/money';
 
 export async function getJarRules(groupId: string): Promise<JarRule[]> {
   const { data, error } = await supabase
@@ -103,27 +104,51 @@ export async function getJar(groupId: string) {
  */
 export async function getJarSummary(): Promise<{
   totalCents: number;
+  /**
+   * Per-currency subtotals. Groups can each set their own unit, so the flat
+   * `totalCents` below is only meaningful when this has a single entry — it used
+   * to add ₹ to $ and print the result under whichever symbol the viewer had.
+   */
+  byCurrency: CurrencyTotal[];
   violationCount: number;
   weekCount: number;
 }> {
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const [{ data: violations, error: vError }, { data: entries, error: lError }] =
-    await Promise.all([
-      supabase.from('jar_violations').select('id, created_at'),
-      supabase
-        .from('ledger_entries')
-        .select('amount_cents, violation_id')
-        .not('violation_id', 'is', null)
-        .eq('status', 'pending'),
-    ]);
+  const [
+    { data: violations, error: vError },
+    { data: entries, error: lError },
+    { data: groups, error: gError },
+  ] = await Promise.all([
+    supabase.from('jar_violations').select('id, created_at, group_id'),
+    supabase
+      .from('ledger_entries')
+      .select('amount_cents, violation_id')
+      .not('violation_id', 'is', null)
+      .eq('status', 'pending'),
+    supabase.from('groups').select('id, currency'),
+  ]);
   if (vError) throw vError;
   if (lError) throw lError;
+  if (gError) throw gError;
+
+  const currencyOfGroup = new Map<string, string>(
+    (groups ?? []).map((g: any) => [g.id, (g.currency ?? 'GBP').toUpperCase()]),
+  );
+  const groupOfViolation = new Map<string, string>(
+    (violations ?? []).map((v: any) => [v.id, v.group_id]),
+  );
 
   const ids = new Set((violations ?? []).map((v) => v.id));
+  const owed = (entries ?? []).filter((e) => ids.has(e.violation_id!));
+
   return {
-    totalCents: (entries ?? [])
-      .filter((e) => ids.has(e.violation_id!))
-      .reduce((sum, e) => sum + e.amount_cents, 0),
+    totalCents: owed.reduce((sum, e) => sum + e.amount_cents, 0),
+    byCurrency: totalsByCurrency(
+      owed.map((e) => ({
+        currency: currencyOfGroup.get(groupOfViolation.get(e.violation_id!) ?? '') ?? 'GBP',
+        cents: e.amount_cents,
+      })),
+    ),
     violationCount: violations?.length ?? 0,
     weekCount: (violations ?? []).filter((v) => v.created_at >= weekAgo).length,
   };
@@ -148,11 +173,19 @@ export async function settleJar(groupId: string, note?: string) {
  * filter is needed here.
  */
 export async function getJarsByGroup(): Promise<
-  { groupId: string; name: string; emoji: string | null; totalCents: number; violationCount: number }[]
+  {
+    groupId: string;
+    name: string;
+    emoji: string | null;
+    totalCents: number;
+    violationCount: number;
+    /** The group's own unit — jar totals across groups are not comparable. */
+    currency: string;
+  }[]
 > {
   const [{ data: groups, error: gErr }, { data: violations, error: vErr }, { data: entries, error: lErr }] =
     await Promise.all([
-      supabase.from('groups').select('id, name, emoji').order('created_at'),
+      supabase.from('groups').select('id, name, emoji, currency').order('created_at'),
       supabase.from('jar_violations').select('id, group_id'),
       supabase
         .from('ledger_entries')
@@ -183,5 +216,6 @@ export async function getJarsByGroup(): Promise<
     emoji: g.emoji,
     totalCents: totalByGroup.get(g.id) ?? 0,
     violationCount: countByGroup.get(g.id) ?? 0,
+    currency: (g as any).currency ?? 'GBP',
   }));
 }

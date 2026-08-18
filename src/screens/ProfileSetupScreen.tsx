@@ -1,8 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { colors, spacing } from '../tokens';
-import { ScreenBackground, NavHeader, Avatar, TextInput, Button } from '../components';
+import {
+  ScreenBackground,
+  NavHeader,
+  Avatar,
+  TextInput,
+  Button,
+  SettingsRow,
+  ActionSheet,
+} from '../components';
 import { claimHandle } from '../api/auth';
+import { updateSettings } from '../api/settings';
+import { CURRENCY_CODES, currencyLabel, deviceCurrency } from '../lib/money';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -11,6 +21,10 @@ import { humanError } from '../lib/errors';
 export function ProfileSetupScreen({ navigation }: any) {
   const [name, setName] = useState('');
   const [handle, setHandle] = useState('');
+  // Asked once, at signup. Everything used to land on formatMoney's GBP default,
+  // so an account never told the app what it counts in.
+  const [currency, setCurrency] = useState(deviceCurrency);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
   const ready = name.trim().length > 1 && handle.trim().length > 2;
   const { run: claim, loading, error } = useAction(claimHandle);
   const { refreshProfile } = useAuth();
@@ -19,6 +33,14 @@ export function ProfileSetupScreen({ navigation }: any) {
     if (!isBackendConfigured) return navigation.replace('Root');
     const profile = await claim(handle, name);
     if (profile) {
+      // Saved after the handle, because the settings row is keyed to the profile
+      // this call creates. A failure here must not strand anyone outside the app —
+      // the currency is editable in Settings, an unfinished signup is not.
+      try {
+        await updateSettings({ currency });
+      } catch {
+        // Non-fatal: they keep the default and can change it in Settings.
+      }
       refreshProfile(); // clears needsProfile so this screen isn't the entry point again
       navigation.replace('Root');
     }
@@ -53,6 +75,17 @@ export function ProfileSetupScreen({ navigation }: any) {
             helper="This is how friends find and call you out."
             error={error ? humanError(error) : undefined}
           />
+
+          <SettingsRow
+            icon="coin"
+            label="Currency"
+            value={currencyLabel(currency)}
+            onPress={() => setCurrencyOpen(true)}
+          />
+          <Text style={styles.helper}>
+            What your bets and jars are counted in. Each group can set its own later —
+            so everyone in a group reads the same figures.
+          </Text>
         </View>
         <Button
           label="Start keeping score"
@@ -63,6 +96,17 @@ export function ProfileSetupScreen({ navigation }: any) {
           style={styles.cta}
         />
       </ScrollView>
+
+      <ActionSheet
+        visible={currencyOpen}
+        title="Currency"
+        options={CURRENCY_CODES.map((code) => ({
+          label: currencyLabel(code),
+          primary: code === currency,
+          onPress: () => setCurrency(code),
+        }))}
+        onDismiss={() => setCurrencyOpen(false)}
+      />
     </ScreenBackground>
   );
 }
@@ -90,5 +134,11 @@ const styles = StyleSheet.create({
     borderColor: colors.bg.base,
   },
   badgeIcon: { fontSize: 16, color: colors.text.inverse, fontWeight: '700' },
+  helper: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 11,
+    lineHeight: 16,
+    color: colors.text.tertiary,
+  },
   cta: { marginBottom: spacing[6] },
 });

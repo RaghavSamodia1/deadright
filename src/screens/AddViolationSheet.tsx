@@ -8,6 +8,8 @@ import { getGroup } from '../api/groups';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 import { humanError } from '../lib/errors';
+import { formatMoney } from '../lib/money';
+import { useGroupCurrency } from '../hooks/useGroupCurrency';
 
 const MOCK_MEMBERS = [
   { id: 'm1', handle: 'Marcus', initials: 'MJ' },
@@ -29,6 +31,7 @@ interface AddViolationSheetProps {
 }
 
 export function AddViolationSheet({ visible, onDismiss, groupId }: AddViolationSheetProps) {
+  const currency = useGroupCurrency(groupId);
   const [member, setMember] = useState<string | null>(null);
   const [rule, setRule] = useState<string | null>(null);
 
@@ -105,7 +108,7 @@ export function AddViolationSheet({ visible, onDismiss, groupId }: AddViolationS
           {rules.map((r: any) => (
             <ChoiceChip
               key={r.id}
-              label={`${r.label} · $${r.amount}`}
+              label={`${r.label} · ${formatMoney(Math.round(r.amount * 100), currency)}`}
               selected={rule === r.id}
               onPress={() => setRule(r.id)}
             />
@@ -122,7 +125,11 @@ export function AddViolationSheet({ visible, onDismiss, groupId }: AddViolationS
       </Text>
 
       <Button
-        label={selectedRule ? `INTO THE JAR — $${selectedRule.amount}` : 'INTO THE JAR'}
+        label={
+          selectedRule
+            ? `INTO THE JAR — ${formatMoney(Math.round(selectedRule.amount * 100), currency)}`
+            : 'INTO THE JAR'
+        }
         onPress={submit}
         disabled={!member || !rule}
         loading={loading}

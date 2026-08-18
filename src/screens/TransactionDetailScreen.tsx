@@ -5,9 +5,12 @@ import { ScreenBackground, NavHeader, ListRow, TimelineEvent, Button } from '../
 import { getLedger, markSettled } from '../api/ledger';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { uidOrNull } from '../lib/supabase';
+import { formatMoney } from '../lib/money';
+import { useCurrency } from '../hooks/useCurrency';
 
 // Ledger entry detail — a settled bet's bookkeeping (no real money).
 export function TransactionDetailScreen({ navigation, route }: any) {
+  const currency = useCurrency();
   const entryId: string | undefined = route?.params?.id;
 
   const { data: entry } = useQuery<any>(
@@ -24,7 +27,11 @@ export function TransactionDetailScreen({ navigation, route }: any) {
   const { run: settle, loading: settling } = useAction(markSettled);
 
   const incoming = entry ? entry.to_user === entry.uid : true;
-  const amount = entry ? (incoming ? entry.amount_cents : -entry.amount_cents) / 100 : 20;
+  const amountCents = entry ? (incoming ? entry.amount_cents : -entry.amount_cents) : 0;
+  const amount = amountCents / 100;
+  // The entry carries its own unit (its group's), so it does not depend on who
+  // is reading the screen.
+  const entryCurrency: string = (entry?.currency ?? currency).toUpperCase();
   const positive = amount >= 0;
   const other = entry ? (incoming ? entry.from : entry.to) : null;
   const otherHandle = other?.handle ? other.handle : '—';
@@ -37,7 +44,8 @@ export function TransactionDetailScreen({ navigation, route }: any) {
       <View style={styles.root}>
         <View style={styles.hero}>
           <Text style={[styles.amount, { color: positive ? colors.semantic.win : colors.semantic.loss }]}>
-            {positive ? '+' : '−'}${Math.abs(amount).toFixed(2)}
+            {positive ? '+' : '−'}
+            {formatMoney(Math.abs(amountCents), entryCurrency)}
           </Text>
           <Text style={styles.sub}>
             {isJar ? 'Cookie Jar' : positive ? 'You won' : 'You lost'}
@@ -62,7 +70,7 @@ export function TransactionDetailScreen({ navigation, route }: any) {
             onPress={() => navigation.navigate('FriendProfile', { handle: otherHandle })}
           />
         )}
-        <ListRow title="Amount" value={`$${Math.abs(amount).toFixed(2)}`} />
+        <ListRow title="Amount" value={formatMoney(Math.abs(amountCents), entryCurrency)} />
 
         {isPending && entryId && (
           <Button

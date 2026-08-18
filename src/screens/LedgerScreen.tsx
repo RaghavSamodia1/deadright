@@ -9,7 +9,7 @@ import { useQuery, useAction } from '../hooks/useQuery';
 import { humanError } from '../lib/errors';
 import { plural } from '../lib/plural';
 import { useCurrency } from '../hooks/useCurrency';
-import { formatMoney } from '../lib/money';
+import { formatMoney, formatTotals, totalsByCurrency } from '../lib/money';
 import { uidOrNull } from '../lib/supabase';
 
 // V2-03 Ledger (design-v2.md §5) — balance hero + stat column + month chart + txns.
@@ -18,7 +18,13 @@ type Txn = {
   id: string;
   title: string;
   group: string;
-  amount: number; // signed cents-as-dollars; + you're owed, − you owe
+  /**
+   * Signed CENTS; + you're owed, − you owe. Was in whole units while the row
+   * rendered it through a cents formatter, so a ₹20 win displayed as ₹0.2.
+   */
+  amountCents: number;
+  /** The entry's own unit — entries can span groups, and groups set currency. */
+  currency: string;
   when: string;
   /** epoch ms, for the weekly chart */
   at?: number;
@@ -27,15 +33,22 @@ type Txn = {
 export function LedgerScreen({ navigation }: any) {
   const currency = useCurrency();
   const MOCK_TXNS: Txn[] = [
-    { id: '1', title: 'Won vs Marcus', group: 'Sunday League', amount: 20, when: '2h ago' },
-    { id: '2', title: 'Lost vs Priya', group: 'Flatmates', amount: -10, when: 'Yesterday' },
-    { id: '3', title: 'Cookie Jar — swearing', group: 'Flatmates', amount: -1, when: '2d ago' },
-    { id: '4', title: 'Won vs Deej', group: 'Sunday League', amount: 15, when: '3d ago' },
+    { id: '1', title: 'Won vs Marcus', group: 'Sunday League', amountCents: 2000, currency, when: '2h ago' },
+    { id: '2', title: 'Lost vs Priya', group: 'Flatmates', amountCents: -1000, currency, when: 'Yesterday' },
+    { id: '3', title: 'Cookie Jar — swearing', group: 'Flatmates', amountCents: -100, currency, when: '2d ago' },
+    { id: '4', title: 'Won vs Deej', group: 'Sunday League', amountCents: 1500, currency, when: '3d ago' },
   ];
 
   const { data: summary } = useQuery(
     getLedgerSummary,
-    { lifetimeCents: 14500, thisMonthCents: 4200, pendingCents: 3000 },
+    {
+      lifetimeCents: 0,
+      thisMonthCents: 0,
+      pendingCents: 0,
+      lifetimeByCurrency: [],
+      thisMonthByCurrency: [],
+      pendingByCurrency: [],
+    },
   );
   const { data: txns } = useQuery<Txn[]>(
     async () => {
@@ -53,7 +66,7 @@ export function LedgerScreen({ navigation }: any) {
     for (const t of txns) {
       const age = Date.now() - (t.at ?? 0);
       const idx = 6 - Math.floor(age / WEEK);
-      if (idx >= 0 && idx < 7) buckets[idx] += t.amount;
+      if (idx >= 0 && idx < 7) buckets[idx] += t.amountCents;
     }
     const peak = Math.max(...buckets.map((b) => Math.abs(b)), 1);
     return buckets.map((net) => ({ net, pct: 12 + (Math.abs(net) / peak) * 88 }));
@@ -68,13 +81,13 @@ export function LedgerScreen({ navigation }: any) {
     const theyOwe = b.netCents > 0;
     Alert.alert(
       `Square up with ${b.displayName}?`,
-      `${theyOwe ? 'They owe you' : 'You owe them'} ${money(Math.abs(b.netCents))} across ${plural(b.entries, 'open item')}. This marks them all settled — it doesn't move any money.`,
+      `${theyOwe ? 'They owe you' : 'You owe them'} ${money(Math.abs(b.netCents), b.currency)} across ${plural(b.entries, 'open item')}. This marks those ${b.currency} items settled — it doesn't move any money.`,
       [
         { text: 'Not yet', style: 'cancel' },
         {
           text: 'Mark settled',
           onPress: async () => {
-            const ok = await doSettle(b.userId);
+            const ok = await doSettle(b.userId, b.currency);
             if (ok === null) {
               Alert.alert('Couldn’t settle up', humanError(settleError));
               return;
@@ -86,28 +99,40 @@ export function LedgerScreen({ navigation }: any) {
     );
   };
 
+  // The jar is group-scoped, so it is read in that group's currency — carry it
+  // out of the query rather than formatting with the viewer's default.
   const { data: jar } = useQuery(
     async () => {
       const groups = await getMyGroups();
-      if (!groups.length) return { totalCents: 0 };
+      if (!groups.length) return { totalCents: 0, currency: null as string | null };
       const { totalCents } = await getJar(groups[0].id);
-      return { totalCents };
+      return { totalCents, currency: (groups[0] as any).currency ?? null };
     },
-    { totalCents: 2350 },
+    { totalCents: 0, currency: null as string | null },
   );
-
-  const jarTotal = jar.totalCents / 100;
 
   // The hero counted settled entries only, so it read +0.00 while the balances
   // below said someone owed you a thousand. Settled is history; what you are up
   // or down right now includes what is still open.
-  const openCents = balances.reduce((sum, b) => sum + b.netCents, 0);
-  const netCents = summary.lifetimeCents + openCents;
+  // Signed, and in the unit the amount is actually denominated in.
+  const money = (cents: number, code?: string | null) =>
+    `${cents >= 0 ? '+' : '\u2212'}${formatMoney(Math.abs(cents), code ?? currency)}`;
 
-  // Hardcoded "$" here while the tiles beside it used the real currency, and
-  // pending was printed as a bare number so £10 outstanding read as a count.
-  const money = (cents: number) =>
-    `${cents >= 0 ? '+' : '\u2212'}${formatMoney(Math.abs(cents), currency)}`;
+  // Net used to be `lifetimeCents + openCents`, both of which added every
+  // currency together. Settled history and still-open balances are combined per
+  // unit instead, and the hero shows the biggest of them.
+  const netTotals = totalsByCurrency([
+    ...summary.lifetimeByCurrency,
+    ...balances.map((b) => ({ currency: b.currency, cents: b.netCents })),
+  ]).sort((a, b) => Math.abs(b.cents) - Math.abs(a.cents));
+  const netMixed = netTotals.length > 1;
+  const netCents = netTotals[0]?.cents ?? 0;
+  const netCurrency = netTotals[0]?.currency ?? currency;
+
+  const pendingTotals = summary.pendingByCurrency;
+  const pendingMixed = pendingTotals.length > 1;
+  const pendingCents = pendingTotals[0]?.cents ?? 0;
+  const pendingCurrency = pendingTotals[0]?.currency ?? currency;
 
   return (
     <ScreenBackground tone="base">
@@ -120,28 +145,40 @@ export function LedgerScreen({ navigation }: any) {
             size="hero"
             tone="mint"
             icon="coin"
-            value={money(netCents)}
-            label="Net this season"
+            value={money(netCents, netCurrency)}
+            label={netMixed ? `Net · ${netCurrency}` : 'Net this season'}
             caption="All bookkeeping — no real money"
           />
           <View style={styles.col}>
             <BentoTile
               size="stat" tone="amber-tint"
-              value={formatMoney(summary.pendingCents, currency)}
-              label="Pending"
+              value={formatMoney(pendingCents, pendingCurrency)}
+              label={pendingMixed ? `Pending · ${pendingCurrency}` : 'Pending'}
             />
             <BentoTile
               size="stat"
               tone="amber"
-              value={`$${jarTotal.toFixed(0)}`}
+              value={formatMoney(jar.totalCents, jar.currency ?? currency)}
               label="Cookie Jar →"
               onPress={() => navigation.navigate('CookieJar')}
             />
           </View>
         </View>
 
+        {/* The hero can only speak for one unit; say what the others come to
+            rather than letting them vanish. */}
+        {netMixed && (
+          <Text style={styles.mixedNote}>
+            Also open: {formatTotals(netTotals.slice(1))}
+          </Text>
+        )}
+
         {/* Row 2 — month chart */}
-        <BentoTile size="chart" tone="navy" label="Last 7 weeks">
+        <BentoTile
+          size="chart"
+          tone="navy"
+          label={netMixed ? `Last 7 weeks · all currencies` : 'Last 7 weeks'}
+        >
           <View style={styles.chart}>
             {weekly.map((w, i) => (
               <View
@@ -172,10 +209,12 @@ export function LedgerScreen({ navigation }: any) {
               const theyOwe = b.netCents > 0;
               return (
                 <ListRow
-                  key={b.userId}
+                  key={`${b.userId}:${b.currency}`}
                   title={b.displayName}
-                  subtitle={`${theyOwe ? 'owes you' : 'you owe'} · ${plural(b.entries, 'open item')}`}
-                  value={money(Math.abs(b.netCents))}
+                  subtitle={`${theyOwe ? 'owes you' : 'you owe'} · ${plural(b.entries, 'open item')}${
+                    netMixed ? ` · ${b.currency}` : ''
+                  }`}
+                  value={money(Math.abs(b.netCents), b.currency)}
                   valueColor={theyOwe ? colors.semantic.win : colors.semantic.disputed}
                   onPress={() => confirmSettle(b)}
                 />
@@ -191,8 +230,8 @@ export function LedgerScreen({ navigation }: any) {
             key={t.id}
             title={t.title}
             subtitle={`${t.group} · ${t.when}`}
-            value={money(t.amount)}
-            valueColor={t.amount >= 0 ? colors.semantic.win : colors.semantic.loss}
+            value={money(t.amountCents, t.currency)}
+            valueColor={t.amountCents >= 0 ? colors.semantic.win : colors.semantic.loss}
             onPress={() => navigation.navigate('TransactionDetail', { id: t.id })}
           />
         ))}
@@ -213,7 +252,8 @@ function toTxn(e: any, uid: string | null): Txn {
       ? 'Cookie Jar'
       : `${incoming ? 'Won vs' : 'Lost vs'} ${otherHandle}`,
     group: e.bet?.title ?? (e.status === 'pending' ? 'Pending' : 'Settled'),
-    amount: (incoming ? e.amount_cents : -e.amount_cents) / 100,
+    amountCents: incoming ? e.amount_cents : -e.amount_cents,
+    currency: (e.currency ?? 'GBP').toUpperCase(),
     when: relativeTime(e.created_at),
     at: new Date(e.created_at).getTime(),
   };
@@ -229,6 +269,11 @@ function relativeTime(iso: string): string {
 }
 
 const styles = StyleSheet.create({
+  mixedNote: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 11,
+    color: colors.text.tertiary,
+  },
   content: {
     padding: spacing.screenGutter,
     gap: spacing[3],

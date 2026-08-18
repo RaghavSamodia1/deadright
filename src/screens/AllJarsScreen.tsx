@@ -4,7 +4,8 @@ import { colors, radius, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, ListRow, EmptyState, Button } from '../components';
 import { getJarsByGroup } from '../api/jar';
 import { useQuery } from '../hooks/useQuery';
-import { formatMoney } from '../lib/money';
+import { formatMoney, formatTotals, totalsByCurrency } from '../lib/money';
+import { useCurrency } from '../hooks/useCurrency';
 import { plural } from '../lib/plural';
 import { humanError } from '../lib/errors';
 
@@ -17,8 +18,15 @@ import { humanError } from '../lib/errors';
  */
 export function AllJarsScreen({ navigation }: any) {
   const { data: jars, loading, error } = useQuery(getJarsByGroup, []);
+  // Only a fallback now: each jar carries its group's own currency, and the
+  // screen's own footnote already says nothing pools across groups. Adding the
+  // cents together and printing them under the viewer's symbol was the bug.
+  const currency = useCurrency();
 
-  const total = jars.reduce((sum, j) => sum + j.totalCents, 0);
+  const totals = totalsByCurrency(
+    jars.map((j) => ({ currency: j.currency, cents: j.totalCents })),
+  );
+  const mixed = totals.length > 1;
 
   return (
     <ScreenBackground tone="base">
@@ -38,9 +46,15 @@ export function AllJarsScreen({ navigation }: any) {
         ) : (
           <>
             <View style={styles.totalCard}>
-              <Text style={styles.totalValue}>{formatMoney(total)}</Text>
+              <Text
+                style={[styles.totalValue, mixed && styles.totalValueMixed]}
+                numberOfLines={2}
+              >
+                {formatTotals(totals, currency)}
+              </Text>
               <Text style={styles.totalLabel}>
                 ACROSS {plural(jars.length, 'JAR').toUpperCase()}
+                {mixed ? ` · ${plural(totals.length, 'CURRENCY', 'CURRENCIES').toUpperCase()}` : ''}
               </Text>
             </View>
 
@@ -53,7 +67,7 @@ export function AllJarsScreen({ navigation }: any) {
                     ? 'Clean sheet'
                     : plural(j.violationCount, 'violation')
                 }
-                value={formatMoney(j.totalCents)}
+                value={formatMoney(j.totalCents, j.currency)}
                 valueColor={j.totalCents > 0 ? colors.semantic.awaiting : colors.text.tertiary}
                 showChevron
                 onPress={() =>
@@ -97,6 +111,8 @@ const styles = StyleSheet.create({
     color: colors.cardInk.onLight.primary,
     includeFontPadding: false,
   },
+  // A run of subtotals needs to fit; 44 only ever suited one figure.
+  totalValueMixed: { fontSize: 26, letterSpacing: -0.5, textAlign: 'center' },
   totalLabel: {
     fontFamily: 'Barlow-SemiBold',
     fontSize: 10,

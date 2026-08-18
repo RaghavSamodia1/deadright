@@ -21,6 +21,14 @@ interface BottomSheetProps {
   // How much of the screen the sheet takes (0–1). Default: auto (content-height)
   snapPoint?: number;
   showHandle?: boolean;
+  /**
+   * Restrict the drag-to-dismiss gesture to the handle.
+   *
+   * The pan is attached to the whole sheet by default, which is right for short
+   * sheets but makes a scrollable one unusable: dragging to scroll the list gets
+   * captured as a sheet drag instead. Sheets with scrolling content set this.
+   */
+  dragFromHandleOnly?: boolean;
 }
 
 export function BottomSheet({
@@ -29,6 +37,7 @@ export function BottomSheet({
   children,
   snapPoint,
   showHandle = true,
+  dragFromHandleOnly = false,
 }: BottomSheetProps) {
   const insets = useSafeAreaInsets();
   const translateY = useSharedValue(SCREEN_HEIGHT);
@@ -77,6 +86,31 @@ export function BottomSheet({
 
   if (!visible) return null;
 
+  const body = (
+    <Animated.View
+      style={[
+        styles.sheet,
+        { paddingBottom: insets.bottom + 16 },
+        snapPoint ? { height: SCREEN_HEIGHT * snapPoint } : null,
+        sheetStyle,
+      ]}
+    >
+      {showHandle &&
+        (dragFromHandleOnly ? (
+          // The only draggable area, so the list below scrolls normally. Padded
+          // out to a usable target rather than the 4pt bar itself.
+          <GestureDetector gesture={gesture}>
+            <View style={styles.handleGrip}>
+              <View style={styles.handle} />
+            </View>
+          </GestureDetector>
+        ) : (
+          <View style={styles.handle} />
+        ))}
+      {children}
+    </Animated.View>
+  );
+
   return (
     <View style={StyleSheet.absoluteFill}>
       {/* Scrim */}
@@ -85,19 +119,7 @@ export function BottomSheet({
       </Animated.View>
 
       {/* Sheet */}
-      <GestureDetector gesture={gesture}>
-        <Animated.View
-          style={[
-            styles.sheet,
-            { paddingBottom: insets.bottom + 16 },
-            snapPoint ? { height: SCREEN_HEIGHT * snapPoint } : null,
-            sheetStyle,
-          ]}
-        >
-          {showHandle && <View style={styles.handle} />}
-          {children}
-        </Animated.View>
-      </GestureDetector>
+      {dragFromHandleOnly ? body : <GestureDetector gesture={gesture}>{body}</GestureDetector>}
     </View>
   );
 }
@@ -112,11 +134,19 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    // Auto-height sheets grew past the top of the screen with no way back —
+    // a 41-row list put its first options off-screen and unreachable.
+    maxHeight: SCREEN_HEIGHT * 0.9,
     backgroundColor: colors.bg.sheet,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
     paddingHorizontal: 20,
     paddingTop: 12,
+  },
+  handleGrip: {
+    paddingTop: 4,
+    paddingBottom: 8,
+    alignItems: 'center',
   },
   handle: {
     width: 36,

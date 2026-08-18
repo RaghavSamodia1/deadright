@@ -1,6 +1,7 @@
 import { supabase, uidAsync } from '../lib/supabase';
 import type { Bet, BetEvent, BetParticipant, BetSide } from '../types/database';
 import { uniqueChannelName } from '../lib/realtime';
+import { getSettings } from './settings';
 
 export interface CreateBetInput {
   groupId: string | null;
@@ -20,6 +21,20 @@ export interface CreateBetInput {
 /** FLOW 4 — publish. Only title is truly required; everything else defaults. */
 export async function createBet(input: CreateBetInput): Promise<Bet> {
   const creator_id = await uidAsync();
+
+  // "Default resolution" in Settings was stored and then never read — this was a
+  // hardcoded 'mutual', so every bet used it whatever the setting said. Only
+  // consulted when the caller hasn't specified, and 'judge' is ignored because
+  // the judge_required constraint needs a judge_id nothing collects yet.
+  let fallbackResolution: 'mutual' | 'group_vote' = 'mutual';
+  if (!input.resolutionMethod) {
+    try {
+      const settings = await getSettings();
+      if (settings?.default_resolution === 'group_vote') fallbackResolution = 'group_vote';
+    } catch {
+      // Settings unavailable — 'mutual' is the schema default anyway.
+    }
+  }
   const { data, error } = await supabase
     .from('bets')
     .insert({
@@ -31,7 +46,7 @@ export async function createBet(input: CreateBetInput): Promise<Bet> {
       stake_amount_cents: input.stakeAmountCents ?? (input.stakeKind === 'money' || !input.stakeKind ? 500 : null),
       dare_forfeit: input.dareForfeit ?? null,
       deadline: input.deadline.toISOString(),
-      resolution_method: input.resolutionMethod ?? 'mutual',
+      resolution_method: input.resolutionMethod ?? fallbackResolution,
       judge_id: input.judgeId ?? null,
       privacy: input.privacy ?? 'group',
     })
@@ -48,6 +63,7 @@ export async function getFeed(groupId?: string) {
     .select(
       `*,
        creator:profiles!bets_creator_id_fkey(handle, display_name, avatar_url),
+       group:groups(name, currency),
        participants:bet_participants(user_id, side)`,
     )
     // A called-off bet is history, not something the group still has to act on.
@@ -66,6 +82,7 @@ export async function getBet(betId: string) {
     .select(
       `*,
        creator:profiles!bets_creator_id_fkey(handle, display_name, avatar_url),
+       group:groups(name, currency),
        participants:bet_participants(user_id, side, agreed,
          profile:profiles(handle, display_name, avatar_url)),
        events:bet_events(
@@ -125,6 +142,31 @@ export function subscribeToBetEvents(betId: string, onEvent: (e: BetEvent) => vo
  * Cancels rather than deletes: other people's participation and timeline hang
  * off the row, and bets carry no delete policy by design.
  */
+/**
+ * Delete a bet outright. Creator only, and only while nothing has settled on it.
+ *
+ * Refused once the bet has ledger or cred rows: those columns are ON DELETE SET
+ * NULL, so they would survive with their link cut — money in everyone's ledger
+ * with no bet behind it. Cancel those instead. Participants are notified.
+ */
+export async function deleteBet(betId: string): Promise<void> {
+  const { error } = await supabase.rpc('delete_bet', { p_bet: betId });
+  if (error) {
+    if (error.message.includes('has_settlement')) {
+      throw new Error(
+        "This bet has already moved money or cred, so it can't be deleted — call it off instead",
+      );
+    }
+    if (error.message.includes('not_allowed')) {
+      throw new Error('Only whoever opened the bet can delete it');
+    }
+    if (error.message.includes('no_such_bet')) {
+      throw new Error('That bet no longer exists');
+    }
+    throw error;
+  }
+}
+
 export async function cancelBet(betId: string, reason?: string): Promise<Bet> {
   const { data, error } = await supabase.rpc('cancel_bet', {
     p_bet: betId,

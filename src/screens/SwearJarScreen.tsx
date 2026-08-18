@@ -14,16 +14,24 @@ import { AddViolationSheet } from './AddViolationSheet';
 import { getJar, getJarRules, ownUp } from '../api/jar';
 import { getMyGroups } from '../api/groups';
 import { useQuery, useAction } from '../hooks/useQuery';
-import { useCurrency } from '../hooks/useCurrency';
-import { formatMoney } from '../lib/money';
+import { useGroupCurrency } from '../hooks/useGroupCurrency';
+import { formatMoney, DEFAULT_JAR_CAP_CENTS } from '../lib/money';
 import { isBackendConfigured } from '../lib/supabase';
 import { Icon } from '../components';
 
+// Amounts as cents, not baked "+$1.00" strings — the demo rows showed dollars
+// whatever currency the account was set to.
 const MOCK_VIOLATIONS = [
-  { id: '1', member: { handle: 'Marcus', initials: 'MJ' }, rule: 'Swearing', amount: '+$1.00', timestamp: '2h ago', disputable: true },
-  { id: '2', member: { handle: 'Raghav', initials: 'RS' }, rule: 'Late to plans', amount: '+$5.00', timestamp: '1d ago', ownedUp: true },
-  { id: '3', member: { handle: 'Abi', initials: 'AK' }, rule: 'Phone at dinner', amount: '+$2.00', timestamp: '2d ago' },
+  { id: '1', member: { handle: 'Marcus', initials: 'MJ' }, rule: 'Swearing', amountCents: 100, timestamp: '2h ago', disputable: true },
+  { id: '2', member: { handle: 'Raghav', initials: 'RS' }, rule: 'Late to plans', amountCents: 500, timestamp: '1d ago', ownedUp: true },
+  { id: '3', member: { handle: 'Abi', initials: 'AK' }, rule: 'Phone at dinner', amountCents: 200, timestamp: '2d ago' },
 ];
+
+const mockRows = (currency?: string | null) =>
+  MOCK_VIOLATIONS.map(({ amountCents, ...v }) => ({
+    ...v,
+    amount: `+${formatMoney(amountCents, currency)}`,
+  }));
 
 /**
  * A jar always belongs to a group — rules, violations and the settle-up are all
@@ -31,15 +39,19 @@ const MOCK_VIOLATIONS = [
  * group. With no groups yet there's nothing to show, so we say so.
  */
 export function SwearJarScreen({ navigation, route }: any) {
-  const currency = useCurrency();
   const [addVisible, setAddVisible] = useState(false);
-  const cap = 50;
 
   // Fall back to the user's first group when opened without one (Home tile).
   const { data: groups } = useQuery(getMyGroups, [] as any[]);
   const groupId: string | undefined = route?.params?.groupId ?? groups?.[0]?.id;
   const groupName: string =
     route?.params?.groupName ?? groups?.[0]?.name ?? 'Your group';
+  // The jar belongs to the group, so its unit and its cap do too — the cap was a
+  // hardcoded 50 here while groups.jar_cap_cents already held the real value.
+  const currency = useGroupCurrency(groupId);
+  const group: any = (groups ?? []).find((g: any) => g?.id === groupId);
+  const capCents: number = group?.jar_cap_cents ?? DEFAULT_JAR_CAP_CENTS;
+  const cap = capCents / 100;
 
   const { data: jar, refetch } = useQuery(
     async () => (groupId ? await getJar(groupId) : { violations: [], totalCents: 2350 }),
@@ -56,10 +68,10 @@ export function SwearJarScreen({ navigation, route }: any) {
 
   const total = jar.totalCents / 100;
   const violations = isBackendConfigured && jar.violations.length
-    ? jar.violations.map(toViolationRow)
+    ? jar.violations.map((v: any) => toViolationRow(v, currency))
     : isBackendConfigured
       ? []
-      : MOCK_VIOLATIONS;
+      : mockRows(currency);
 
   const selfReport = async () => {
     if (!groupId || !rules.length) return setAddVisible(true);
@@ -106,7 +118,7 @@ export function SwearJarScreen({ navigation, route }: any) {
           groupName={groupName}
           contributionCount={violations.length}
           capProgress={Math.min(total / cap, 1)}
-          capLabel={`Cap: $${cap} — jar settles when full`}
+          capLabel={`Cap: ${formatMoney(capCents, currency)} — jar settles when full`}
         />
 
         {total / cap > 0.8 && (
@@ -149,7 +161,7 @@ export function SwearJarScreen({ navigation, route }: any) {
 }
 
 // jar_violations row (with rule + violator joined) → ViolationRow props
-function toViolationRow(v: any) {
+function toViolationRow(v: any, currency?: string | null) {
   const name = v.violator?.display_name ?? v.violator?.handle ?? '??';
   return {
     id: v.id,
@@ -158,7 +170,7 @@ function toViolationRow(v: any) {
       initials: name.slice(0, 2).toUpperCase(),
     },
     rule: v.rule?.label ?? 'Rule',
-    amount: `+$${((v.rule?.amount_cents ?? 0) / 100).toFixed(2)}`,
+    amount: `+${formatMoney(v.rule?.amount_cents ?? 0, currency)}`,
     timestamp: relativeTime(v.created_at),
     ownedUp: !!v.owned_up,
     disputable: v.status === 'pending',

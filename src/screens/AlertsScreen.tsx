@@ -96,6 +96,8 @@ const ACTION_FOR: Record<string, NotificationAction> = {
   bet_invite: 'join',
   bet_joined: null,
   bet_cancelled: null,
+  ledger_reset: null,
+  bet_deleted: null,
   resolution_request: 'resolve',
   outcome_proposed: 'resolve',
   dispute_raised: 'view-dispute',

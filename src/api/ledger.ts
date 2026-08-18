@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { totalsByCurrency, type CurrencyTotal } from '../lib/money';
 
 /** S37 — full ledger with bet context, newest first. */
 export async function getLedger() {
@@ -18,12 +19,18 @@ export async function getLedger() {
   return data;
 }
 
-/** Summary card numbers: lifetime net, this month, pending. */
+/**
+ * Summary card numbers: lifetime net, this month, pending.
+ *
+ * The flat `*Cents` fields add every currency together, so they are only
+ * meaningful when the matching `*ByCurrency` list has a single entry. Prefer the
+ * lists — that is the whole point of them.
+ */
 export async function getLedgerSummary() {
   const uid = (await supabase.auth.getSession()).data.session?.user.id;
   const { data, error } = await supabase
     .from('ledger_entries')
-    .select('from_user, to_user, amount_cents, status, created_at')
+    .select('from_user, to_user, amount_cents, status, created_at, currency')
     .or(`from_user.eq.${uid},to_user.eq.${uid}`);
   if (error) throw error;
 
@@ -31,19 +38,31 @@ export async function getLedgerSummary() {
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
-  let lifetime = 0;
-  let thisMonth = 0;
-  let pending = 0;
-  for (const e of data ?? []) {
+  const lifetime: { currency: string; cents: number }[] = [];
+  const thisMonth: { currency: string; cents: number }[] = [];
+  const pending: { currency: string; cents: number }[] = [];
+
+  for (const e of (data ?? []) as any[]) {
     const signed = e.to_user === uid ? e.amount_cents : -e.amount_cents;
+    const currency = (e.currency ?? 'GBP').toUpperCase();
     if (e.status === 'settled') {
-      lifetime += signed;
-      if (new Date(e.created_at) >= monthStart) thisMonth += signed;
+      lifetime.push({ currency, cents: signed });
+      if (new Date(e.created_at) >= monthStart) thisMonth.push({ currency, cents: signed });
     } else {
-      pending += Math.abs(signed);
+      pending.push({ currency, cents: Math.abs(signed) });
     }
   }
-  return { lifetimeCents: lifetime, thisMonthCents: thisMonth, pendingCents: pending };
+
+  const sum = (rows: { cents: number }[]) => rows.reduce((t, r) => t + r.cents, 0);
+
+  return {
+    lifetimeCents: sum(lifetime),
+    thisMonthCents: sum(thisMonth),
+    pendingCents: sum(pending),
+    lifetimeByCurrency: totalsByCurrency(lifetime),
+    thisMonthByCurrency: totalsByCurrency(thisMonth),
+    pendingByCurrency: totalsByCurrency(pending),
+  };
 }
 
 /** Mark a pending entry settled ("Sam paid you"). Either party can mark. */
@@ -62,6 +81,12 @@ export interface Balance {
   /** Positive = they owe you. Negative = you owe them. In cents. */
   netCents: number;
   entries: number;
+  /**
+   * The unit this balance is in. One person can owe you in two currencies — a
+   * ₹ group and a $ group — and those are two debts, not one. Netting them
+   * together would invent a number that is true in neither.
+   */
+  currency: string;
 }
 
 /**
@@ -79,7 +104,7 @@ export async function getBalances(): Promise<Balance[]> {
   const { data, error } = await supabase
     .from('ledger_entries')
     .select(
-      `from_user, to_user, amount_cents, status,
+      `from_user, to_user, amount_cents, status, currency,
        from:profiles!ledger_entries_from_user_fkey(handle, display_name),
        to:profiles!ledger_entries_to_user_fkey(handle, display_name)`,
     )
@@ -95,16 +120,21 @@ export async function getBalances(): Promise<Balance[]> {
     const other = theyOweMe ? e.from : e.to;
     if (!otherId || otherId === uid) continue;
 
-    const row = by.get(otherId) ?? {
+    // Keyed per person *and* per currency, so a ₹ debt and a $ debt with the
+    // same person stay apart.
+    const currency = (e.currency ?? 'GBP').toUpperCase();
+    const key = `${otherId}:${currency}`;
+    const row = by.get(key) ?? {
       userId: otherId,
       handle: other?.handle ?? 'someone',
       displayName: other?.display_name ?? other?.handle ?? 'Someone',
       netCents: 0,
       entries: 0,
+      currency,
     };
     row.netCents += theyOweMe ? e.amount_cents : -e.amount_cents;
     row.entries += 1;
-    by.set(otherId, row);
+    by.set(key, row);
   }
 
   // A net of zero is square — two people who have cancelled each other out do
@@ -119,10 +149,17 @@ export async function getBalances(): Promise<Balance[]> {
  * settled. Either side can do it — the same rule as a single entry, since the
  * ledger tracks what was agreed, not money that moved.
  */
-export async function settleUpWith(otherUserId: string): Promise<void> {
+export async function settleUpWith(
+  otherUserId: string,
+  /**
+   * Restrict to one currency. Balances are listed per currency, so squaring up a
+   * ₹ row must not quietly settle the same person's $ entries as well.
+   */
+  currency?: string,
+): Promise<void> {
   const uid = (await supabase.auth.getSession()).data.session?.user.id;
   if (!uid) throw new Error('not_authenticated');
-  const { error } = await supabase
+  let q = supabase
     .from('ledger_entries')
     .update({ status: 'settled', settled_at: new Date().toISOString() })
     .eq('status', 'pending')
@@ -130,5 +167,26 @@ export async function settleUpWith(otherUserId: string): Promise<void> {
       `and(from_user.eq.${uid},to_user.eq.${otherUserId}),` +
         `and(from_user.eq.${otherUserId},to_user.eq.${uid})`,
     );
+  if (currency) q = q.eq('currency', currency.toUpperCase());
+  const { error } = await q;
   if (error) throw error;
+}
+
+/**
+ * Delete every ledger entry you are party to, and notify the people you shared
+ * them with. Returns how many rows were removed.
+ *
+ * Entries are shared rows, so this clears them from the other person's ledger as
+ * well — hence the notification. Jar violation records are left in place, so a
+ * jar can read "1 violation · 0" until it is settled again. Irreversible.
+ */
+export async function resetMyLedger(): Promise<number> {
+  const { data, error } = await supabase.rpc('reset_my_ledger');
+  if (error) {
+    if (error.message.includes('not_authenticated')) {
+      throw new Error('Sign in again to reset your ledger');
+    }
+    throw error;
+  }
+  return typeof data === 'number' ? data : 0;
 }

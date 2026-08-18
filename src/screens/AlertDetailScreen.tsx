@@ -17,6 +17,7 @@ const ROUTE_FOR: Record<string, { label: string; screen: string } | undefined> =
   bet_won: { label: 'See the bet', screen: 'BetDetail' },
   bet_lost: { label: 'See the bet', screen: 'BetDetail' },
   jar_violation: { label: 'Open the jar', screen: 'CookieJar' },
+  ledger_reset: { label: 'Open the ledger', screen: 'Ledger' },
   jar_cap_reached: { label: 'Open the jar', screen: 'CookieJar' },
   group_joined: { label: 'Open the group', screen: 'Group' },
   cred_change: { label: 'See your profile', screen: 'Profile' },

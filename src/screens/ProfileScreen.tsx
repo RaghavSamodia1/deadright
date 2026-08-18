@@ -16,6 +16,8 @@ import { getFeed } from '../api/bets';
 import { useQuery } from '../hooks/useQuery';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
+import { useCurrency } from '../hooks/useCurrency';
+import { formatMoney } from '../lib/money';
 import { Icon } from '../components';
 
 type Tab = 'all' | 'wins' | 'losses';
@@ -23,6 +25,7 @@ type Tab = 'all' | 'wins' | 'losses';
 // V2-05 Profile (design-v2.md §5) — cred ring hero + stats + filtered history.
 export function ProfileScreen({ navigation }: any) {
   const [tab, setTab] = useState<Tab>('all');
+  const currency = useCurrency();
 
   const { data: profile } = useQuery(getMyProfile, {
     handle: 'You',
@@ -59,7 +62,7 @@ export function ProfileScreen({ navigation }: any) {
       author: { handle: 'You', initials: 'RS' },
       group: 'Sunday League',
       sideAPercent: 55, sideACount: 6, sideBCount: 5, participantCount: 11,
-      stake: '£10', deadline: new Date(Date.now() - 1000 * 60 * 60 * 48),
+      stake: formatMoney(1000, currency), deadline: new Date(Date.now() - 1000 * 60 * 60 * 48),
     },
     {
       id: 'h2',
@@ -75,7 +78,7 @@ export function ProfileScreen({ navigation }: any) {
   const { data: history } = useQuery<BetCardData[]>(
     async () => {
       const uid = await uidOrNull();
-      return (await getFeed()).map((b) => toBetCard(b, uid));
+      return (await getFeed()).map((b) => toBetCard(b, uid, currency));
     },
     MOCK_HISTORY,
   );

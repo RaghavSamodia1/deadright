@@ -14,19 +14,22 @@ import { getFeed } from '../api/bets';
 import { useQuery } from '../hooks/useQuery';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
+import { useCurrency } from '../hooks/useCurrency';
+import { formatMoney } from '../lib/money';
 
 // V2-08 Full feed (design-v2.md §5) — the v1 feed, now a pushed screen from Home.
 type Filter = 'all' | 'awaiting' | 'live' | 'win' | 'disputed';
 
 export function FeedScreen({ navigation }: any) {
   const [filter, setFilter] = useState<Filter>('all');
+  const currency = useCurrency();
 
   const MOCK: BetCardData[] = [
     {
       id: '1', title: 'Arsenal win the league this season', status: 'awaiting',
       author: { handle: 'Marcus', initials: 'MC' }, group: 'Sunday League',
       sideAPercent: 62, sideACount: 5, sideBCount: 3, participantCount: 8,
-      stake: '£10', deadline: new Date(Date.now() + 1000 * 60 * 60 * 26),
+      stake: formatMoney(1000, currency), deadline: new Date(Date.now() + 1000 * 60 * 60 * 26),
     },
     {
       id: '2', title: 'Priya finishes the marathon under 4h', status: 'live',
@@ -51,7 +54,7 @@ export function FeedScreen({ navigation }: any) {
   const { data: bets, loading, refetch } = useQuery<BetCardData[]>(
     async () => {
       const uid = await uidOrNull();
-      return (await getFeed()).map((b) => toBetCard(b, uid));
+      return (await getFeed()).map((b) => toBetCard(b, uid, currency));
     },
     MOCK,
   );

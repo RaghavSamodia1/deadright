@@ -17,14 +17,16 @@ import { useQuery } from '../hooks/useQuery';
 import { uidOrNull } from '../lib/supabase';
 import { toBetCard } from '../lib/mappers';
 import { plural } from '../lib/plural';
-import { useCurrency } from '../hooks/useCurrency';
+import { useGroupCurrency } from '../hooks/useGroupCurrency';
 import { formatMoney } from '../lib/money';
 import { Icon } from '../components';
 
 // Group detail — members, the group's Cookie Jar, and its open bets.
 export function GroupScreen({ navigation, route }: any) {
-  const currency = useCurrency();
   const groupId: string | undefined = route?.params?.id;
+  // The group's unit, so every member reads this jar and these stakes the same
+  // way — not the viewer's personal default.
+  const currency = useGroupCurrency(groupId);
 
   const { data: group } = useQuery<any>(
     async () => (groupId ? await getGroup(groupId) : null),
@@ -41,7 +43,7 @@ export function GroupScreen({ navigation, route }: any) {
     async () => {
       if (!groupId) return [];
       const uid = await uidOrNull();
-      return (await getFeed(groupId)).map((b) => toBetCard(b, uid));
+      return (await getFeed(groupId)).map((b) => toBetCard(b, uid, currency));
     },
     [],
     [groupId],
@@ -70,6 +72,11 @@ export function GroupScreen({ navigation, route }: any) {
             onPress: () =>
               navigation.navigate('ShareInvite', { name, groupId, code: group?.invite_code }),
             accessibilityLabel: 'Invite',
+          },
+          {
+            icon: <Icon name="gear" size={20} color={colors.text.secondary} strokeWidth={2} />,
+            onPress: () => navigation.navigate('GroupSettings', { id: groupId, name }),
+            accessibilityLabel: 'Group settings',
           },
         ]}
       />

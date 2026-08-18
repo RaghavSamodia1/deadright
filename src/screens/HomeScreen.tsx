@@ -26,21 +26,27 @@ import { toBetCard } from '../lib/mappers';
 import { plural } from '../lib/plural';
 import { humanError } from '../lib/errors';
 import { useCurrency } from '../hooks/useCurrency';
-import { formatMoney } from '../lib/money';
+import { formatMoney, formatTotals, DEFAULT_JAR_CAP_CENTS } from '../lib/money';
 
 // v2 bento hub (design-v2.md §2) — no bottom nav; tiles are the navigation.
 export function HomeScreen({ navigation }: any) {
   const currency = useCurrency();
-  const jarCap = 50;
 
   // Was a hardcoded 23.5 with a hardcoded "4 violations this week" — it showed
   // $23.50 to an account whose only jar was empty.
   const { data: jarSummary, refetch: refetchJar } = useQuery(getJarSummary, {
+    byCurrency: [],
     totalCents: 0,
     violationCount: 0,
     weekCount: 0,
   });
-  const jarTotal = jarSummary.totalCents / 100;
+  // Groups each carry their own currency, so the jars cannot be added into one
+  // figure. The hero shows the biggest currency's subtotal and owns up to the
+  // rest in its caption; AllJars has the full breakdown.
+  const jarTotals = jarSummary.byCurrency ?? [];
+  const jarMixed = jarTotals.length > 1;
+  const jarCurrency = jarTotals[0]?.currency ?? currency;
+  const jarTotal = (jarTotals[0]?.cents ?? 0) / 100;
 
   const { data: profile } = useQuery(getMyProfile, {
     handle: 'you',
@@ -51,10 +57,19 @@ export function HomeScreen({ navigation }: any) {
   } as any);
 
   const { data: summary } = useQuery(getLedgerSummary, {
-    lifetimeCents: 14500,
+    lifetimeCents: 0,
     thisMonthCents: 0,
     pendingCents: 0,
+    lifetimeByCurrency: [],
+    thisMonthByCurrency: [],
+    pendingByCurrency: [],
   });
+
+  // Same rule as the jar hero: the tile shows the dominant currency's net rather
+  // than a sum across units that means nothing.
+  const ledgerTotals = summary.lifetimeByCurrency ?? [];
+  const ledgerCents = ledgerTotals[0]?.cents ?? 0;
+  const ledgerCurrency = ledgerTotals[0]?.currency ?? currency;
 
   const {
     data: bets,
@@ -64,7 +79,7 @@ export function HomeScreen({ navigation }: any) {
   } = useQuery<BetCardData[]>(
     async () => {
       const uid = await uidOrNull();
-      return (await getFeed()).map((b) => toBetCard(b, uid));
+      return (await getFeed()).map((b) => toBetCard(b, uid, currency));
     },
     [],
   );
@@ -73,6 +88,14 @@ export function HomeScreen({ navigation }: any) {
   // so that's the first thing to fix rather than showing empty tiles.
   const { data: groups, refetch: refetchGroups } = useQuery(getMyGroups, [] as any[]);
   const noGroups = isBackendConfigured && groups.length === 0;
+
+  // groups.jar_cap_cents has held the real cap since the first migration; this
+  // was a hardcoded 50 that ignored it.
+  const jarCap =
+    ((groups ?? []).reduce(
+      (sum: number, g: any) => sum + (g?.jar_cap_cents ?? DEFAULT_JAR_CAP_CENTS),
+      0,
+    ) || DEFAULT_JAR_CAP_CENTS) / 100;
 
 
   // Someone else calling a bet or joining a side should show up without a
@@ -144,7 +167,7 @@ export function HomeScreen({ navigation }: any) {
             tone="amber"
             icon="jar"
             countUp={jarTotal}
-            formatValue={(n) => formatMoney(Math.round(n * 100), currency)}
+            formatValue={(n) => formatMoney(Math.round(n * 100), jarCurrency)}
             label={
               jarSummary.weekCount > 0
                 ? `${jarSummary.weekCount} this week`
@@ -152,15 +175,26 @@ export function HomeScreen({ navigation }: any) {
                   ? `${jarSummary.violationCount} all time`
                   : 'Nobody has slipped yet'
             }
-            caption="Open the jar"
+            caption={
+              jarMixed
+                ? `+ ${formatTotals(jarTotals.slice(1))} more`
+                : 'Open the jar'
+            }
             // The tile sums every group's jar, so it opens the breakdown —
             // sending it to CookieJar with no group silently showed only
             // whichever group came first.
             onPress={() => navigation.navigate('AllJars')}
           >
-            <View style={styles.capTrack}>
-              <View style={[styles.capFill, { width: `${(jarTotal / jarCap) * 100}%` }]} />
-            </View>
+            {!jarMixed && (
+              <View style={styles.capTrack}>
+                <View
+                  style={[
+                    styles.capFill,
+                    { width: `${Math.min(jarTotal / jarCap, 1) * 100}%` },
+                  ]}
+                />
+              </View>
+            )}
           </BentoTile>
           <View style={styles.col}>
             <BentoTile
@@ -190,7 +224,7 @@ export function HomeScreen({ navigation }: any) {
           />
           <View style={styles.col}>
             <BentoTile
-              size="nav" tone="mint-tint" value={`${money(summary.lifetimeCents)}`} label="Ledger" icon="ledger"
+              size="nav" tone="mint-tint" value={money(ledgerCents, ledgerCurrency)} label="Ledger" icon="ledger"
               onPress={() => navigation.navigate('Ledger')}
             />
             <BentoTile
@@ -202,38 +236,37 @@ export function HomeScreen({ navigation }: any) {
 
         </Rise>
 
-        {/* Row 3 — the action strip, two rows of three. */}
+        {/* Row 3 — the action strip, as two unequal pairs rather than rows of
+            three: identical tiles in a line read as a toolbar, not a bento.
+            Each row splits differently (1/3+2/3, then 1/2+1/2) and the large
+            side flips, breaking the large-on-the-left run of rows 1 and 2.
+            Held to two rows on purpose — a third pushed the bento past the fold
+            on a 852pt screen, so the grid needed scrolling to take in.
+            The "All bets" and "Alerts" tiles are gone: both duplicated targets
+            already on this screen (the "See all" action in the feed below, and
+            the header bell, which carries the unread badge too). */}
         <Rise index={2}>
         <View style={styles.strip}>
           <View style={styles.row}>
             <BentoTile
-              size="nav" tone="amber" label="New bet" icon="plus"
-              onPress={() => navigation.navigate('CreateBet')}
-            />
-            <BentoTile
-              size="nav" tone="navy" label="Join code" icon="link"
-              onPress={() => navigation.navigate('JoinGroup')}
-            />
-            <BentoTile
-              size="nav" tone="navy" label="Pools" icon="party"
+              size="stat" tone="navy" label="Pools" icon="party"
               onPress={() => navigation.navigate('Pools')}
             />
+            {/* The primary action gets the widest tile on the strip. */}
+            <BentoTile
+              size="band" tone="amber" label="New bet" icon="plus"
+              caption="Call it now"
+              onPress={() => navigation.navigate('CreateBet')}
+            />
           </View>
-          {/* Settle it, plus two destinations that had no tile at all: the full
-              feed was only reachable through "See all", and alerts only through
-              the bell in the header. */}
           <View style={styles.row}>
             <BentoTile
-              size="nav" tone="navy" label="Settle it" icon="dice"
+              size="half" tone="navy" label="Settle it" icon="dice"
               onPress={() => navigation.navigate('Settle')}
             />
             <BentoTile
-              size="nav" tone="navy" label="All bets" icon="inbox"
-              onPress={() => navigation.navigate('AllBets')}
-            />
-            <BentoTile
-              size="nav" tone="navy" label="Alerts" icon="bell"
-              onPress={() => navigation.navigate('Alerts')}
+              size="half" tone="navy" label="Join code" icon="link"
+              onPress={() => navigation.navigate('JoinGroup')}
             />
           </View>
         </View>
@@ -303,8 +336,10 @@ export function HomeScreen({ navigation }: any) {
   );
 }
 
-const money = (cents: number) =>
-  `${cents >= 0 ? '+' : '−'}$${Math.abs(cents / 100).toFixed(0)}`;
+// The "$" was hardcoded here, so the Ledger tile printed "+$0" beside a hero
+// showing ₹. Signed, and in whatever currency the user actually picked.
+const money = (cents: number, currency?: string | null) =>
+  `${cents >= 0 ? '+' : '−'}${formatMoney(Math.abs(cents), currency)}`;
 
 const styles = StyleSheet.create({
   content: {

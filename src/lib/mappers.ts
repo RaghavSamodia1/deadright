@@ -6,7 +6,11 @@ import { formatMoney } from './money';
  * DB `bets` row (with embedded creator + participants) → the shape BetCard
  * renders. Kept in one place so Home, Feed, Profile and Group agree.
  */
-export function toBetCard(b: any, myUserId?: string | null): BetCardData {
+export function toBetCard(
+  b: any,
+  myUserId?: string | null,
+  currency?: string | null,
+): BetCardData {
   const participants: any[] = b.participants ?? [];
   const sideA = participants.filter((p) => p.side === 'a').length;
   const sideB = participants.filter((p) => p.side === 'b').length;
@@ -28,7 +32,7 @@ export function toBetCard(b: any, myUserId?: string | null): BetCardData {
     sideACount: sideA,
     sideBCount: sideB,
     participantCount: total,
-    stake: formatStake(b),
+    stake: formatStake(b, betCurrency(b, currency)),
     isOrdinal: b.type === 'ordinal',
     deadline: new Date(b.deadline),
     isCreator: b.is_creator ?? undefined,
@@ -73,7 +77,17 @@ function toBetStatus(b: any, myUserId?: string | null): BetStatus {
   }
 }
 
-function formatStake(b: any): string | undefined {
+/**
+ * A bet's unit comes from the bet, not from whoever is reading it: its group's
+ * currency, or its own for a solo bet. Using the viewer's setting made a stake
+ * read ₹10 on the bet screen while the ledger entry it produced said £10 — the
+ * group's actual unit. `fallback` only covers a bet whose group didn't load.
+ */
+export function betCurrency(b: any, fallback?: string | null): string | undefined {
+  return b?.group?.currency ?? b?.currency ?? fallback ?? undefined;
+}
+
+function formatStake(b: any, currency?: string | null): string | undefined {
   // dare_forfeit already carries its own emoji ("🏆 Bragging rights"), and it is
   // the whole point of the stake — returning a bare 🎲 threw it away and every
   // non-money bet looked identical.
@@ -81,6 +95,8 @@ function formatStake(b: any): string | undefined {
   if (b.stake_kind === 'secret') return '🤐';
   // toFixed(0) rounded a custom £12.50 stake to "£13" — formatMoney keeps the
   // decimals when there are any and drops them when there aren't.
-  if (b.stake_amount_cents) return formatMoney(b.stake_amount_cents);
+  // Without the currency this fell back to GBP, so a stake printed "£12.50" on
+  // a screen whose every other figure was the user's own currency.
+  if (b.stake_amount_cents) return formatMoney(b.stake_amount_cents, currency);
   return undefined;
 }

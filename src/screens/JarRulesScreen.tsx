@@ -12,8 +12,8 @@ import {
 } from '../components';
 import { getJarRules, proposeRule, settleJar } from '../api/jar';
 import { useQuery, useAction } from '../hooks/useQuery';
-import { useCurrency } from '../hooks/useCurrency';
-import { formatMoney } from '../lib/money';
+import { useGroupCurrency } from '../hooks/useGroupCurrency';
+import { formatMoney, DEFAULT_JAR_CAP_CENTS } from '../lib/money';
 import { isBackendConfigured } from '../lib/supabase';
 import { humanError } from '../lib/errors';
 
@@ -28,8 +28,8 @@ const AMOUNTS = [1, 2, 5, 10];
 
 /** Rules belong to a group's jar — proposing one writes to that group. */
 export function JarRulesScreen({ navigation, route }: any) {
-  const currency = useCurrency();
   const groupId: string | undefined = route?.params?.groupId;
+  const currency = useGroupCurrency(groupId);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [label, setLabel] = useState('');
   const [emoji, setEmoji] = useState('🤬');
@@ -118,7 +118,8 @@ export function JarRulesScreen({ navigation, route }: any) {
         )}
 
         <Text style={styles.footnote}>
-          Jar cap: $50 · When full, the jar settles into a group event and everyone’s
+          {`Jar cap: ${formatMoney(DEFAULT_JAR_CAP_CENTS, currency)} · `}
+          When full, the jar settles into a group event and everyone’s
           ledger updates proportionally.
         </Text>
       </ScrollView>

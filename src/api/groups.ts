@@ -69,3 +69,26 @@ export async function setMemberRole(
   });
   if (error) throw error;
 }
+
+/**
+ * Set the group's currency — the unit every amount inside it is read in.
+ *
+ * Admin only (the database enforces it too). This relabels rather than converts:
+ * a jar holding 500 cents becomes ₹5 instead of $5, so callers should confirm
+ * with the user when the group already has money recorded.
+ */
+export async function setGroupCurrency(groupId: string, currency: string) {
+  const { error } = await supabase.rpc('set_group_currency', {
+    p_group: groupId,
+    p_currency: currency.toUpperCase(),
+  });
+  if (error) {
+    if (error.message.includes('admin_only')) {
+      throw new Error('Only a group admin can change the currency');
+    }
+    if (error.message.includes('invalid_currency')) {
+      throw new Error('That currency code looks wrong');
+    }
+    throw error;
+  }
+}

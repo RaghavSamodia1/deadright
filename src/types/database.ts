@@ -32,6 +32,8 @@ export type NotificationType =
   | 'bet_lost'
   | 'cred_change'
   | 'jar_violation'
+  | 'ledger_reset'
+  | 'bet_deleted'
   | 'jar_cap_reached'
   | 'group_joined';
 export type EventKind =

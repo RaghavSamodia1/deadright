@@ -17,19 +17,21 @@ import {
   type Stat,
   type TimelineTone,
 } from '../components';
-import { getBet, cancelBet } from '../api/bets';
+import { getBet, cancelBet, deleteBet } from '../api/bets';
 import { agreeOutcome, raiseDispute } from '../api/resolution';
 import type { DisputeReason } from '../types/database';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { useRealtime } from '../hooks/useRealtime';
 import { uidOrNull } from '../lib/supabase';
-import { toBetCard } from '../lib/mappers';
+import { toBetCard, betCurrency } from '../lib/mappers';
 import { formatMoney } from '../lib/money';
+import { useCurrency } from '../hooks/useCurrency';
 import { Icon } from '../components';
 import { humanError } from '../lib/errors';
 
 // V2-04 Bet Detail (design-v2.md §5) — BetCard + stat strip + timeline + action.
 export function BetDetailScreen({ navigation, route }: any) {
+  const currency = useCurrency();
   const betId: string | undefined = route?.params?.id;
 
   const MOCK: BetCardData = {
@@ -42,7 +44,7 @@ export function BetDetailScreen({ navigation, route }: any) {
     sideACount: 5,
     sideBCount: 3,
     participantCount: 8,
-    stake: '£10',
+    stake: formatMoney(1000, currency),
     deadline: new Date(Date.now() + 1000 * 60 * 60 * 26),
   };
 
@@ -67,7 +69,11 @@ export function BetDetailScreen({ navigation, route }: any) {
     }, [betId]),
   );
 
-  const bet: BetCardData = raw ? toBetCard(raw, raw.uid) : MOCK;
+  const bet: BetCardData = raw ? toBetCard(raw, raw.uid, currency) : MOCK;
+  // The bet's own unit — its group's, or its own if it has no group. The viewer's
+  // setting is only a fallback, otherwise the stake and pot here disagreed with
+  // the ledger entry the bet produced.
+  const betUnit = betCurrency(raw, currency);
   const events: any[] = raw?.events ?? [];
   const myEntry = (raw?.participants ?? []).find((p: any) => p.user_id === raw?.uid);
   const canJoin = raw ? raw.status === 'active' || raw.status === 'live' : true;
@@ -109,7 +115,7 @@ export function BetDetailScreen({ navigation, route }: any) {
       // toFixed(0) turned a £12.50 stake into a "£13" pot. Same rounding bug
       // as formatStake had; same fix.
       value: stakeCents
-        ? formatMoney(stakeCents * Math.max(bet.participantCount, 1))
+        ? formatMoney(stakeCents * Math.max(bet.participantCount, 1), betUnit)
         : '—',
       label: 'Pot',
     },
@@ -128,11 +134,19 @@ export function BetDetailScreen({ navigation, route }: any) {
 
   const [menuOpen, setMenuOpen] = React.useState(false);
   const { run: doCancel, error: cancelError } = useAction(cancelBet);
+  const { run: doDelete, error: deleteError } = useAction(deleteBet);
 
   // Creator-only, and only while it is still open. After the deadline the
   // routes are resolving or disputing — pulling a bet once the result is known
   // is the move the app exists to prevent.
   const canCancel = !!raw?.uid && raw?.creator_id === raw?.uid && raw?.status === 'active';
+
+  // Deleting stays available on a cancelled bet — calling something off and then
+  // clearing it away is the normal path for one opened by mistake. The server
+  // refuses if anything settled on it; this only hides the obvious cases.
+  const isMine = !!raw?.uid && raw?.creator_id === raw?.uid;
+  const settledStatuses = ['win', 'loss', 'settled', 'disputed'];
+  const canDelete = isMine && !settledStatuses.includes(raw?.status ?? '');
 
   const confirmCancel = () =>
     Alert.alert(
@@ -158,6 +172,30 @@ export function BetDetailScreen({ navigation, route }: any) {
       ],
     );
 
+  const confirmDelete = () =>
+    Alert.alert(
+      'Delete this bet?',
+      'It disappears for everyone, along with its timeline and anyone’s side. ' +
+        'Whoever had taken a side is told. This cannot be undone — to keep the ' +
+        'record and mark it off, call it off instead.',
+      [
+        { text: 'Keep it', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            if (!betId) return;
+            const ok = await doDelete(betId);
+            if (ok === null) {
+              Alert.alert('Couldn’t delete it', humanError(deleteError));
+              return;
+            }
+            navigation.goBack();
+          },
+        },
+      ],
+    );
+
   return (
     <ScreenBackground tone="base">
       <NavHeader
@@ -168,7 +206,7 @@ export function BetDetailScreen({ navigation, route }: any) {
           // Cancelling lives behind the overflow, not on the bar. A one-tap
           // destructive control next to Share is too easy to hit by accident,
           // and calling a bet off is not a routine action.
-          ...(canCancel
+          ...(canCancel || canDelete
             ? [
                 {
                   icon: (
@@ -319,7 +357,12 @@ export function BetDetailScreen({ navigation, route }: any) {
         visible={menuOpen}
         title="Bet options"
         options={[
-          { label: 'Call this bet off', destructive: true, onPress: confirmCancel },
+          ...(canCancel
+            ? [{ label: 'Call this bet off', destructive: true, onPress: confirmCancel }]
+            : []),
+          ...(canDelete
+            ? [{ label: 'Delete this bet', destructive: true, onPress: confirmDelete }]
+            : []),
         ]}
         onDismiss={() => setMenuOpen(false)}
       />

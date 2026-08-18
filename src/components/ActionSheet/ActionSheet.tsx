@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Pressable, StyleSheet } from 'react-native';
+import { Text, Pressable, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../tokens';
 import { BottomSheet } from '../BottomSheet/BottomSheet';
@@ -19,9 +19,19 @@ interface ActionSheetProps {
   onDismiss: () => void;
 }
 
+/** Beyond this many rows the list scrolls instead of growing the sheet. */
+const SCROLL_AFTER = 7;
+const MAX_LIST_HEIGHT = Dimensions.get('window').height * 0.55;
+
 /**
  * Action sheet built on BottomSheet — "Keep editing / Save draft / Discard".
  * Destructive rows are coral; a Cancel row is appended automatically.
+ *
+ * Long lists (the 41-entry currency picker) scroll. They used to render every row
+ * into an auto-height sheet anchored to the bottom, so the sheet ran off the top
+ * of the screen and the rows up there could be neither seen nor scrolled to — and
+ * the sheet's drag-to-dismiss pan swallowed any attempt to scroll them. Cancel
+ * stays outside the scroll area so it is always in reach.
  */
 export function ActionSheet({ visible, title, options, onDismiss }: ActionSheetProps) {
   const handleOption = (opt: ActionSheetOption) => {
@@ -32,31 +42,47 @@ export function ActionSheet({ visible, title, options, onDismiss }: ActionSheetP
     opt.onPress();
   };
 
+  const scrolls = options.length > SCROLL_AFTER;
+
+  const rows = options.map((opt, i) => (
+    <Pressable
+      key={i}
+      onPress={() => handleOption(opt)}
+      style={({ pressed }) => [
+        styles.row,
+        { backgroundColor: pressed ? colors.bg.surface3 : colors.bg.surface2 },
+      ]}
+      accessibilityRole="button"
+    >
+      <Text
+        style={[
+          styles.label,
+          opt.destructive && { color: colors.interactive.destructive },
+          opt.primary && { color: colors.interactive.primary },
+        ]}
+      >
+        {opt.label}
+      </Text>
+    </Pressable>
+  ));
+
   return (
-    <BottomSheet visible={visible} onDismiss={onDismiss}>
+    <BottomSheet visible={visible} onDismiss={onDismiss} dragFromHandleOnly={scrolls}>
       {title && <Text style={styles.title}>{title}</Text>}
 
-      {options.map((opt, i) => (
-        <Pressable
-          key={i}
-          onPress={() => handleOption(opt)}
-          style={({ pressed }) => [
-            styles.row,
-            { backgroundColor: pressed ? colors.bg.surface3 : colors.bg.surface2 },
-          ]}
-          accessibilityRole="button"
+      {scrolls ? (
+        <ScrollView
+          style={{ maxHeight: MAX_LIST_HEIGHT }}
+          showsVerticalScrollIndicator
+          // The rows are Pressables, so without this the first tap after a flick
+          // only stops the momentum instead of choosing anything.
+          keyboardShouldPersistTaps="handled"
         >
-          <Text
-            style={[
-              styles.label,
-              opt.destructive && { color: colors.interactive.destructive },
-              opt.primary && { color: colors.interactive.primary },
-            ]}
-          >
-            {opt.label}
-          </Text>
-        </Pressable>
-      ))}
+          {rows}
+        </ScrollView>
+      ) : (
+        rows
+      )}
 
       <Pressable onPress={onDismiss} style={styles.cancel} accessibilityRole="button">
         <Text style={styles.cancelLabel}>Cancel</Text>

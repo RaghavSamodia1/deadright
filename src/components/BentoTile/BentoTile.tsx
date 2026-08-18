@@ -6,7 +6,18 @@ import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../tokens';
 import { Icon, type IconName } from '../Icon/Icon';
 
-export type TileSize = 'hero' | 'feature' | 'wide' | 'stat' | 'nav' | 'chart';
+export type TileSize =
+  | 'hero'
+  | 'feature'
+  | 'wide'
+  | 'chart'
+  // Two-thirds wide but short — lets a row pair one big tile with one small
+  // instead of three identical ones.
+  | 'band'
+  // Half width, for an even two-up row.
+  | 'half'
+  | 'stat'
+  | 'nav';
 export type TileTone =
   | 'amber' | 'mint' | 'flame' | 'navy'
   | 'amber-tint' | 'mint-tint';
@@ -53,7 +64,12 @@ const BASE_CONTENT = 390 - spacing.screenGutter * 2;
 // the column beside it always line up (226 == 107 * 2 + 12 for hero,
 // 180 == 84 * 2 + 12 for feature). Deriving rather than hardcoding is what
 // stops the ragged row `wide` produced when it sat next to two stats.
-const BASE_HEIGHTS: Record<Exclude<TileSize, 'hero' | 'feature'>, number> = {
+// band/half are derived too — they reuse the stat and nav heights so a short
+// wide tile always lines up with the small tile sharing its row.
+const BASE_HEIGHTS: Record<
+  Exclude<TileSize, 'hero' | 'feature' | 'band' | 'half'>,
+  number
+> = {
   wide: 150,
   stat: 107,
   nav: 84,
@@ -79,6 +95,8 @@ export function tileSizesFor(windowWidth: number): Record<TileSize, TileDims> {
   // Three small tiles + two gaps == one row; large == the remaining 2/3.
   const small = Math.floor((content - GAP * 2) / 3);
   const large = content - GAP - small;
+  // Floor, so a 1px remainder is left as slack rather than overflowing the row.
+  const half = Math.floor((content - GAP) / 2);
   const scale = tileScaleFor(windowWidth);
   const statH = Math.round(BASE_HEIGHTS.stat * scale);
   const navH = Math.round(BASE_HEIGHTS.nav * scale);
@@ -89,9 +107,12 @@ export function tileSizesFor(windowWidth: number): Record<TileSize, TileDims> {
     // Same trick one size down: pairs with two stacked nav tiles.
     feature: { w: large, h: navH * 2 + GAP, r: radius.lg },
     wide: { w: large, h: Math.round(BASE_HEIGHTS.wide * scale), r: radius.lg },
+    chart: { w: large, h: Math.round(BASE_HEIGHTS.chart * scale), r: radius.md },
+    // Short tiles that pair with a small one: same heights, so rows stay flush.
+    band: { w: large, h: statH, r: radius.md },
+    half: { w: half, h: navH, r: radius.md },
     stat: { w: small, h: statH, r: radius.md },
     nav: { w: small, h: navH, r: radius.md },
-    chart: { w: large, h: Math.round(BASE_HEIGHTS.chart * scale), r: radius.md },
   };
 }
 
@@ -121,7 +142,11 @@ const TONES: Record<TileTone, { bg: string; border?: string; text: string; sub: 
   'mint-tint': { bg: 'rgba(99,185,114,0.18)', border: 'rgba(99,185,114,0.45)', text: colors.semantic.win, sub: colors.text.secondary },
 };
 
-const VALUE_SIZE: Record<TileSize, number> = { hero: 52, feature: 26, wide: 48, stat: 28, nav: 22, chart: 0 };
+const VALUE_SIZE: Record<TileSize, number> = {
+  hero: 52, feature: 26, wide: 48, chart: 0,
+  band: 26, half: 22,
+  stat: 28, nav: 22,
+};
 
 /**
  * v2 bento vocabulary (design-v2.md). Tiles that navigate should pass onPress
@@ -146,7 +171,10 @@ export function BentoTile({
   const scale = tileScaleFor(windowWidth);
   const valueSize = Math.round(VALUE_SIZE[size] * scale);
   const t = TONES[tone];
-  const isLarge = size === 'hero' || size === 'feature' || size === 'wide' || size === 'chart';
+  // band clears 75pt of inner height, so it can stack icon/value/label. half is
+  // only 84 tall — it takes the compact icon+value row.
+  const isLarge =
+    size === 'hero' || size === 'feature' || size === 'wide' || size === 'chart' || size === 'band';
 
   const handlePress = onPress
     ? () => {

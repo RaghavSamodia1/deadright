@@ -10,6 +10,7 @@ import {
   Rise,
   Swap,
   SoundBoard,
+  SoundToggle,
   BetCard,
   Icon,
   type BetCardData,
@@ -129,20 +130,13 @@ export function HomeScreen({ navigation }: any) {
     <ScreenBackground tone="base">
       <NavHeader
         variant="home"
-        brand={board ? 'SOUNDBOARD' : undefined}
         showAvatar
         avatarInitials={(profile.display_name ?? 'You').slice(0, 2).toUpperCase()}
         onAvatarPress={() => navigation.navigate('Profile')}
         rightActions={[
           {
-            icon: (
-              <Icon
-                name="waveform"
-                size={20}
-                color={board ? colors.brand.flame : colors.text.secondary}
-                strokeWidth={1.9}
-              />
-            ),
+            icon: <SoundToggle active={board} />,
+            wide: true,
             onPress: () => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               setBoard((v) => !v);

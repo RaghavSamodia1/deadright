@@ -118,3 +118,4 @@ export { Glass } from './Glass/Glass';
 export { Atmosphere } from './Atmosphere/Atmosphere';
 export { Confetti } from './Confetti/Confetti';
 export { SoundBoard } from './SoundBoard/SoundBoard';
+export { SoundToggle } from './SoundBoard/SoundToggle';

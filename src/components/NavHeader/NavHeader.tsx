@@ -11,13 +11,17 @@ interface NavAction {
   icon: React.ReactNode;
   onPress: () => void;
   accessibilityLabel: string;
+  /**
+   * Let the action size to its own content instead of the 34pt icon square.
+   * For controls that grow — the soundboard toggle expands into a labelled
+   * pill — a fixed square would clip them.
+   */
+  wide?: boolean;
 }
 
 interface NavHeaderProps {
   variant?: NavVariant;
   title?: string;
-  /** Overrides the wordmark on the home header. */
-  brand?: string;
   onBack?: () => void;
   rightActions?: NavAction[];
   // Home variant
@@ -30,7 +34,6 @@ interface NavHeaderProps {
 export function NavHeader({
   variant = 'back',
   title,
-  brand,
   onBack,
   rightActions = [],
   showAvatar = false,
@@ -50,7 +53,7 @@ export function NavHeader({
     >
       <View style={styles.inner}>
         {/* Left */}
-        <View style={styles.side}>
+        <View style={[styles.side, variant === 'home' && styles.sideAuto]}>
           {variant === 'back' && onBack && (
             <Pressable
               onPress={onBack}
@@ -73,7 +76,7 @@ export function NavHeader({
             </Pressable>
           )}
           {variant === 'home' && (
-            <Text style={styles.brandName}>{brand ?? 'DeadRight'}</Text>
+            <Text style={styles.brandName}>DeadRight</Text>
           )}
         </View>
 
@@ -90,7 +93,7 @@ export function NavHeader({
             <Pressable
               key={i}
               onPress={action.onPress}
-              style={styles.iconBtn}
+              style={action.wide ? styles.iconBtnWide : styles.iconBtn}
               hitSlop={10}
               accessibilityRole="button"
               accessibilityLabel={action.accessibilityLabel}
@@ -128,8 +131,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
+  // Home has no centre title to balance, so the left side sizes to the
+  // wordmark and the right side absorbs the slack. At flex:1 each half got
+  // half the bar, and the expanded soundboard pill had nowhere to grow.
+  sideAuto: {
+    flex: 0,
+  },
   right: {
     justifyContent: 'flex-end',
+    // Keeps the actions off the wordmark. On a 320dp screen the expanded
+    // soundboard pill ended up 5dp from the "t" in DeadRight.
+    marginLeft: spacing[3],
   },
   iconBtn: {
     width: 34,
@@ -139,6 +151,13 @@ const styles = StyleSheet.create({
     // No fill. The tinted square read as a button chrome the rest of the header
     // does not have, and next to the round avatar it looked like two different
     // control systems sharing a bar.
+  },
+  // Same height and centring as iconBtn, but free to be as wide as it needs.
+  iconBtnWide: {
+    height: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 4,
   },
   textBtn: {
     height: 34,

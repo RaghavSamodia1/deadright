@@ -13,6 +13,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { spacing } from '../../tokens';
 import { Glass } from '../Glass/Glass';
+import { Icon } from '../Icon/Icon';
 import { useTileSizes, tileScaleFor, type TileSize } from '../BentoTile/BentoTile';
 import { useWindowDimensions } from 'react-native';
 import { PADS, type Pad } from './sounds';
@@ -31,6 +32,12 @@ import { useSoundBoard } from './useSoundBoard';
 const LABEL_SIZE: Record<TileSize, number> = {
   hero: 34, feature: 24, wide: 24, chart: 20,
   band: 20, half: 18, stat: 14, nav: 13,
+};
+
+// Big enough to carry the pad, small enough to leave the word the headline.
+const ICON_SIZE: Record<TileSize, number> = {
+  hero: 30, feature: 26, wide: 26, chart: 22,
+  band: 22, half: 20, stat: 18, nav: 18,
 };
 
 const IMPACT = {
@@ -148,21 +155,33 @@ function PadButton({ pad, index, onHit }: { pad: Pad; index: number; onHit: (key
             ringStyle,
           ]}
         />
-        <Text
-          style={[
-            styles.label,
-            {
-              color: pad.ink,
-              fontSize: Math.round(LABEL_SIZE[pad.size] * scale),
-              letterSpacing: LABEL_SIZE[pad.size] * -0.02,
-            },
-          ]}
-          numberOfLines={2}
-          adjustsFontSizeToFit
-        >
-          {pad.label}
-        </Text>
-        <Text style={styles.caption} numberOfLines={1}>{pad.caption}</Text>
+        {/* Icon up top, word at the bottom — the same shape as the bento tile
+            this pad replaced, so the board still reads as that grid. */}
+        <View style={styles.body}>
+          <Icon
+            name={pad.icon}
+            size={Math.round(ICON_SIZE[pad.size] * scale)}
+            color={pad.ink}
+            strokeWidth={2}
+          />
+          <View>
+            <Text
+              style={[
+                styles.label,
+                {
+                  color: pad.ink,
+                  fontSize: Math.round(LABEL_SIZE[pad.size] * scale),
+                  letterSpacing: LABEL_SIZE[pad.size] * -0.02,
+                },
+              ]}
+              numberOfLines={2}
+              adjustsFontSizeToFit
+            >
+              {pad.label}
+            </Text>
+            <Text style={styles.caption} numberOfLines={1}>{pad.caption}</Text>
+          </View>
+        </View>
       </Pressable>
     </Animated.View>
   );
@@ -213,8 +232,11 @@ const styles = StyleSheet.create({
   strip: { gap: spacing[3] },
   pad: {
     overflow: 'hidden',
-    justifyContent: 'flex-end',
     backgroundColor: 'transparent',
+  },
+  body: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
   ring: {
     position: 'absolute',

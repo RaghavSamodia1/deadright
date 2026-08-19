@@ -1,12 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, LayoutChangeEvent } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  useReducedMotion,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated';
+import { View, Text, StyleSheet, Animated, Easing, LayoutChangeEvent } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 import { colors, radius } from '../../tokens';
 import { Glass } from '../Glass/Glass';
 import { Icon } from '../Icon/Icon';
@@ -19,46 +13,51 @@ const GAP = 7;
 /**
  * The soundboard toggle, which is also its label.
  *
- * A separate badge beside the wordmark said the same thing twice and crowded
- * the icons. Here the control *is* the mode indicator: tap it and it grows
- * leftward out of its own icon, the word emerging from underneath. The icon
- * holds still because the header row is right-aligned — only the pill's left
- * edge travels — so it reads as the button opening rather than the whole header
- * rearranging itself.
+ * Tapping it grows the pill leftward out of its own icon and uncovers the word
+ * from underneath. The icon holds still because the header row is right-aligned
+ * — only the pill's left edge travels — so it reads as the button opening
+ * rather than the header rearranging itself.
  *
- * Nothing is allowed to be wider than the pill: the word lives in a clip whose
- * width is animated alongside it. The first version anchored an over-wide row
- * inside `overflow: hidden` and let the clipping do the work, which looked
- * right open and ate three-fifths of the icon shut.
- *
- * The width comes from measuring the word rather than a hardcoded guess, so a
- * larger font scale doesn't truncate it.
+ * This uses RN's Animated rather than Reanimated, and deliberately: every child
+ * here is absolutely positioned, so the pill has no intrinsic width, and a
+ * width driven from the UI thread never reaches Yoga. The pill *looked* right
+ * while the Pressable wrapping it stayed 0pt wide, leaving a touch target made
+ * entirely of hitSlop — about 7dp of it, sitting next to the icon rather than
+ * on it. Width is layout, so it has to be animated where layout can see it.
  */
 export function SoundToggle({ active }: { active: boolean }) {
   const reduced = useReducedMotion();
   const [wordWidth, setWordWidth] = React.useState(0);
   const reveal = wordWidth > 0 ? wordWidth + GAP : 0;
 
-  const p = useSharedValue(active ? 1 : 0);
+  const p = React.useRef(new Animated.Value(active ? 1 : 0)).current;
 
   React.useEffect(() => {
-    p.value = reduced
-      ? active
-        ? 1
-        : 0
-      : withTiming(active ? 1 : 0, {
-          duration: 380,
-          easing: Easing.out(Easing.cubic),
-        });
+    const to = active ? 1 : 0;
+    if (reduced) {
+      p.setValue(to);
+      return;
+    }
+    const anim = Animated.timing(p, {
+      toValue: to,
+      duration: 380,
+      easing: Easing.out(Easing.cubic),
+      // Width is a layout prop: the native driver cannot touch it, and we need
+      // Yoga to follow so the button stays as big as it looks.
+      useNativeDriver: false,
+    });
+    anim.start();
+    return () => anim.stop();
   }, [active, reduced]);
 
-  const pill = useAnimatedStyle(() => ({ width: COLLAPSED + reveal * p.value }));
-  const clip = useAnimatedStyle(() => ({ width: reveal * p.value }));
+  const pillWidth = p.interpolate({
+    inputRange: [0, 1],
+    outputRange: [COLLAPSED, COLLAPSED + reveal],
+  });
+  const clipWidth = p.interpolate({ inputRange: [0, 1], outputRange: [0, reveal] });
   // The skin arrives ahead of the word so the pill exists before it fills.
-  const skin = useAnimatedStyle(() => ({ opacity: Math.min(1, p.value * 2) }));
-  const word = useAnimatedStyle(() => ({
-    opacity: Math.max(0, (p.value - 0.25) / 0.75),
-  }));
+  const skinOpacity = p.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1, 1] });
+  const wordOpacity = p.interpolate({ inputRange: [0, 0.25, 1], outputRange: [0, 0, 1] });
 
   const onWordLayout = (e: LayoutChangeEvent) => {
     const w = Math.ceil(e.nativeEvent.layout.width);
@@ -66,8 +65,8 @@ export function SoundToggle({ active }: { active: boolean }) {
   };
 
   return (
-    <Animated.View style={[styles.pill, pill]}>
-      <Animated.View style={[StyleSheet.absoluteFillObject, skin]}>
+    <Animated.View style={[styles.pill, { width: pillWidth }]}>
+      <Animated.View style={[StyleSheet.absoluteFillObject, { opacity: skinOpacity }]}>
         <Glass
           radius={radius.full}
           intensity={20}
@@ -77,27 +76,39 @@ export function SoundToggle({ active }: { active: boolean }) {
         />
       </Animated.View>
 
-      {/* Off-layout copy, purely to measure the word at its natural width —
-          the visible one lives inside a clip that is 0 wide most of the time. */}
-      <Text
-        style={[styles.word, styles.ruler]}
-        numberOfLines={1}
-        onLayout={onWordLayout}
-      >
-        SOUNDBOARD
-      </Text>
+      {/* Off-layout copy, purely to measure the word at its natural width. It
+          needs a box with room in it: measured directly inside the pill, the
+          available width *was* the pill's own animated width, so the reading fed
+          the thing it was measuring. No numberOfLines here either — a clamped
+          line reports the clamp. */}
+      <View pointerEvents="none" style={styles.rulerBox}>
+        <Text style={styles.word} onLayout={onWordLayout}>
+          SOUNDBOARD
+        </Text>
+      </View>
 
       {/* row-reverse: the icon is written first and lands on the right, which
           is the edge that stays put. */}
-      <View style={styles.row}>
+      <View style={styles.row} pointerEvents="none">
         <Icon
           name="waveform"
           size={20}
           color={active ? colors.brand.flame : colors.text.secondary}
           strokeWidth={1.9}
         />
-        <Animated.View style={[styles.clip, clip]}>
-          <Animated.Text style={[styles.word, styles.revealed, word]} numberOfLines={1}>
+        <Animated.View style={[styles.clip, { width: clipWidth }]}>
+          {/* Explicit width, so the text is laid out at full size and the clip
+              does the hiding. Left to fit the clip, iOS would ellipsize a single
+              line rather than let it overflow — the word would read "SOU…" for
+              most of the animation instead of being uncovered. */}
+          <Animated.Text
+            style={[
+              styles.word,
+              styles.revealed,
+              { width: wordWidth || undefined, opacity: wordOpacity },
+            ]}
+            numberOfLines={1}
+          >
             SOUNDBOARD
           </Animated.Text>
         </Animated.View>
@@ -129,9 +140,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: GAP,
   },
-  ruler: {
+  rulerBox: {
     position: 'absolute',
     left: 0,
+    top: 0,
+    // Wider than the word can plausibly be at any font scale, so the text
+    // inside is never the thing under measurement pressure.
+    width: 400,
+    flexDirection: 'row',
     opacity: 0,
   },
   word: {

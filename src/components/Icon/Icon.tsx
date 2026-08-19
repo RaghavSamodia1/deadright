@@ -1,5 +1,5 @@
 import React from 'react';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
 
 /**
  * Line icons, drawn rather than borrowed from the emoji table.
@@ -57,6 +57,13 @@ export type IconName =
   | 'info'
   | 'exit'
   | 'waveform'
+  // Soundboard: the pads name a noise, not a destination, so they needed
+  // their own small set rather than the nearest functional icon.
+  | 'burst'
+  | 'cymbal'
+  | 'drum'
+  | 'horn'
+  | 'bolt'
   | 'trash';
 
 interface IconProps {
@@ -203,6 +210,41 @@ export function Icon({ name, size = 24, color = '#F0F0F0', strokeWidth = 2 }: Ic
         <>
           <Path d="M4 10v4M8 6v12M12 3v18M16 7v10M20 11v2" {...stroke} />
         </>
+      )}
+      {/* An eight-point star, not rays off a circle — the same distinction the
+          gear note makes below. Rays read as a sun; a jagged outline reads as
+          something going off. */}
+      {name === 'burst' && (
+        <Path
+          d="M12 2.6l2.2 4.6 4.9-1.6-1.6 4.9 4.6 2.2-4.6 2.2 1.6 4.9-4.9-1.6L12 21.4l-2.2-4.6-4.9 1.6 1.6-4.9L1.9 12l4.6-2.2-1.6-4.9 4.9 1.6z"
+          {...stroke}
+        />
+      )}
+      {name === 'cymbal' && (
+        <>
+          <Ellipse cx="12" cy="8.5" rx="9" ry="2.8" {...stroke} />
+          <Path d="M12 11.3V20M9 20h6" {...stroke} />
+        </>
+      )}
+      {name === 'drum' && (
+        <>
+          <Ellipse cx="12" cy="7.5" rx="8" ry="3" {...stroke} />
+          <Path d="M4 7.5v8c0 1.7 3.6 3 8 3s8-1.3 8-3v-8" {...stroke} />
+          {/* Tension rods. At 18px they are texture rather than detail, which
+              is the point — they stop the body reading as a bucket. */}
+          <Path d="M7.2 10.6l2.4 4.6M16.8 10.6l-2.4 4.6" {...stroke} />
+        </>
+      )}
+      {/* A trombone rather than another cone: the slide on the left is what
+          stops it being the megaphone again. */}
+      {name === 'horn' && (
+        <>
+          <Path d="M14 10.5v3l7 3.5V7z" {...stroke} />
+          <Path d="M14 12H6M6 9.5v5" {...stroke} />
+        </>
+      )}
+      {name === 'bolt' && (
+        <Path d="M13 2.5L5 13.5h5.5L10 21.5 19 10h-5.5z" {...stroke} />
       )}
       {name === 'trash' && (
         <>

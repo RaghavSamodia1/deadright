@@ -1,4 +1,5 @@
 import type { TileSize } from '../BentoTile/BentoTile';
+import type { IconName } from '../Icon/Icon';
 
 /**
  * The soundboard's roster.
@@ -14,6 +15,8 @@ export interface Pad {
   label: string;
   /** The line underneath — the joke, not a description. */
   caption: string;
+  /** Drawn mark for the noise. Reading ten pads of type is a list, not a board. */
+  icon: IconName;
   /** Wash colour for the pad's glass. */
   hue: string;
   /** Ink for the label. Pads carry no status, so the colour is free. */
@@ -27,52 +30,52 @@ export interface Pad {
 // Grouped in the order they sit on the grid, so the file reads like the board.
 export const PADS: Pad[] = [
   {
-    key: 'airhorn', label: 'AIRHORN', caption: 'BRRRAAAP',
+    key: 'airhorn', label: 'AIRHORN', caption: 'BRRRAAAP', icon: 'megaphone',
     hue: 'rgba(226,102,31,0.30)', ink: '#FFC49A', weight: 'heavy',
     size: 'hero', module: require('../../../assets/sfx/airhorn.wav'),
   },
   {
-    key: 'boom', label: 'BOOM', caption: 'bass',
+    key: 'boom', label: 'BOOM', caption: 'bass', icon: 'burst',
     hue: 'rgba(108,99,255,0.30)', ink: '#C4C0FF', weight: 'heavy',
     size: 'stat', module: require('../../../assets/sfx/boom.wav'),
   },
   {
-    key: 'badumtss', label: 'BA-DUM', caption: 'tss',
+    key: 'badumtss', label: 'BA-DUM', caption: 'tss', icon: 'cymbal',
     hue: 'rgba(247,200,70,0.26)', ink: '#FFD966', weight: 'medium',
     size: 'stat', module: require('../../../assets/sfx/badumtss.wav'),
   },
   {
-    key: 'drumroll', label: 'DRUM ROLL', caption: 'and the winner is',
+    key: 'drumroll', label: 'DRUM ROLL', caption: 'and the winner is', icon: 'drum',
     hue: 'rgba(79,168,160,0.30)', ink: '#9FE4DC', weight: 'medium',
     size: 'feature', module: require('../../../assets/sfx/drumroll.wav'),
   },
   {
-    key: 'kaching', label: 'KA-CHING', caption: 'pay up',
+    key: 'kaching', label: 'KA-CHING', caption: 'pay up', icon: 'coin',
     hue: 'rgba(99,185,114,0.30)', ink: '#A8EEB6', weight: 'light',
     size: 'nav', module: require('../../../assets/sfx/kaching.wav'),
   },
   {
-    key: 'buzzer', label: 'WRONG', caption: 'nope',
+    key: 'buzzer', label: 'WRONG', caption: 'nope', icon: 'ban',
     hue: 'rgba(252,87,78,0.30)', ink: '#FFA9A4', weight: 'heavy',
     size: 'nav', module: require('../../../assets/sfx/buzzer.wav'),
   },
   {
-    key: 'crickets', label: 'CRICKETS', caption: 'anyone?',
+    key: 'crickets', label: 'CRICKETS', caption: 'anyone?', icon: 'moon',
     hue: 'rgba(255,255,255,0.10)', ink: '#C9C9D0', weight: 'light',
     size: 'stat', module: require('../../../assets/sfx/crickets.wav'),
   },
   {
-    key: 'trombone', label: 'SAD TROMBONE', caption: 'womp womp',
+    key: 'trombone', label: 'SAD TROMBONE', caption: 'womp womp', icon: 'horn',
     hue: 'rgba(232,179,60,0.26)', ink: '#F5CE72', weight: 'medium',
     size: 'band', module: require('../../../assets/sfx/trombone.wav'),
   },
   {
-    key: 'suspense', label: 'SUSPENSE', caption: 'dun dun DUNNN',
+    key: 'suspense', label: 'SUSPENSE', caption: 'dun dun DUNNN', icon: 'bolt',
     hue: 'rgba(108,99,255,0.26)', ink: '#C4C0FF', weight: 'medium',
     size: 'half', module: require('../../../assets/sfx/suspense.wav'),
   },
   {
-    key: 'tada', label: 'TA-DA', caption: 'called it',
+    key: 'tada', label: 'TA-DA', caption: 'called it', icon: 'trophy',
     hue: 'rgba(226,102,31,0.26)', ink: '#FFC49A', weight: 'medium',
     size: 'half', module: require('../../../assets/sfx/tada.wav'),
   },

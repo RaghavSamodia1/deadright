@@ -327,32 +327,45 @@ code{font-family:var(--mono);font-size:.86em;color:var(--amber)}
 </section>
 <section class="stack wrap" data-stack>
   <article class="stack-card" style="--i:0">
-    <span class="n">01</span><h3>Pinned, never hijacked.</h3>
-    <p>Nothing here intercepts your wheel or animates the page for you. Every act is a tall
-      track with a <code>position:sticky</code> child, so the browser pins natively at compositor
-      speed. Scroll is only ever read. Momentum, Page Down, find-in-page and screen readers
-      all behave exactly as they would on a plain document.</p>
+    <span class="n">01</span><h3>No money ever moves.</h3>
+    <p>It is a ledger and a reputation, not a wallet. Nothing in the app takes a payment,
+      holds a balance or settles up, and that is a position rather than a missing feature &#8212;
+      the moment real stakes change hands between friends it stops being a game and starts
+      being regulated. Being right is the entire currency, which is a much harder thing to
+      lose than twenty pounds.</p>
   </article>
   <article class="stack-card" style="--i:1">
-    <span class="n">02</span><h3>One engine, one frame.</h3>
-    <p>Five techniques share a single <code>requestAnimationFrame</code> loop and one scroll read
-      per frame. Each act registers a start and end offset and is handed its own 0&#8211;1.
-      Nothing can drift out of sync with anything else, and there is never more than one
-      loop running.</p>
+    <span class="n">02</span><h3>Colour means one thing.</h3>
+    <p>A card&#8217;s fill <em>is</em> its status &#8212; amber awaiting, mint won, coral disputed, navy
+      still running &#8212; so colour is never spent on decoration. That forces a second rule:
+      ink is chosen by how light the fill is, not from the global text tokens. Those assume
+      a dark navy background and collapse on a coloured card; an <span style="white-space:nowrap">AWAITING</span>
+      chip was amber-on-amber at 1.00:1, which is not low contrast, it is invisible.</p>
   </article>
   <article class="stack-card" style="--i:2">
-    <span class="n">03</span><h3>Transform and opacity only.</h3>
-    <p>Twenty cards and a phone move every frame, so nothing may touch layout. Geometry is
-      measured once, cached, and recomputed only on resize; the loop writes
-      <code>translate3d</code>, <code>rotate</code>, <code>scale</code> and opacity and reads nothing back. An
-      earlier version animated a blur radius and locked the renderer up outright.</p>
+    <span class="n">03</span><h3>Never invent a number.</h3>
+    <p>The jar tile showed a hardcoded &#163;23.50 and &#8220;4 violations this week&#8221; to an account
+      whose jar was empty. Every friend&#8217;s profile opened as the same person on the same
+      812 cred with the same 7&#8211;4 head-to-head. Typing any six characters into the join
+      screen produced a confident preview of a group that did not exist. All of it is real
+      data or an em-dash now: a fabricated number is the one kind of wrong that looks
+      completely convincing.</p>
   </article>
   <article class="stack-card" style="--i:3">
-    <span class="n">04</span><h3>Damped, then stopped.</h3>
-    <p>Raw scroll is jittery on a trackpad and steppy on a wheel, so the rendered value
-      chases the real one by 12% a frame &#8212; that is where the weight comes from. When the
-      gap closes it snaps to exact and the loop <em>ends</em> rather than idling at 60fps against
-      a still page.</p>
+    <span class="n">04</span><h3>Enforce it in the database.</h3>
+    <p>The anon key ships inside the app bundle, so anything guarded only in JavaScript is a
+      suggestion to anyone willing to read it. Blocking, private profiles and who may see
+      what in search are enforced in row-level security and security-definer functions, and
+      the client is treated as a display layer that happens to be helpful rather than as a
+      thing that can be trusted.</p>
+  </article>
+  <article class="stack-card" style="--i:4">
+    <span class="n">05</span><h3>Reduce Motion shortens the flight. It never takes the gesture away.</h3>
+    <p>The coin is thrown rather than pressed, and the first version disabled the throw
+      entirely when Reduce Motion was on. On any device where the animation scale is simply
+      unset &#8212; a stock emulator among them &#8212; the coin could not be flicked at all. Reducing
+      motion should shorten the arc, not remove the interaction; the flick still decides,
+      it just decides straight away.</p>
   </article>
 </section>
 
@@ -365,8 +378,11 @@ code{font-family:var(--mono);font-size:.86em;color:var(--amber)}
     <a href="RESUME.pdf" data-resume hidden>R&#233;sum&#233; (PDF)</a>
   </div>
   <p class="smallprint">
-    Built by Raghav Samodia. No GSAP, no ScrollTrigger, no Lenis, no Framer Motion &#8212; one
-    rAF loop and a handful of sticky elements. Screens are real captures from the running
+    Built by Raghav Samodia. Nothing here intercepts your wheel: every act is a tall track
+    with a <code>position:sticky</code> child, so the browser pins natively and scroll is only
+    ever read &#8212; momentum, Page Down and find-in-page all behave as they would on a plain
+    document. No GSAP, no ScrollTrigger, no Lenis, no Framer Motion &#8212; one rAF loop, one
+    scroll read per frame, and a handful of sticky elements. Screens are real captures from the running
     app. Respects <code>prefers-reduced-motion</code>: with motion reduced every track collapses,
     nothing pins, and each act renders in its finished state.
   </p>

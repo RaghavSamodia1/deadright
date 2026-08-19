@@ -3,6 +3,8 @@ import { Text, Pressable, ScrollView, StyleSheet, Dimensions } from 'react-nativ
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../tokens';
 import { BottomSheet } from '../BottomSheet/BottomSheet';
+import { Glass } from '../Glass/Glass';
+import { StyleSheet as RNStyleSheet } from 'react-native';
 
 export interface ActionSheetOption {
   label: string;
@@ -48,21 +50,32 @@ export function ActionSheet({ visible, title, options, onDismiss }: ActionSheetP
     <Pressable
       key={i}
       onPress={() => handleOption(opt)}
-      style={({ pressed }) => [
-        styles.row,
-        { backgroundColor: pressed ? colors.bg.surface3 : colors.bg.surface2 },
-      ]}
+      style={styles.row}
       accessibilityRole="button"
     >
-      <Text
-        style={[
-          styles.label,
-          opt.destructive && { color: colors.interactive.destructive },
-          opt.primary && { color: colors.interactive.primary },
-        ]}
-      >
-        {opt.label}
-      </Text>
+      {({ pressed }) => (
+        <>
+          {/* blur off: these rows sit on the sheet's own frosted panel, and
+              blurring an already-blurred image only muddies it. */}
+          <Glass
+            radius={radius.sm}
+            blur={false}
+            rim={0.5}
+            fill="rgba(255,255,255,0.10)"
+            style={RNStyleSheet.absoluteFillObject}
+          />
+          {pressed && <Pressable style={styles.pressed} pointerEvents="none" />}
+          <Text
+            style={[
+              styles.label,
+              opt.destructive && { color: colors.interactive.destructive },
+              opt.primary && { color: colors.interactive.primary },
+            ]}
+          >
+            {opt.label}
+          </Text>
+        </>
+      )}
     </Pressable>
   ));
 
@@ -103,7 +116,13 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     paddingVertical: spacing[4],
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: spacing[2],
+    overflow: 'hidden',
+  },
+  pressed: {
+    ...RNStyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.09)',
   },
   label: {
     fontFamily: 'Barlow-SemiBold',

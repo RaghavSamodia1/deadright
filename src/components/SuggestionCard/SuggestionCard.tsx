@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
 import { Button } from '../Button/Button';
+import { Glass } from '../Glass/Glass';
 
 interface SuggestionCardProps {
   /** The AI-sharpened text */
@@ -21,6 +22,9 @@ interface SuggestionCardProps {
 export function SuggestionCard({ suggestion, onAccept, onReject, loading = false, style }: SuggestionCardProps) {
   return (
     <View style={[styles.card, loading && { opacity: 0.6 }, style]}>
+      {/* The amber ring stays: it is what marks this text as the machine's
+          suggestion rather than something the user wrote. */}
+      <Glass radius={radius.md} intensity={24} tint="warm" style={StyleSheet.absoluteFillObject} />
       <Text style={styles.overline}>SUGGESTED</Text>
       <Text style={styles.text}>"{suggestion}"</Text>
       <View style={styles.actions}>
@@ -33,7 +37,8 @@ export function SuggestionCard({ suggestion, onAccept, onReject, loading = false
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.bg.surface2,
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
     borderRadius: radius.md,
     borderWidth: 1.5,
     borderColor: 'rgba(247,200,70,0.5)',

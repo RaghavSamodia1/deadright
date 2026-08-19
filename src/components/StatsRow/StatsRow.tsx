@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
-import { colors, spacing } from '../../tokens';
+import { colors, radius, spacing } from '../../tokens';
+import { Glass } from '../Glass/Glass';
 
 export interface Stat {
   value: string;
@@ -18,6 +19,10 @@ interface StatsRowProps {
 export function StatsRow({ stats, style }: StatsRowProps) {
   return (
     <View style={[styles.row, style]}>
+      {/* The strip used to be decorated by each screen that used it — three
+          copies of the same surface-1-plus-border block. It carries its own
+          surface now, so the screens just place it. */}
+      <Glass radius={radius.md} intensity={24} style={StyleSheet.absoluteFillObject} />
       {stats.map((s, i) => (
         <React.Fragment key={s.label}>
           {i > 0 && <View style={styles.divider} />}
@@ -37,6 +42,9 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: spacing[4],
+    borderRadius: radius.md,
+    overflow: 'hidden',
   },
   stat: {
     flex: 1,

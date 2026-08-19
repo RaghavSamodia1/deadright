@@ -80,8 +80,12 @@ function Pool({ blob, index, reduced }: { blob: Blob; index: number; reduced: bo
       <Svg width={d} height={d}>
         <Defs>
           <RadialGradient id={`pool${index}`} cx="50%" cy="50%" r="50%">
-            <Stop offset="0" stopColor={blob.color} stopOpacity={0.5} />
-            <Stop offset="0.45" stopColor={blob.color} stopOpacity={0.18} />
+            {/* Halved from 0.5/0.18. On an OLED phone the pools were reading
+                as a colour cast laid over the whole app rather than as light in
+                the room behind it — and they were fighting the glass, which
+                needs something to refract but not something to compete with. */}
+            <Stop offset="0" stopColor={blob.color} stopOpacity={0.25} />
+            <Stop offset="0.45" stopColor={blob.color} stopOpacity={0.09} />
             <Stop offset="1" stopColor={blob.color} stopOpacity={0} />
           </RadialGradient>
         </Defs>

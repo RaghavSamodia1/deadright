@@ -1,12 +1,15 @@
 import React, { useCallback } from 'react';
 import { View, Text, Pressable, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
 import { colors, spacing } from '../tokens';
 import {
   ScreenBackground,
   NavHeader,
   BentoTile,
   Rise,
+  Swap,
+  SoundBoard,
   BetCard,
   Icon,
   type BetCardData,
@@ -31,6 +34,11 @@ import { formatMoney, formatTotals, DEFAULT_JAR_CAP_CENTS } from '../lib/money';
 // v2 bento hub (design-v2.md §2) — no bottom nav; tiles are the navigation.
 export function HomeScreen({ navigation }: any) {
   const currency = useCurrency();
+
+  // The bento has a back. Nothing else in the app depends on this, and nothing
+  // is recorded by it — it exists because an app about calling your friends out
+  // should be able to play a sad trombone at them.
+  const [board, setBoard] = React.useState(false);
 
   // Was a hardcoded 23.5 with a hardcoded "4 violations this week" — it showed
   // $23.50 to an account whose only jar was empty.
@@ -121,10 +129,26 @@ export function HomeScreen({ navigation }: any) {
     <ScreenBackground tone="base">
       <NavHeader
         variant="home"
+        brand={board ? 'SOUNDBOARD' : undefined}
         showAvatar
         avatarInitials={(profile.display_name ?? 'You').slice(0, 2).toUpperCase()}
         onAvatarPress={() => navigation.navigate('Profile')}
         rightActions={[
+          {
+            icon: (
+              <Icon
+                name="waveform"
+                size={20}
+                color={board ? colors.brand.flame : colors.text.secondary}
+                strokeWidth={1.9}
+              />
+            ),
+            onPress: () => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              setBoard((v) => !v);
+            },
+            accessibilityLabel: board ? 'Close the soundboard' : 'Open the soundboard',
+          },
           {
             icon: (
               <View>
@@ -159,6 +183,11 @@ export function HomeScreen({ navigation }: any) {
           />
         }
       >
+        <Swap
+          showing={board}
+          b={<SoundBoard active={board} />}
+          a={
+        <View style={styles.bento}>
         {/* Row 1 — Cookie Jar hero + cred/streak column */}
         <Rise index={0}>
         <View style={styles.row}>
@@ -271,6 +300,9 @@ export function HomeScreen({ navigation }: any) {
           </View>
         </View>
         </Rise>
+        </View>
+          }
+        />
 
         {/* Row 3 — bets, or the first-run path into the social loop */}
         {feedError ? (
@@ -352,6 +384,9 @@ const styles = StyleSheet.create({
     gap: spacing[3],
   },
   strip: { gap: spacing[3] },
+  // The rows used to be siblings of the feed and inherited the scroll view's
+  // gap. They're one object now — it has to carry its own.
+  bento: { gap: spacing[3] },
   col: {
     gap: spacing[3],
   },

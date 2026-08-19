@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
 import { Avatar } from '../Avatar/Avatar';
+import { Glass } from '../Glass/Glass';
 
 export type NotificationAction = 'join' | 'resolve' | 'view-dispute' | null;
 
@@ -29,9 +30,15 @@ export function NotificationRow({ avatar, text, meta, unread = false, action = n
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.row, { backgroundColor: unread ? colors.bg.surface2 : colors.bg.surface1 }, style]}
+      style={[styles.row, style]}
       accessibilityRole="button"
     >
+      <Glass
+        radius={radius.sm}
+        intensity={24}
+        fill={unread ? 'rgba(247,200,70,0.09)' : undefined}
+        style={StyleSheet.absoluteFillObject}
+      />
       <Avatar size="md" initials={avatar.initials} uri={avatar.uri} tint={avatar.tint ?? 'neutral'} />
 
       <View style={styles.body}>
@@ -61,10 +68,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing[3],
     borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.border.default,
     padding: spacing[3],
     minHeight: 72,
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
   },
   body: { flex: 1, gap: 4 },
   text: {

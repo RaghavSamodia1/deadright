@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
 import { Timer } from '../Timer/Timer';
+import { Glass } from '../Glass/Glass';
 
 interface CountdownCardProps {
   deadline: Date;
@@ -20,6 +21,7 @@ interface CountdownCardProps {
 export function CountdownCard({ deadline, caption, title, onExpire, style }: CountdownCardProps) {
   return (
     <View style={[styles.card, style]}>
+      <Glass radius={radius.lg} intensity={28} style={StyleSheet.absoluteFillObject} />
       <Text style={styles.overline}>TIME LEFT</Text>
       {title && (
         <Text style={styles.title} numberOfLines={1}>
@@ -34,10 +36,9 @@ export function CountdownCard({ deadline, caption, title, onExpire, style }: Cou
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.bg.surface1,
+    backgroundColor: 'transparent',
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border.default,
+    overflow: 'hidden',
     padding: spacing[7],
     alignItems: 'center',
     gap: spacing[2],

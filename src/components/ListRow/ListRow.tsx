@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
+import { Glass } from '../Glass/Glass';
 
 interface ListRowProps {
   title: string;
@@ -39,13 +40,15 @@ export function ListRow({
   return (
     <Container
       onPress={onPress}
-      style={[
-        styles.row,
-        { backgroundColor: elevated ? colors.bg.surface2 : colors.bg.surface1 },
-        style,
-      ]}
+      style={[styles.row, style]}
       accessibilityRole={onPress ? 'button' : undefined}
     >
+      <Glass
+        radius={radius.md}
+        intensity={24}
+        fill={elevated ? 'rgba(255,255,255,0.11)' : undefined}
+        style={StyleSheet.absoluteFillObject}
+      />
       {dotColor && <View style={[styles.dot, { backgroundColor: dotColor }]} />}
       {left}
 
@@ -78,6 +81,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[3],
     borderRadius: radius.md,
     minHeight: 56,
+    overflow: 'hidden',
   },
   dot: {
     width: 8,

@@ -16,6 +16,8 @@ interface NavAction {
 interface NavHeaderProps {
   variant?: NavVariant;
   title?: string;
+  /** Overrides the wordmark on the home header. */
+  brand?: string;
   onBack?: () => void;
   rightActions?: NavAction[];
   // Home variant
@@ -28,6 +30,7 @@ interface NavHeaderProps {
 export function NavHeader({
   variant = 'back',
   title,
+  brand,
   onBack,
   rightActions = [],
   showAvatar = false,
@@ -70,7 +73,7 @@ export function NavHeader({
             </Pressable>
           )}
           {variant === 'home' && (
-            <Text style={styles.brandName}>DeadRight</Text>
+            <Text style={styles.brandName}>{brand ?? 'DeadRight'}</Text>
           )}
         </View>
 

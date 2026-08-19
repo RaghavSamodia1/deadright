@@ -8,6 +8,7 @@ import {
   TextInputProps as RNTextInputProps,
 } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
+import { Glass } from '../Glass/Glass';
 
 interface TextInputProps extends Omit<RNTextInputProps, 'style'> {
   label?: string;
@@ -35,11 +36,14 @@ export function TextInput({
   const charCount = value.length;
   const nearLimit = maxChars ? charCount >= maxChars * 0.7 : false;
 
+  // Unfocused, the glass rim is the edge — a second grey border on top of it
+  // read as two frames around one field. Focus and error still get a real ring,
+  // because those have to be unmistakable.
   const borderColor = error
     ? colors.interactive.destructive
     : focused
       ? colors.border.strong
-      : colors.border.default;
+      : 'transparent';
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -51,6 +55,7 @@ export function TextInput({
           { borderColor, minHeight: multiline ? 88 : 52 },
         ]}
       >
+        <Glass radius={radius.sm} intensity={18} style={StyleSheet.absoluteFillObject} />
         <RNTextInput
           value={value}
           onChangeText={onChangeText}
@@ -90,11 +95,12 @@ const styles = StyleSheet.create({
     color: colors.semantic.awaiting,
   },
   inputWrap: {
-    backgroundColor: colors.bg.surface3,
+    backgroundColor: 'transparent',
     borderRadius: radius.sm,
     borderWidth: 1,
     paddingHorizontal: spacing[4],
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   input: {
     fontFamily: 'Inter-Regular',

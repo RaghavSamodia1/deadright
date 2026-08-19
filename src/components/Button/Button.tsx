@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { colors, radius } from '../../tokens';
+import { Glass } from '../Glass/Glass';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'ghost';
 export type ButtonSize = 'lg' | 'md' | 'sm';
@@ -73,6 +74,11 @@ export function Button({
 }: ButtonProps) {
   const v = VARIANT_STYLES[variant];
   const s = SIZE_STYLES[size];
+  // The secondary button is a surface, not an accent, so it frosts with
+  // everything else — left solid it became the only opaque grey block on
+  // screens where the cards had all gone to glass. Primary and destructive keep
+  // their fills: those are the colour that carries the meaning.
+  const isGlass = variant === 'secondary' && !disabled && !loading;
 
   const handlePress = () => {
     if (haptic && !disabled) {
@@ -95,13 +101,16 @@ export function Button({
           height: s.height,
           paddingHorizontal: s.px,
           borderRadius: s.borderRadius,
-          backgroundColor: disabled
-            ? colors.interactive.disabled
-            : pressed
-              ? v.pressedBg
-              : v.bg,
-          borderWidth: v.border ? 1 : 0,
-          borderColor: v.border ?? 'transparent',
+          backgroundColor: isGlass
+            ? 'transparent'
+            : disabled
+              ? colors.interactive.disabled
+              : pressed
+                ? v.pressedBg
+                : v.bg,
+          overflow: isGlass ? 'hidden' : 'visible',
+          borderWidth: v.border && !isGlass ? 1 : 0,
+          borderColor: v.border && !isGlass ? v.border : 'transparent',
           alignSelf: fullWidth ? 'stretch' : 'flex-start',
           opacity: loading ? 0.7 : 1,
         },
@@ -110,6 +119,16 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ disabled: disabled || loading }}
     >
+      {({ pressed }) => (
+      <>
+      {isGlass && (
+        <Glass
+          radius={s.borderRadius}
+          intensity={24}
+          fill={pressed ? 'rgba(255,255,255,0.14)' : undefined}
+          style={StyleSheet.absoluteFillObject}
+        />
+      )}
       {loading ? (
         <ActivityIndicator color={disabled ? colors.text.secondary : v.text} size="small" />
       ) : (
@@ -129,6 +148,8 @@ export function Button({
         >
           {label}
         </Text>
+      )}
+      </>
       )}
     </Pressable>
   );

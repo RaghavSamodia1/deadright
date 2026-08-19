@@ -65,7 +65,7 @@ export function FriendProfileScreen({ navigation, route }: any) {
           <Text style={styles.sub}>{person?.handle ?? handle}</Text>
         </View>
 
-        <StatsRow stats={stats} style={styles.statsRow} />
+        <StatsRow stats={stats} />
 
         <Button label="Call them out" onPress={() => navigation.navigate('CreateBet')} fullWidth style={styles.cta} />
       </ScrollView>
@@ -96,13 +96,6 @@ const styles = StyleSheet.create({
   hero: { alignItems: 'center', gap: spacing[2], paddingVertical: spacing[3] },
   name: { fontFamily: 'Barlow-Bold', fontSize: 20, color: colors.text.primary },
   sub: { fontFamily: 'Inter-Regular', fontSize: 12, color: colors.text.tertiary },
-  statsRow: {
-    backgroundColor: colors.bg.surface1,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border.default,
-    paddingVertical: spacing[4],
-  },
   q: { fontFamily: 'Barlow-SemiBold', fontSize: 11, letterSpacing: 2, color: colors.semantic.awaiting },
   h2h: { flexDirection: 'row', height: 14, borderRadius: 999, overflow: 'hidden', gap: 2 },
   h2hBar: { borderRadius: 999 },

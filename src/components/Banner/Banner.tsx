@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
+import { Glass } from '../Glass/Glass';
 
 export type BannerTone = 'awaiting' | 'dispute' | 'info' | 'invite';
 
@@ -28,7 +29,9 @@ const TONES: Record<BannerTone, { bg: string; accent: string; text: string; sub:
     sub: colors.text.secondary,
   },
   info: {
-    bg: colors.bg.surface2,
+    // Was opaque surface-2, which sat a solid block on top of the frosted panel
+    // behind it. Translucent, so the banner tints the glass instead.
+    bg: 'rgba(255,255,255,0.07)',
     accent: colors.semantic.awaiting,
     text: colors.text.primary,
     sub: colors.text.secondary,
@@ -49,7 +52,8 @@ export function Banner({ tone = 'info', title, body, actionLabel, onAction, onDi
   const t = TONES[tone];
 
   return (
-    <View style={[styles.banner, { backgroundColor: t.bg, borderColor: `${t.accent}55` }, style]}>
+    <View style={[styles.banner, { borderColor: `${t.accent}55` }, style]}>
+      <Glass radius={radius.md} intensity={22} fill={t.bg} style={StyleSheet.absoluteFillObject} />
       <View style={[styles.accentBar, { backgroundColor: t.accent }]} />
       <View style={styles.body}>
         <Text style={[styles.title, { color: t.text }]}>{title}</Text>
@@ -73,6 +77,7 @@ const styles = StyleSheet.create({
   banner: {
     flexDirection: 'row',
     borderRadius: radius.md,
+    overflow: 'hidden',
     borderWidth: 1,
     padding: spacing[4],
     gap: spacing[3],

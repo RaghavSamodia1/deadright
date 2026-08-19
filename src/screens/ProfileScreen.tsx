@@ -113,7 +113,7 @@ export function ProfileScreen({ navigation }: any) {
           </Text>
         </View>
 
-        <StatsRow stats={stats} style={styles.statsRow} />
+        <StatsRow stats={stats} />
 
         {/* History tabs */}
         <View style={styles.tabs}>
@@ -148,12 +148,5 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,
   },
   icon: { fontSize: 18, color: colors.text.secondary },
-  statsRow: {
-    backgroundColor: colors.bg.surface1,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.border.default,
-    paddingVertical: spacing[4],
-  },
   tabs: { flexDirection: 'row', gap: spacing[2] },
 });

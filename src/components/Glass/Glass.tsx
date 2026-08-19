@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle, Platform } from 'react-native';
+import { View, StyleSheet, StyleProp, ViewStyle, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { radius as R } from '../../tokens';
@@ -13,7 +13,20 @@ interface GlassProps {
   intensity?: number;
   /** Warms or cools the panel — used for the tiles that carry meaning. */
   tint?: 'neutral' | 'warm' | 'cool' | 'hot';
-  style?: ViewStyle;
+  /**
+   * An explicit wash colour, overriding `tint`. The soundboard gives every pad
+   * its own hue, which a fixed four-value enum can't express.
+   */
+  fill?: string;
+  /** Strength of the lit rim, 0–1. Dropped on surfaces that sit inside another. */
+  rim?: number;
+  /**
+   * Blur what's behind. Off for panels that sit *on* another glass panel —
+   * stacking BlurViews blurs an already-blurred image, which muddies the result
+   * and costs a second full-surface pass on Android for nothing.
+   */
+  blur?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 const FILL: Record<string, string> = {
@@ -39,29 +52,31 @@ export function Glass({
   radius = R.lg,
   intensity = 26,
   tint = 'neutral',
+  fill,
+  rim = 1,
+  blur = true,
   style,
 }: GlassProps) {
   const inner = Math.max(0, radius - 1);
+  const a = (v: number) => `rgba(255,255,255,${(v * rim).toFixed(3)})`;
 
   return (
     <LinearGradient
-      colors={[
-        'rgba(255,255,255,0.30)',
-        'rgba(255,255,255,0.07)',
-        'rgba(255,255,255,0.02)',
-      ]}
+      colors={[a(0.30), a(0.07), a(0.02)]}
       locations={[0, 0.4, 1]}
       start={{ x: 0.15, y: 0 }}
       end={{ x: 0.7, y: 1 }}
       style={[{ borderRadius: radius, padding: 1 }, style]}
     >
       <View style={[styles.panel, { borderRadius: inner }]}>
-        <BlurView
-          intensity={Platform.OS === 'android' ? Math.round(intensity * 0.55) : intensity}
-          tint="dark"
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: FILL[tint] }]} />
+        {blur && (
+          <BlurView
+            intensity={Platform.OS === 'android' ? Math.round(intensity * 0.55) : intensity}
+            tint="dark"
+            style={StyleSheet.absoluteFill}
+          />
+        )}
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: fill ?? FILL[tint] }]} />
         {children}
       </View>
     </LinearGradient>

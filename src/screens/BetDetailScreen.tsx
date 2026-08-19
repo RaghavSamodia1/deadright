@@ -230,7 +230,7 @@ export function BetDetailScreen({ navigation, route }: any) {
         automaticallyAdjustKeyboardInsets>
         <BetCard bet={bet} onPress={() => {}} />
 
-        <StatsRow stats={stats} style={styles.statsRow} />
+        <StatsRow stats={stats} />
 
         <Text style={styles.section}>TIMELINE</Text>
         <View style={styles.timeline}>
@@ -426,13 +426,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing[8],
   },
   icon: { fontSize: 20, color: colors.text.secondary },
-  statsRow: {
-    backgroundColor: colors.bg.surface1,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.border.default,
-    paddingVertical: spacing[4],
-  },
   section: {
     fontFamily: 'Barlow-SemiBold',
     fontSize: 11,

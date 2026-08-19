@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
 import { Avatar } from '../Avatar/Avatar';
+import { Glass } from '../Glass/Glass';
 
 interface ViolationRowProps {
   member: { handle: string; initials: string; avatarUri?: string };
@@ -19,6 +20,7 @@ interface ViolationRowProps {
 export function ViolationRow({ member, rule, amount, timestamp, ownedUp = false, disputable = false, style }: ViolationRowProps) {
   return (
     <View style={[styles.row, style]}>
+      <Glass radius={radius.md} intensity={24} style={StyleSheet.absoluteFillObject} />
       <Avatar size="sm" initials={member.initials} uri={member.avatarUri} tint="b" />
 
       <View style={styles.body}>
@@ -42,8 +44,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],
-    backgroundColor: colors.bg.surface1,
+    backgroundColor: 'transparent',
     borderRadius: radius.md,
+    overflow: 'hidden',
     padding: spacing[4],
   },
   body: { flex: 1, gap: 2 },

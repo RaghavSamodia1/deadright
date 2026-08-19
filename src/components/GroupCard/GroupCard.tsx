@@ -2,6 +2,9 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../tokens';
+import { StyleSheet as RNStyleSheet } from 'react-native';
+import { Glass } from '../Glass/Glass';
+import { Icon } from '../Icon/Icon';
 import { AvatarStack } from '../AvatarStack/AvatarStack';
 import { plural } from '../../lib/plural';
 
@@ -36,12 +39,14 @@ export function GroupCard({
   return (
     <Pressable
       onPress={handlePress}
-      style={({ pressed }) => [
+      style={[
         styles.card,
         {
-          borderColor: selected ? colors.interactive.primary : colors.border.default,
+          // Unselected, the glass rim is the edge. Selection still gets a real
+          // amber ring — it's the only thing telling one card from the next, so
+          // it can't be a subtle shift in fill.
+          borderColor: selected ? colors.interactive.primary : 'transparent',
           borderWidth: selected ? 1.5 : 1,
-          backgroundColor: pressed ? colors.bg.surface2 : colors.bg.surface1,
         },
         style,
       ]}
@@ -49,6 +54,14 @@ export function GroupCard({
       accessibilityState={{ selected }}
       accessibilityLabel={`${name}, ${plural(memberCount, 'member')}`}
     >
+      {({ pressed }) => (
+      <>
+      <Glass
+        radius={radius.md}
+        intensity={24}
+        fill={pressed ? 'rgba(255,255,255,0.12)' : undefined}
+        style={RNStyleSheet.absoluteFillObject}
+      />
       <View style={styles.emojiBox}>
         <Text style={styles.emoji}>{emoji}</Text>
       </View>
@@ -67,8 +80,12 @@ export function GroupCard({
 
       {selected && (
         <View style={styles.check}>
-          <Text style={styles.checkMark}></Text>
+          {/* Was an empty <Text> — the emoji pass took the tick out and left
+              the element behind, so "selected" rendered as a blank amber dot. */}
+          <Icon name="check" size={13} color={colors.text.inverse} strokeWidth={2.6} />
         </View>
+      )}
+      </>
       )}
     </Pressable>
   );
@@ -81,6 +98,8 @@ const styles = StyleSheet.create({
     gap: spacing[3],
     borderRadius: radius.md,
     padding: spacing[4],
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
   },
   emojiBox: {
     width: 44,
@@ -109,10 +128,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.interactive.primary,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  checkMark: {
-    fontFamily: 'Barlow-Bold',
-    fontSize: 12,
-    color: colors.text.inverse,
   },
 });

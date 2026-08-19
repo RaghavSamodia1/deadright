@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
+import { Icon } from '../Icon/Icon';
 
 interface JarCardProps {
   /** Formatted total — "$23.50" */
@@ -21,7 +22,7 @@ export function JarCard({ total, groupName, contributionCount, capProgress, capL
   return (
     <View style={[styles.card, style]}>
       <View style={styles.topRow}>
-        <Text style={styles.emoji}></Text>
+        <Icon name="jar" size={30} color={colors.text.inverse} strokeWidth={2} />
         <View style={styles.groupChip}>
           <Text style={styles.groupLabel}>{groupName.toUpperCase()}</Text>
         </View>
@@ -62,7 +63,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing[2],
     alignSelf: 'stretch',
   },
-  emoji: { fontSize: 36 },
   groupChip: {
     backgroundColor: 'rgba(10,10,11,0.15)',
     borderRadius: radius.xs,

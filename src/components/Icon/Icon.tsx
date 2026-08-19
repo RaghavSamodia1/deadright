@@ -56,6 +56,7 @@ export type IconName =
   | 'doc'
   | 'info'
   | 'exit'
+  | 'waveform'
   | 'trash';
 
 interface IconProps {
@@ -193,6 +194,14 @@ export function Icon({ name, size = 24, color = '#F0F0F0', strokeWidth = 2 }: Ic
         <>
           <Path d="M14 4H5v16h9" {...stroke} />
           <Path d="M18 12H9M15 8l4 4-4 4" {...stroke} />
+        </>
+      )}
+      {/* Five bars at a mixed height — a level meter rather than a speaker.
+          `megaphone` is already the broadcast icon; this one has to say "noise
+          you can play with", so it borrows the shape of a mixing desk. */}
+      {name === 'waveform' && (
+        <>
+          <Path d="M4 10v4M8 6v12M12 3v18M16 7v10M20 11v2" {...stroke} />
         </>
       )}
       {name === 'trash' && (

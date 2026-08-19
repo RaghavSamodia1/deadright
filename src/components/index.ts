@@ -113,3 +113,6 @@ export { Icon, type IconName } from './Icon/Icon';
 export { Rise } from './Motion/Rise';
 export { CountUp } from './Motion/CountUp';
 export { usePressScale, AnimatedPressable } from './Motion/usePressScale';
+export { Glass } from './Glass/Glass';
+export { Atmosphere } from './Atmosphere/Atmosphere';
+export { Confetti } from './Confetti/Confetti';

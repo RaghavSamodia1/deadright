@@ -108,7 +108,9 @@ export function NavHeader({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.bg.base,
+    // Transparent so the drifting light behind the app carries all the way to
+    // the top. An opaque bar cut a hard black band across the room.
+    backgroundColor: 'transparent',
   },
   inner: {
     height: 46,

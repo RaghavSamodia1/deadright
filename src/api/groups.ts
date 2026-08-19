@@ -92,3 +92,25 @@ export async function setGroupCurrency(groupId: string, currency: string) {
     throw error;
   }
 }
+
+export interface GroupPeek {
+  id: string;
+  name: string;
+  emoji: string | null;
+  member_count: number;
+}
+
+/**
+ * What a group is, from its invite code, without joining it.
+ *
+ * The join screen used to fake this — a hardcoded "Flatmates" card that
+ * appeared for any six characters, next to an error saying the code matched
+ * nothing. This returns the real group or nothing at all.
+ */
+export async function peekGroup(code: string): Promise<GroupPeek | null> {
+  const c = code.trim();
+  if (c.length !== 6) return null;
+  const { data, error } = await supabase.rpc('peek_group', { p_code: c });
+  if (error) throw error;
+  return (data && data[0]) ?? null;
+}

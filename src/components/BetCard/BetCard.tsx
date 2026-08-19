@@ -7,6 +7,7 @@ import { StatusChip, BetStatus } from '../StatusChip/StatusChip';
 import { SideBar } from '../SideBar/SideBar';
 import { Timer } from '../Timer/Timer';
 import { Icon } from '../Icon/Icon';
+import { Glass } from '../Glass/Glass';
 
 export interface BetCardData {
   id: string;
@@ -53,7 +54,9 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
       style={({ pressed }) => [
         styles.card,
         {
-          backgroundColor: colors.bg.surface1,
+          // Glass rather than a solid fill, so the light behind the app carries
+          // through the feed instead of stopping at a wall of grey rectangles.
+          backgroundColor: 'transparent',
           opacity: pressed ? 0.92 : 1,
           transform: [{ scale: pressed ? 0.985 : 1 }],
         },
@@ -62,6 +65,8 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
       accessibilityRole="button"
       accessibilityLabel={`Bet: ${bet.title}. Status: ${bet.status}.`}
     >
+      <Glass radius={radius.md} intensity={26} style={StyleSheet.absoluteFillObject} />
+
       {/* Author row */}
       <View style={styles.authorRow}>
         <Avatar size="sm" initials={bet.author.initials} uri={bet.author.avatarUri} tint="a" />

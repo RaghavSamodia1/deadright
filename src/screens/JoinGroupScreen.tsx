@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, TextInput, AvatarStack, Button } from '../components';
-import { joinGroupByCode } from '../api/groups';
-import { useAction } from '../hooks/useQuery';
+import { joinGroupByCode, peekGroup } from '../api/groups';
+import { useAction, useQuery } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 import { humanError } from '../lib/errors';
+import { plural } from '../lib/plural';
 
 // Join a group by its 6-char code (join_group_by_code RPC).
 export function JoinGroupScreen({ navigation, route }: any) {
@@ -13,7 +14,17 @@ export function JoinGroupScreen({ navigation, route }: any) {
   const [code, setCode] = useState<string>(
     (route?.params?.code ?? '').toString().toUpperCase(),
   );
-  const found = code.trim().length === 6;
+  // Was `code.length === 6`, which is not "found", it is "long enough".
+  const { data: peek, error: peekError } = useQuery(
+    async () => (code.trim().length === 6 ? await peekGroup(code) : null),
+    null,
+    [code],
+  );
+  // The preview is a courtesy, not a gate. If the lookup itself fails — offline,
+  // or the function is not deployed — a full-length code still gets to try, and
+  // the join tells you the truth. Blocking the button on a failed preview would
+  // make a nicety into an outage.
+  const found = peekError ? code.trim().length === 6 : !!peek;
   const { run: join, loading, error } = useAction(joinGroupByCode);
 
   const submit = async () => {
@@ -44,12 +55,11 @@ export function JoinGroupScreen({ navigation, route }: any) {
             error={error ? humanError(error) : undefined}
           />
 
-          {found && (
+          {peek && (
             <View style={styles.preview}>
-              <Text style={styles.previewEmoji}>🏠</Text>
-              <Text style={styles.previewName}>Flatmates</Text>
-              <AvatarStack people={[{ initials: 'AB' }, { initials: 'JK' }, { initials: 'PR' }]} max={3} size="sm" />
-              <Text style={styles.previewSub}>5 members · 12 open bets</Text>
+              {!!peek.emoji && <Text style={styles.previewEmoji}>{peek.emoji}</Text>}
+              <Text style={styles.previewName}>{peek.name}</Text>
+              <Text style={styles.previewSub}>{plural(peek.member_count, 'member')}</Text>
             </View>
           )}
         </View>

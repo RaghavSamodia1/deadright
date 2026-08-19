@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, ViewStyle, Dimensions } from 'react-native';
 import Svg, { Defs, RadialGradient, Stop, Ellipse } from 'react-native-svg';
 import { colors } from '../../tokens';
+import { Atmosphere } from '../Atmosphere/Atmosphere';
 
 const { width: W, height: H } = Dimensions.get('window');
 
@@ -39,7 +40,11 @@ export function ScreenBackground({ tone = 'base', glow = true, children, style }
 
   return (
     <View style={[styles.root, { backgroundColor: t.bg }, style]}>
-      {glow && (
+      {/* Only the regular screens get the room. The peak takeovers are a single
+          saturated colour on purpose — putting drifting light behind CALLED IT
+          would fight the one moment that should be loudest. */}
+      {tone === 'base' && <Atmosphere />}
+      {glow && tone !== 'base' && (
         <Svg width={W} height={H} style={StyleSheet.absoluteFill} pointerEvents="none">
           <Defs>
             <RadialGradient id="glowTR" cx="50%" cy="50%" r="50%">

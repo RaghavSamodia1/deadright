@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
-import { ScreenBackground, Stamp, Button } from '../components';
+import { ScreenBackground, Stamp, Button, Confetti } from '../components';
 import { undoResolution, getCredDelta } from '../api/resolution';
 import { useAction } from '../hooks/useQuery';
 
@@ -38,6 +38,8 @@ export function WinScreen({ navigation, route }: any) {
 
   return (
     <ScreenBackground tone="win">
+      {/* The one screen in the app that exists purely to feel good. */}
+      <Confetti />
       <View style={styles.root}>
         <View style={styles.center}>
           <Stamp label="CALLED IT" color={colors.text.inverse} rotate={-12} fontSize={60} />

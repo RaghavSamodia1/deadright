@@ -5,293 +5,583 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <title>Bet you won&#8217;t &#8212; Raghav Samodia</title>
-<meta name="description" content="A scroll study: five scroll-driven techniques on one page, one shared engine, no framework. DeadRight, by Raghav Samodia.">
+<meta name="description" content="A scroll study in seven acts: slot reels, pinned waypoints, horizontal travel and a chaos-to-order transition. One engine, no framework. DeadRight, by Raghav Samodia.">
 <meta property="og:title" content="Bet you won’t — Raghav Samodia">
-<meta property="og:description" content="Five scroll-driven techniques, one shared engine, no framework.">
+<meta property="og:description" content="Seven scroll-driven acts, one engine, no framework.">
 <meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
 
 <style>
-@font-face{font-family:"Barlow Black";src:url(assets/barlow-black.ttf) format("truetype");font-weight:900;font-display:block}
-@font-face{font-family:"Barlow SemiBold";src:url(assets/barlow-semibold.ttf) format("truetype");font-weight:600;font-display:block}
-@font-face{font-family:"Space Mono";src:url(assets/space-mono-bold.ttf) format("truetype");font-weight:700;font-display:block}
+@font-face{font-family:"Barlow Black";src:url(assets/barlow-black.ttf) format("truetype");font-weight:900;font-display:swap}
+@font-face{font-family:"Barlow SemiBold";src:url(assets/barlow-semibold.ttf) format("truetype");font-weight:600;font-display:swap}
+@font-face{font-family:"Space Mono";src:url(assets/space-mono-bold.ttf) format("truetype");font-weight:700;font-display:swap}
 
 :root{
-  --base:#0A0A0B;
-  --ink:#F0F0F0; --ink-2:#9C9CA3; --ink-3:#6B6B73;
-  --amber:#F7C846; --flame:#E2661F; --mint:#63B972; --coral:#FC574E; --violet:#6C63FF;
-  --line:rgba(255,255,255,.10);
+  /* Table felt, chip colours, and the neon over the door. */
+  --felt:#0B6E4F;
+  --felt-deep:#064434;
+  --ink:#0B0A12;
+  --cream:#FFF6E5;
+  --gold:#FFC53D;
+  --red:#E8253F;
+  --pink:#FF3D9A;
+  --cyan:#22D3EE;
+  --violet:#7C3AED;
+  --lime:#B6F36B;
+
+  --sign:"Bungee","Barlow Black",system-ui,sans-serif;
   --display:"Barlow Black",system-ui,sans-serif;
   --label:"Barlow SemiBold",system-ui,sans-serif;
-  --mono:"Space Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --mono:"Space Mono",ui-monospace,Menlo,monospace;
   --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  --gutter:clamp(20px,5vw,64px);
+  --gutter:clamp(18px,5vw,64px);
+  --edge:4px;               /* the pop-art outline everything wears */
 }
 *{box-sizing:border-box}
 html{scroll-behavior:auto}
-body{margin:0;background:var(--base);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
-h1,h2,h3{margin:0;font-family:var(--display);font-weight:900;letter-spacing:-.03em;line-height:.94}
+body{
+  margin:0;background:var(--ink);color:var(--cream);
+  font-family:var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+h1,h2,h3{margin:0;line-height:.92;letter-spacing:-.02em}
 p{margin:0}
 a{color:inherit}
-code{font-family:var(--mono);font-size:.86em;color:var(--amber)}
-.wrap{max-width:1180px;margin:0 auto;padding-inline:var(--gutter)}
-.eyebrow{font-family:var(--label);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--amber);margin:0 0 18px}
+code{font-family:var(--mono);font-size:.86em}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:var(--gutter)}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
 
-/* ── HUD: names the technique you are currently inside ───────────────────── */
+/* Halftone, the pop-art tell. Cheap: one repeating radial gradient. */
+.halftone{
+  position:absolute;inset:0;pointer-events:none;opacity:.16;
+  background-image:radial-gradient(circle,var(--ink) 1.4px,transparent 1.5px);
+  background-size:10px 10px;
+}
+/* Rays behind the loud things. */
+.rays{
+  position:absolute;inset:-40%;pointer-events:none;opacity:.5;
+  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.13) 0deg 7deg,transparent 7deg 14deg);
+  will-change:transform;
+}
+.grain{
+  position:absolute;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── Shared bits ──────────────────────────────────────────────────────────── */
+.eyebrow{
+  display:inline-block;font-family:var(--sign);font-size:clamp(10px,1.1vw,13px);
+  letter-spacing:.14em;text-transform:uppercase;
+  background:var(--ink);color:var(--gold);
+  padding:7px 14px;border-radius:999px;border:3px solid var(--gold);
+  transform:rotate(-1.4deg);
+}
+.sticker{
+  display:inline-block;font-family:var(--sign);font-size:clamp(11px,1.3vw,15px);
+  background:var(--red);color:var(--cream);padding:10px 18px;
+  border:var(--edge) solid var(--ink);border-radius:999px;
+  box-shadow:5px 5px 0 var(--ink);transform:rotate(-3deg);
+}
+.plate{
+  border:var(--edge) solid var(--ink);border-radius:22px;
+  box-shadow:9px 9px 0 var(--ink);
+}
+.bulbs{
+  position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  /* A ring of marquee bulbs, drawn as dots along the border box. */
+  background:
+    repeating-linear-gradient(90deg,var(--gold) 0 8px,transparent 8px 26px) top/100% 8px no-repeat,
+    repeating-linear-gradient(90deg,var(--gold) 0 8px,transparent 8px 26px) bottom/100% 8px no-repeat,
+    repeating-linear-gradient(180deg,var(--gold) 0 8px,transparent 8px 26px) left/8px 100% no-repeat,
+    repeating-linear-gradient(180deg,var(--gold) 0 8px,transparent 8px 26px) right/8px 100% no-repeat;
+  opacity:.9;animation:chase 1.1s steps(2) infinite;
+}
+@keyframes chase{50%{opacity:.35}}
+
+/* ── HUD ──────────────────────────────────────────────────────────────────── */
 .hud{
-  position:fixed;z-index:60;left:var(--gutter);bottom:var(--gutter);
-  display:flex;align-items:center;gap:12px;pointer-events:none;
-  font-family:var(--label);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);
-  opacity:0;transition:opacity .4s;
+  position:fixed;z-index:80;left:var(--gutter);bottom:var(--gutter);
+  display:flex;align-items:center;gap:10px;pointer-events:none;
+  font-family:var(--sign);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--ink);color:var(--gold);padding:9px 14px;border-radius:999px;
+  border:3px solid var(--gold);opacity:0;transition:opacity .35s;
 }
 .hud.on{opacity:1}
-.hud .dot{width:6px;height:6px;border-radius:50%;background:var(--amber)}
-.hud .bar{width:110px;height:2px;background:rgba(255,255,255,.12);border-radius:2px;overflow:hidden}
-.hud .bar i{display:block;height:100%;background:var(--amber);transform-origin:0 50%;transform:scaleX(var(--all,0))}
+.hud .bar{width:74px;height:6px;background:rgba(255,255,255,.18);border-radius:999px;overflow:hidden}
+.hud .bar i{display:block;height:100%;background:var(--gold);transform-origin:0 50%;transform:scaleX(var(--all,0))}
 
-/* ── The travelling phone ────────────────────────────────────────────────── */
+/* ── Travelling phone ─────────────────────────────────────────────────────── */
 .phone{
-  position:fixed;z-index:20;left:50%;top:50%;width:var(--pw,250px);
-  margin-left:calc(var(--pw,250px) / -2);
-  margin-top:calc(var(--pw,250px) * -1.02);
+  position:fixed;z-index:30;left:50%;top:50%;width:var(--pw,244px);
+  margin-left:calc(var(--pw,244px) / -2);margin-top:calc(var(--pw,244px) * -1.02);
   pointer-events:none;opacity:0;will-change:transform,opacity;
 }
 .phone-frame{
-  position:relative;border-radius:34px;padding:8px;
-  background:linear-gradient(160deg,#34343c,#141417 40%,#0d0d10);
-  box-shadow:0 40px 90px rgba(0,0,0,.66),0 0 0 1px rgba(255,255,255,.07);
+  position:relative;border-radius:34px;padding:9px;background:var(--ink);
+  border:var(--edge) solid var(--ink);box-shadow:12px 12px 0 rgba(0,0,0,.45);
 }
-.phone-screen{position:relative;border-radius:27px;overflow:hidden;background:#0A0A0B;aspect-ratio:1 / 2}
-.phone-screen img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;will-change:opacity}
-.phone-notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:34%;height:19px;border-radius:0 0 11px 11px;background:#0d0d10;z-index:3}
-.phone-glare{position:absolute;inset:0;border-radius:27px;z-index:2;pointer-events:none;
-  background:linear-gradient(128deg,rgba(255,255,255,.16),rgba(255,255,255,.03) 26%,transparent 52%)}
+.phone-screen{position:relative;border-radius:26px;overflow:hidden;background:#0A0A0B;aspect-ratio:1 / 2}
+.phone-screen img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity}
+.phone-notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:34%;height:18px;border-radius:0 0 10px 10px;background:var(--ink);z-index:3}
 
-/* ── Act 1 — hero ────────────────────────────────────────────────────────── */
-.hero{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
-.hero-bg{position:absolute;inset:-20%;pointer-events:none;will-change:transform;
-  background:
-    radial-gradient(38% 42% at 18% 22%,rgba(226,102,31,.30),transparent 70%),
-    radial-gradient(40% 40% at 84% 74%,rgba(108,99,255,.22),transparent 70%);
+/* ── ACT 1 · Hero ─────────────────────────────────────────────────────────── */
+.hero{
+  position:relative;min-height:100svh;display:flex;flex-direction:column;
+  justify-content:center;overflow:hidden;
+  background:radial-gradient(120% 90% at 50% 10%,#1B1140 0%,var(--ink) 60%);
 }
-.byline{position:absolute;top:var(--gutter);left:var(--gutter);right:var(--gutter);z-index:3;
-  display:flex;justify-content:space-between;gap:16px;
-  font-family:var(--label);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
-.hero h1{position:relative;z-index:2;font-size:clamp(52px,13vw,168px);max-width:11ch}
-/* Each word rides in from under its own clipping box. */
-.w{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.08em}
-.w span{display:inline-block;transform:translateY(110%);opacity:0}
-.ready .w span{transition:transform .95s cubic-bezier(.16,1,.3,1),opacity .7s ease;transform:none;opacity:1}
-.ready .w:nth-of-type(2) span{transition-delay:.08s}
-.ready .w:nth-of-type(3) span{transition-delay:.16s}
-.hero .sub{position:relative;z-index:2;margin-top:30px;max-width:44ch;
-  font-size:clamp(15px,1.6vw,18px);line-height:1.62;color:var(--ink-2);opacity:0;transform:translateY(14px)}
-.ready .hero .sub{transition:opacity .8s .34s,transform .8s .34s cubic-bezier(.16,1,.3,1);opacity:1;transform:none}
-.cue{position:absolute;bottom:var(--gutter);right:var(--gutter);z-index:3;
-  font-family:var(--label);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);
-  display:flex;align-items:center;gap:10px}
-.cue i{display:block;width:1px;height:34px;background:linear-gradient(var(--amber),transparent);animation:drop 1.9s ease-in-out infinite}
-@keyframes drop{0%,100%{opacity:.25;transform:translateY(-5px)}50%{opacity:1;transform:translateY(5px)}}
+.byline{
+  position:absolute;top:var(--gutter);left:var(--gutter);right:var(--gutter);z-index:6;
+  display:flex;justify-content:space-between;gap:14px;align-items:flex-start;
+  font-family:var(--sign);font-size:clamp(9px,1vw,12px);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
+}
+.hero-inner{position:relative;z-index:5;text-align:center;padding-bottom:clamp(52px,9svh,88px)}
+/* A scrim between the flying chips and the words. Inside .hero-inner's own
+   stacking context, so it sits above the chip field and below the copy. */
+.hero-inner::before{
+  content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:135%;height:160%;pointer-events:none;z-index:-1;
+  background:radial-gradient(closest-side,rgba(11,10,18,.78),rgba(11,10,18,0) 76%);
+}
+.neon{
+  font-family:var(--sign);
+  font-size:clamp(46px,13.5vw,178px);line-height:.86;color:var(--cream);
+  text-transform:uppercase;letter-spacing:.01em;
+  text-shadow:
+    0 0 6px rgba(255,61,154,.9), 0 0 22px rgba(255,61,154,.75),
+    0 0 48px rgba(124,58,237,.65), 6px 7px 0 var(--ink);
+  animation:flicker 6s infinite;
+}
+.neon .lit{color:var(--gold);text-shadow:0 0 8px rgba(255,197,61,.95),0 0 30px rgba(255,197,61,.7),6px 7px 0 var(--ink)}
+@keyframes flicker{
+  0%,96%,100%{opacity:1}
+  97%{opacity:.55}
+  98%{opacity:1}
+  99%{opacity:.7}
+}
+.hero .sub{
+  margin:26px auto 0;max-width:52ch;font-size:clamp(14px,1.6vw,18px);line-height:1.6;
+  color:rgba(255,246,229,.82);
+}
+.hero-badges{margin-top:26px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.cue{
+  position:absolute;bottom:calc(var(--gutter) + 4px);left:50%;transform:translateX(-50%);z-index:6;
+  font-family:var(--sign);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.cue i{display:block;width:3px;height:30px;border-radius:2px;background:var(--gold);animation:drop 1.7s ease-in-out infinite}
+@keyframes drop{0%,100%{opacity:.3;transform:translateY(-5px)}50%{opacity:1;transform:translateY(6px)}}
 
-/* ── Act 2 — waypoints the phone travels between ─────────────────────────── */
-.journey{position:relative}
-.stop{min-height:100svh;display:flex;align-items:center;padding-block:12svh}
-.stop .copy{max-width:30ch;position:relative;z-index:10}
+/* Chips that drift in the hero, parallaxed. */
+.chip-field{position:absolute;inset:0;z-index:2;pointer-events:none}
+.chip-field .fly{position:absolute;will-change:transform}
+
+/* ── Marquee ──────────────────────────────────────────────────────────────── */
+.ticker{
+  position:relative;overflow:hidden;background:var(--gold);color:var(--ink);
+  border-top:var(--edge) solid var(--ink);border-bottom:var(--edge) solid var(--ink);
+  padding:14px 0;
+}
+.ticker.pink{background:var(--pink);color:var(--cream)}
+.ticker.cyan{background:var(--cyan);color:var(--ink)}
+.ticker-row{display:flex;gap:34px;white-space:nowrap;will-change:transform}
+.ticker span{
+  font-family:var(--sign);font-size:clamp(16px,2.6vw,32px);text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:34px;
+}
+.ticker svg{width:1em;height:1em;flex:0 0 auto}
+
+/* ── ACT 2 · Slot machine ─────────────────────────────────────────────────── */
+.slots{position:relative;height:340svh;background:var(--violet)}
+.slots-stage{
+  position:sticky;top:0;height:100svh;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,3svh,30px);
+}
+.machine{
+  position:relative;z-index:3;background:var(--red);
+  border:var(--edge) solid var(--ink);border-radius:28px;
+  box-shadow:12px 12px 0 var(--ink);
+  padding:clamp(14px,2.4vw,26px);
+}
+.machine-top{
+  font-family:var(--sign);text-align:center;color:var(--gold);
+  font-size:clamp(13px,2vw,22px);text-transform:uppercase;letter-spacing:.06em;
+  margin-bottom:clamp(10px,1.6vw,16px);
+}
+.reels{display:flex;gap:clamp(8px,1.4vw,16px);position:relative}
+.reel{
+  --tile:clamp(58px,9vw,104px);
+  width:var(--tile);height:calc(var(--tile) * 3 + var(--edge) * 2);
+  overflow:hidden;background:var(--cream);
+  border:var(--edge) solid var(--ink);border-radius:14px;position:relative;
+}
+.reel-strip{position:absolute;top:0;left:0;width:100%;will-change:transform}
+.reel-strip div{
+  height:var(--tile);display:grid;place-items:center;
+}
+.reel-strip svg{width:62%;height:62%}
+/* The payline across the middle window. */
+.payline{
+  position:absolute;left:-8px;right:-8px;top:50%;height:11px;background:var(--gold);
+  border:3px solid var(--ink);border-radius:6px;transform:translateY(-50%);
+  z-index:4;pointer-events:none;opacity:.95;
+}
+.lever{
+  position:absolute;right:calc(-1 * clamp(26px,4vw,52px));top:16%;
+  width:clamp(14px,2vw,20px);height:38%;
+  background:var(--ink);border-radius:999px;transform-origin:50% 100%;
+}
+.lever::before{
+  content:"";position:absolute;top:calc(-1 * clamp(16px,2.4vw,26px));left:50%;
+  width:clamp(30px,4.6vw,50px);height:clamp(30px,4.6vw,50px);transform:translateX(-50%);
+  background:var(--red);border:var(--edge) solid var(--ink);border-radius:50%;
+}
+.payout{
+  position:relative;z-index:3;font-family:var(--sign);text-transform:uppercase;
+  font-size:clamp(20px,5vw,64px);color:var(--gold);
+  text-shadow:5px 6px 0 var(--ink);
+  opacity:0;transform:scale(.8) rotate(-2deg);will-change:transform,opacity;
+}
+.slots-note{
+  position:relative;z-index:3;font-family:var(--label);font-size:clamp(11px,1.3vw,14px);
+  color:rgba(255,246,229,.8);text-align:center;max-width:44ch;
+}
+
+/* ── ACT 3 · Waypoints ────────────────────────────────────────────────────── */
+.journey{position:relative;background:var(--felt)}
+.journey::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23f)' opacity='.5'/%3E%3C/svg%3E");
+  mix-blend-mode:overlay;
+}
+.stop{min-height:100svh;display:flex;align-items:center;padding-block:12svh;position:relative}
+.stop .copy{max-width:32ch;position:relative;z-index:10}
 .stop.right{justify-content:flex-end;text-align:right}
 .stop.right .copy{margin-left:auto}
-.stop h2{font-size:clamp(30px,4.6vw,62px)}
-.stop p{margin-top:20px;font-size:clamp(14px,1.5vw,17px);line-height:1.68;color:var(--ink-2)}
-.stop .n{font-family:var(--mono);font-size:11px;color:var(--amber);display:block;margin-bottom:14px}
-.reveal{opacity:0;transform:translateY(26px);will-change:transform,opacity}
+.stop h2{font-family:var(--display);font-size:clamp(30px,5vw,68px);color:var(--cream);text-shadow:4px 5px 0 rgba(0,0,0,.35)}
+.stop p{margin-top:18px;font-size:clamp(14px,1.5vw,17px);line-height:1.65;color:rgba(255,246,229,.9)}
+.stop .n{
+  display:inline-block;font-family:var(--sign);font-size:12px;color:var(--ink);
+  background:var(--gold);padding:5px 12px;border-radius:999px;border:3px solid var(--ink);margin-bottom:16px;
+}
+.reveal{opacity:0;transform:translateY(28px);will-change:transform,opacity}
 
-/* ── Act 3 — chaos to order ──────────────────────────────────────────────── */
-.track{position:relative;height:420svh}
+/* ── ACT 4 · Chaos → order ────────────────────────────────────────────────── */
+.track{position:relative;height:420svh;background:var(--cyan)}
 .stage{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;--p:0}
-/* Two fixed layers cross-fading. An earlier version recalculated gradient
-   stops, a blur radius and a rotation from --p every frame; it repainted a
-   viewport-sized element 60 times a second and locked the renderer up. Opacity
-   is the only thing that changes here, so the compositor handles it alone. */
-.bg{position:absolute;inset:-15%;pointer-events:none;will-change:opacity}
-.bg-chaos{opacity:calc(1 - var(--p));
-  background:
-    radial-gradient(42% 48% at 20% 24%,rgba(226,102,31,.30),rgba(226,102,31,.09) 45%,transparent 72%),
-    radial-gradient(44% 44% at 86% 78%,rgba(108,99,255,.26),rgba(108,99,255,.08) 45%,transparent 72%),
-    radial-gradient(30% 30% at 62% 12%,rgba(252,87,78,.14),transparent 70%);
+.stage-head{position:relative;z-index:4;padding:clamp(20px,4svh,48px) var(--gutter) 0;text-align:center;flex:0 0 auto}
+.swap{position:relative;height:clamp(42px,8vw,92px);margin-top:14px}
+.swap h2{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:clamp(26px,5.6vw,74px);white-space:nowrap;color:var(--ink);
 }
-.bg-order{opacity:var(--p);
-  background:
-    radial-gradient(46% 50% at 50% 42%,rgba(99,185,114,.13),rgba(99,185,114,.04) 50%,transparent 76%),
-    radial-gradient(40% 40% at 50% 96%,rgba(247,200,70,.12),transparent 72%);
-}
-.stage-head{position:relative;z-index:2;padding:clamp(24px,5svh,56px) var(--gutter) 0;text-align:center;flex:0 0 auto}
-.swap{position:relative;height:clamp(44px,8.4vw,96px)}
-.swap h2{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(28px,6vw,78px);white-space:nowrap}
-.swap .a{opacity:calc((.45 - var(--p)) / .18 + .5);transform:translateY(calc(-16px * var(--p)))}
-.swap .b{opacity:calc((var(--p) - .45) / .18 + .5);transform:translateY(calc(18px * (1 - var(--p))));color:var(--amber)}
-.note-hold{position:relative;height:1.5em;margin-top:14px;font-size:13px;color:var(--ink-2)}
+/* A true crossfade: the two opacities sum to 1 at every point, so the section
+   is never left without a headline the way an earlier pair of windows did. */
+.swap .a{opacity:calc((.45 - var(--p)) / .18 + .5)}
+.swap .b{opacity:calc((var(--p) - .45) / .18 + .5);color:var(--red)}
+.note-hold{position:relative;height:1.5em;margin-top:10px;font-family:var(--label);font-size:clamp(11px,1.3vw,14px);color:rgba(11,10,18,.75)}
 .note-hold p{position:absolute;left:0;right:0}
 .note-hold .a{opacity:calc((.47 - var(--p)) / .16 + .5)}
 .note-hold .b{opacity:calc((var(--p) - .47) / .16 + .5)}
-.field{position:relative;z-index:1;flex:1 1 auto;margin:0 var(--gutter)}
+.field{position:relative;z-index:3;flex:1 1 auto;margin:0 var(--gutter)}
 .claim{
-  position:absolute;top:0;left:0;width:var(--cw,208px);
-  display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
+  position:absolute;top:0;left:0;width:var(--cw,214px);
+  display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:12px;
   /* No backdrop-filter: twenty live backdrop blurs moving every frame is the
-     most expensive thing you can ask a compositor to do, and against a
-     backdrop this dark a flat translucent fill is indistinguishable. */
-  background:rgba(255,255,255,.055);border:1px solid var(--line);
-  box-shadow:0 6px 22px rgba(0,0,0,.28);
+     most expensive thing a compositor can be asked to do. */
+  background:var(--cream);border:3px solid var(--ink);
+  box-shadow:5px 5px 0 rgba(11,10,18,.55);
   will-change:transform,opacity;contain:layout paint;
 }
-.claim .who{flex:0 0 auto;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
-  font-family:var(--label);font-size:9px;color:#0A0A0B;background:var(--tint,#9C9CA3)}
-.claim .said{flex:1 1 auto;min-width:0;font-size:12.5px;line-height:1.28;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.claim .verdict{flex:0 0 auto;font-family:var(--mono);font-size:10px;padding:3px 6px;border-radius:5px;
-  opacity:var(--settled,0);transform:scale(calc(.82 + .18 * var(--settled,0)))}
-.claim[data-status="won"] .verdict{color:var(--mint);background:rgba(99,185,114,.15)}
-.claim[data-status="lost"] .verdict{color:var(--coral);background:rgba(252,87,78,.15)}
-.claim[data-status="open"] .verdict{color:var(--amber);background:rgba(247,200,70,.15)}
-.stage-foot{position:relative;z-index:2;flex:0 0 auto;padding:0 var(--gutter) clamp(20px,4svh,48px);
-  display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
-.rail{flex:1 1 auto;height:2px;background:rgba(255,255,255,.09);border-radius:2px;overflow:hidden;max-width:420px}
-.rail i{display:block;height:100%;background:var(--amber);transform-origin:0 50%;transform:scaleX(var(--p))}
-.tally{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
-.tally b{color:var(--ink)}
-
-/* ── Act 4 — vertical scroll drives horizontal travel ────────────────────── */
-.hrail{position:relative;height:340svh}
-.hrail-stage{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
-.hrail-head{padding:0 var(--gutter);margin-bottom:clamp(20px,4svh,44px)}
-.hrail-head h2{font-size:clamp(28px,4.4vw,58px)}
-.hrail-row{display:flex;gap:clamp(16px,2.4vw,36px);padding-inline:var(--gutter);will-change:transform}
-.hrail-row figure{margin:0;flex:0 0 auto;width:clamp(150px,17vw,210px)}
-.hrail-row img{width:100%;height:auto;display:block;border-radius:16px;border:1px solid var(--line);background:#111}
-.hrail-row figcaption{margin-top:11px;font-family:var(--label);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
-
-/* ── Act 5 — sticky stack ────────────────────────────────────────────────── */
-.stack{position:relative;padding-bottom:14svh}
-.stack-card{
-  position:sticky;top:calc(15svh + var(--i) * 16px);
-  border-radius:22px;padding:clamp(26px,3.6vw,48px);
-  background:#111114;border:1px solid var(--line);
-  box-shadow:0 -18px 50px rgba(0,0,0,.5);margin-bottom:16px;
+.claim .who{
+  flex:0 0 auto;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--sign);font-size:8px;color:var(--ink);background:var(--tint,#ccc);
+  border:2px solid var(--ink);
 }
-.stack-card h3{font-size:clamp(21px,2.6vw,34px);font-family:var(--display)}
-.stack-card p{margin-top:15px;max-width:58ch;font-size:15px;line-height:1.7;color:var(--ink-2)}
-.stack-card .n{font-family:var(--mono);font-size:11px;color:var(--amber);display:block;margin-bottom:14px}
+.claim .said{flex:1 1 auto;min-width:0;font-size:12px;line-height:1.25;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.claim .verdict{
+  flex:0 0 auto;font-family:var(--sign);font-size:8px;padding:3px 6px;border-radius:5px;
+  border:2px solid var(--ink);opacity:var(--settled,0);
+  transform:scale(calc(.8 + .2 * var(--settled,0)));
+}
+.claim[data-status="won"] .verdict{background:var(--lime);color:var(--ink)}
+.claim[data-status="lost"] .verdict{background:var(--red);color:var(--cream)}
+.claim[data-status="open"] .verdict{background:var(--gold);color:var(--ink)}
+.stage-foot{
+  position:relative;z-index:4;flex:0 0 auto;padding:0 var(--gutter) clamp(16px,3svh,40px);
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.rail{flex:1 1 auto;height:10px;background:rgba(11,10,18,.2);border:3px solid var(--ink);border-radius:999px;overflow:hidden;max-width:420px}
+.rail i{display:block;height:100%;background:var(--red);transform-origin:0 50%;transform:scaleX(var(--p))}
+.tally{font-family:var(--sign);font-size:clamp(11px,1.4vw,16px);color:var(--ink);white-space:nowrap}
 
-/* ── Prose + footer ──────────────────────────────────────────────────────── */
-.sec{padding:clamp(80px,13svh,170px) 0;border-top:1px solid var(--line)}
-.sec h2{font-size:clamp(28px,4.6vw,58px);max-width:17ch}
-.links{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
-.links a{font-family:var(--label);font-size:13px;text-decoration:none;padding:13px 20px;
-  border:1px solid var(--line);border-radius:999px;transition:border-color .18s,background .18s,color .18s}
-.links a:hover{border-color:var(--amber);color:var(--amber)}
-.links a.solid{background:var(--amber);color:#0A0A0B;border-color:var(--amber)}
-.smallprint{margin-top:34px;font-size:12px;line-height:1.7;color:var(--ink-3);max-width:64ch}
+/* ── ACT 5 · Horizontal ───────────────────────────────────────────────────── */
+.hrail{position:relative;height:340svh;background:var(--pink)}
+.hrail-stage{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.hrail-head{padding:0 var(--gutter);margin-bottom:clamp(16px,3svh,38px)}
+.hrail-head h2{font-family:var(--display);font-size:clamp(28px,4.8vw,64px);color:var(--cream);text-shadow:5px 6px 0 var(--ink)}
+.hrail-row{display:flex;gap:clamp(14px,2.2vw,34px);padding-inline:var(--gutter);will-change:transform;align-items:flex-start}
+.hrail-row figure{margin:0;flex:0 0 auto;width:clamp(146px,17vw,206px)}
+.hrail-row img{width:100%;height:auto;display:block;border-radius:16px;border:var(--edge) solid var(--ink);box-shadow:8px 8px 0 var(--ink);background:#111}
+.hrail-row figcaption{
+  margin-top:12px;display:inline-block;font-family:var(--sign);font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;background:var(--ink);color:var(--gold);padding:5px 10px;border-radius:999px;
+}
+
+/* ── ACT 6 · Counters ─────────────────────────────────────────────────────── */
+.stats{position:relative;background:var(--gold);color:var(--ink);padding:clamp(70px,12svh,150px) 0;overflow:hidden}
+.stats h2{font-family:var(--display);font-size:clamp(28px,4.8vw,62px);max-width:18ch;position:relative;z-index:3}
+.stat-grid{
+  position:relative;z-index:3;margin-top:clamp(34px,5vw,62px);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:clamp(16px,2.4vw,30px);
+}
+.stat{background:var(--cream);border:var(--edge) solid var(--ink);border-radius:20px;padding:clamp(18px,2.4vw,28px);box-shadow:8px 8px 0 var(--ink)}
+.stat b{display:block;font-family:var(--sign);font-size:clamp(34px,4.4vw,58px);line-height:.95;color:var(--red)}
+.stat em{
+  display:block;margin-top:6px;font-style:normal;font-family:var(--sign);
+  font-size:clamp(11px,1.3vw,15px);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);
+}
+.stat span{display:block;margin-top:12px;font-family:var(--label);font-size:13px;line-height:1.5;color:rgba(11,10,18,.78)}
+
+/* ── ACT 7 · Sticky stack ─────────────────────────────────────────────────── */
+.rules-head{background:var(--ink);padding:clamp(60px,10svh,120px) 0 clamp(20px,4svh,44px)}
+.rules-head h2{font-family:var(--display);font-size:clamp(28px,4.8vw,62px);max-width:17ch;color:var(--cream)}
+.stack{position:relative;background:var(--ink);padding-bottom:16svh}
+.stack-card{
+  position:sticky;top:calc(14svh + var(--i) * 16px);
+  border-radius:22px;padding:clamp(22px,3.4vw,44px);margin-bottom:16px;
+  border:var(--edge) solid var(--ink);box-shadow:10px 10px 0 rgba(0,0,0,.5);
+  background:var(--cream);color:var(--ink);
+}
+.stack-card:nth-child(2){background:var(--lime)}
+.stack-card:nth-child(3){background:var(--cyan)}
+.stack-card:nth-child(4){background:var(--gold)}
+.stack-card:nth-child(5){background:var(--pink);color:var(--cream)}
+.stack-card h3{font-family:var(--display);font-size:clamp(20px,2.8vw,36px)}
+.stack-card p{margin-top:13px;max-width:60ch;font-size:15px;line-height:1.65}
+.stack-card .n{
+  display:inline-block;font-family:var(--sign);font-size:11px;background:var(--ink);color:var(--gold);
+  padding:5px 11px;border-radius:999px;margin-bottom:14px;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+.foot{position:relative;background:var(--ink);padding:clamp(70px,12svh,150px) 0 clamp(50px,8svh,100px);overflow:hidden;text-align:center}
+.foot .neon{font-size:clamp(34px,9vw,110px)}
+.links{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px;justify-content:center}
+.links a{
+  font-family:var(--sign);font-size:clamp(11px,1.3vw,15px);text-decoration:none;text-transform:uppercase;
+  padding:14px 24px;border-radius:999px;border:var(--edge) solid var(--ink);
+  background:var(--cream);color:var(--ink);box-shadow:6px 6px 0 var(--gold);
+  transition:transform .14s,box-shadow .14s;
+}
+.links a:hover{transform:translate(-2px,-2px);box-shadow:9px 9px 0 var(--gold)}
+.links a.hot{background:var(--red);color:var(--cream);box-shadow:6px 6px 0 var(--gold)}
+.smallprint{margin:36px auto 0;max-width:62ch;font-size:12px;line-height:1.7;color:rgba(255,246,229,.55)}
 
 @media (max-width:760px){
-  .phone{--pw:180px}
-  .swap h2{white-space:normal;line-height:1.04}
-  .swap{height:clamp(58px,15vw,102px)}
-  .tally{display:none}
+  :root{--edge:3px}
+  .phone{--pw:172px}
+  .swap h2{white-space:normal;line-height:1.02}
+  .swap{height:clamp(56px,15vw,100px)}
   .stop .copy{max-width:none}
   .stop.right{text-align:left;justify-content:flex-start}
   .stop.right .copy{margin-left:0}
   .hud{display:none}
+  .lever{display:none}
 }
 
-/* Motion is the entire point of this page, so when it is switched off the page
-   stops pretending: every track collapses, nothing pins, nothing travels, and
-   each act renders in its finished state. That is the half worth reading. */
+/* Motion is the whole point of this page, so when it is switched off the page
+   stops pretending: every track collapses, nothing pins or travels, and each
+   act renders in its finished state. */
 @media (prefers-reduced-motion:reduce){
-  .track,.hrail{height:auto}
-  .stage,.hrail-stage{position:relative;height:auto;--p:1}
-  .bg{display:none}
-  .phone{display:none}
+  .track,.hrail,.slots{height:auto}
+  .stage,.hrail-stage,.slots-stage{position:relative;height:auto;--p:1}
+  .phone,.chip-field,.lever{display:none}
   .stack-card{position:relative;top:auto}
-  .hrail-row{flex-wrap:wrap;transform:none!important}
+  .hrail-row,.ticker-row{flex-wrap:wrap;transform:none!important}
   .reveal{opacity:1!important;transform:none!important}
-  .w span{transform:none;opacity:1}
-  .hero .sub{opacity:1;transform:none}
-  .cue i{animation:none}
-  .hud{display:none}
+  .payout{opacity:1!important;transform:none!important}
+  .neon,.bulbs,.cue i{animation:none}
   .field{min-height:70svh}
+  .hud{display:none}
 }
 </style>
 </head>
 <body>
 
+<!-- ── Asset library ────────────────────────────────────────────────────────
+     Chips, cards, suits and reel symbols, drawn once as <symbol>s and pulled in
+     with <use>. They inherit currentColor, so one shape serves every colourway
+     rather than shipping a PNG per variant. -->
+<svg class="sprite" aria-hidden="true">
+  <symbol id="chip" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" fill="currentColor" stroke="#0B0A12" stroke-width="6"/>
+    <g fill="#FFF6E5">
+      <rect x="44" y="2" width="12" height="16" rx="2"/><rect x="44" y="82" width="12" height="16" rx="2"/>
+      <rect x="2" y="44" width="16" height="12" rx="2"/><rect x="82" y="44" width="16" height="12" rx="2"/>
+      <rect x="14" y="14" width="12" height="16" rx="2" transform="rotate(-45 20 22)"/>
+      <rect x="74" y="70" width="12" height="16" rx="2" transform="rotate(-45 80 78)"/>
+      <rect x="74" y="14" width="12" height="16" rx="2" transform="rotate(45 80 22)"/>
+      <rect x="14" y="70" width="12" height="16" rx="2" transform="rotate(45 20 78)"/>
+    </g>
+    <circle cx="50" cy="50" r="30" fill="none" stroke="#0B0A12" stroke-width="5"/>
+    <circle cx="50" cy="50" r="22" fill="#FFF6E5" stroke="#0B0A12" stroke-width="4"/>
+  </symbol>
+
+  <symbol id="spade" viewBox="0 0 100 100">
+    <path d="M50 8C36 26 14 38 14 56a20 20 0 0 0 33 15l-6 21h18l-6-21a20 20 0 0 0 33-15C86 38 64 26 50 8z" fill="currentColor" stroke="#0B0A12" stroke-width="5" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="heart" viewBox="0 0 100 100">
+    <path d="M50 88C24 68 10 54 10 38a22 22 0 0 1 40-12 22 22 0 0 1 40 12c0 16-14 30-40 50z" fill="currentColor" stroke="#0B0A12" stroke-width="5" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="diamond" viewBox="0 0 100 100">
+    <path d="M50 6 84 50 50 94 16 50z" fill="currentColor" stroke="#0B0A12" stroke-width="5" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="club" viewBox="0 0 100 100">
+    <path d="M50 8a19 19 0 0 0-14 32 19 19 0 1 0-8 34 19 19 0 0 0 16-9l-4 27h20l-4-27a19 19 0 0 0 16 9 19 19 0 1 0-8-34A19 19 0 0 0 50 8z" fill="currentColor" stroke="#0B0A12" stroke-width="5" stroke-linejoin="round"/>
+  </symbol>
+
+  <symbol id="seven" viewBox="0 0 100 100">
+    <path d="M24 16h52L46 92H26l28-60H24z" fill="currentColor" stroke="#0B0A12" stroke-width="5" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="bell" viewBox="0 0 100 100">
+    <path d="M50 10a8 8 0 0 1 8 8v2a26 26 0 0 1 18 25v20l8 11H16l8-11V45a26 26 0 0 1 18-25v-2a8 8 0 0 1 8-8z" fill="currentColor" stroke="#0B0A12" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M40 84a10 10 0 0 0 20 0" fill="none" stroke="#0B0A12" stroke-width="5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="cherry" viewBox="0 0 100 100">
+    <path d="M52 14c-6 18-22 26-26 40" fill="none" stroke="#0B0A12" stroke-width="5" stroke-linecap="round"/>
+    <path d="M52 14c8 16 20 22 26 34" fill="none" stroke="#0B0A12" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="26" cy="72" r="18" fill="currentColor" stroke="#0B0A12" stroke-width="5"/>
+    <circle cx="76" cy="66" r="16" fill="currentColor" stroke="#0B0A12" stroke-width="5"/>
+  </symbol>
+  <symbol id="bar" viewBox="0 0 100 100">
+    <rect x="10" y="34" width="80" height="32" rx="8" fill="currentColor" stroke="#0B0A12" stroke-width="5"/>
+    <path d="M28 42v16M50 42v16M72 42v16" stroke="#0B0A12" stroke-width="5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="horseshoe" viewBox="0 0 100 100">
+    <path d="M30 86V56a20 20 0 0 1 40 0v30" fill="none" stroke="currentColor" stroke-width="20" stroke-linecap="butt"/>
+    <path d="M30 86V56a20 20 0 0 1 40 0v30" fill="none" stroke="#0B0A12" stroke-width="5"/>
+    <g fill="#0B0A12"><circle cx="30" cy="70" r="3.4"/><circle cx="70" cy="70" r="3.4"/>
+      <circle cx="36" cy="52" r="3.4"/><circle cx="64" cy="52" r="3.4"/></g>
+    <rect x="20" y="82" width="20" height="9" rx="3" fill="currentColor" stroke="#0B0A12" stroke-width="4"/>
+    <rect x="60" y="82" width="20" height="9" rx="3" fill="currentColor" stroke="#0B0A12" stroke-width="4"/>
+  </symbol>
+  <symbol id="star" viewBox="0 0 100 100">
+    <path d="m50 8 12 26 28 4-20 20 5 28-25-13-25 13 5-28L10 38l28-4z" fill="currentColor" stroke="#0B0A12" stroke-width="5" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="coin" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="42" fill="currentColor" stroke="#0B0A12" stroke-width="6"/>
+    <circle cx="50" cy="50" r="30" fill="none" stroke="#0B0A12" stroke-width="4"/>
+    <path d="M50 30v40M40 40h16a8 8 0 0 1 0 16h-12a8 8 0 0 0 0 16h16" fill="none" stroke="#0B0A12" stroke-width="5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="die" viewBox="0 0 100 100">
+    <rect x="10" y="10" width="80" height="80" rx="18" fill="currentColor" stroke="#0B0A12" stroke-width="6"/>
+    <g fill="#0B0A12"><circle cx="32" cy="32" r="7"/><circle cx="68" cy="32" r="7"/><circle cx="50" cy="50" r="7"/><circle cx="32" cy="68" r="7"/><circle cx="68" cy="68" r="7"/></g>
+  </symbol>
+</svg>
+
 <div class="hud" data-hud>
-  <span class="dot"></span>
-  <span data-hud-label>Parallax reveal</span>
+  <span data-hud-label>Neon</span>
   <span class="bar"><i></i></span>
 </div>
 
-<!-- One phone for the whole page. It is flown between waypoints and its screen
-     is crossfaded as it goes. -->
 <div class="phone" data-phone aria-hidden="true">
   <div class="phone-frame">
-    <div class="phone-screen">
-      <div class="phone-notch"></div>
-      <div class="phone-glare"></div>
-    </div>
+    <div class="phone-screen"><div class="phone-notch"></div></div>
   </div>
 </div>
 
+<!-- ══ ACT 1 · Hero ═══════════════════════════════════════════════════════ -->
 <header class="hero" data-hero>
-  <div class="hero-bg" data-hero-bg></div>
+  <div class="rays" data-rays></div>
+  <div class="chip-field" data-chips></div>
+  <div class="grain"></div>
   <div class="byline"><span>Raghav Samodia</span><span>Scroll study &#183; 2026</span></div>
-  <div class="wrap">
-    <h1><span class="w"><span>Bet</span></span> <span class="w"><span>you</span></span> <span class="w"><span>won&#8217;t.</span></span></h1>
+
+  <div class="hero-inner wrap">
+    <h1 class="neon">Bet you <span class="lit">won&#8217;t</span></h1>
     <p class="sub">
       DeadRight &#8212; a bet tracker for people who bet in sentences, not stakes.
-      Five different scroll-driven techniques below, one shared engine, no animation
-      library. The phone follows you down.
+      Seven scroll-driven acts below, one shared engine, no animation library.
+      The phone follows you down.
     </p>
+    <div class="hero-badges">
+      <span class="sticker">No real money. Ever.</span>
+      <span class="eyebrow">Ledger only</span>
+    </div>
   </div>
-  <div class="cue">Scroll <i></i></div>
+
+  <div class="cue">Pull the lever <i></i></div>
 </header>
 
+<div class="ticker" data-ticker><div class="ticker-row" data-ticker-row></div></div>
+
+<!-- ══ ACT 2 · Slot machine ═══════════════════════════════════════════════ -->
+<section class="slots" data-slots>
+  <div class="slots-stage">
+    <div class="rays" data-rays style="opacity:.25"></div>
+    <div class="halftone"></div>
+    <p class="eyebrow" style="position:relative;z-index:3">Scroll-scrubbed sequence</p>
+    <div class="machine">
+      <div class="bulbs"></div>
+      <div class="machine-top">Somebody has to be right</div>
+      <div class="reels" data-reels>
+        <div class="payline"></div>
+      </div>
+      <div class="lever" data-lever></div>
+    </div>
+    <p class="payout" data-payout>Called it</p>
+    <p class="slots-note">
+      Three reels, one scroll. Each one is handed its own slice of the section and
+      lands on a symbol chosen before it starts spinning &#8212; so the result is never
+      a lie told after the fact.
+    </p>
+  </div>
+</section>
+
+<div class="ticker pink" data-ticker><div class="ticker-row" data-ticker-row></div></div>
+
+<!-- ══ ACT 3 · Waypoints ═════════════════════════════════════════════════ -->
 <section class="journey" data-journey>
   <div class="stop wrap" data-stop data-screen="0">
     <div class="copy reveal" data-reveal>
       <span class="n">01</span>
       <h2>It starts as a sentence.</h2>
-      <p>Somebody says <em>bet you won&#8217;t</em>. Nobody writes it down, and a week later
-        there are two confident versions of the same evening. That is the whole product surface.</p>
+      <p>Somebody says <em>bet you won&#8217;t</em>. Nobody writes it down, and a week later there
+        are two confident versions of the same evening. That is the whole product surface.</p>
     </div>
   </div>
   <div class="stop right wrap" data-stop data-screen="3">
     <div class="copy reveal" data-reveal>
       <span class="n">02</span>
       <h2>Then somebody writes it down.</h2>
-      <p>Two sides, a deadline, and everyone who was in the room. Once it is written the
-        argument stops being about what was said.</p>
+      <p>Two sides, a deadline, and everyone who was in the room. The app reads the deadline
+        straight out of your wording &#8212; &#8220;by October end&#8221; picks the 31st on its own.</p>
     </div>
   </div>
   <div class="stop wrap" data-stop data-screen="1">
     <div class="copy reveal" data-reveal>
       <span class="n">03</span>
       <h2>It should be worth opening.</h2>
-      <p>The bento grid has a back. One button turns all ten tiles into a soundboard,
-        because an app about calling your friends out should be able to play a sad trombone
-        at them.</p>
+      <p>The bento grid has a back. One button turns all ten tiles into a soundboard, because
+        an app about calling your friends out should be able to play a sad trombone at them.</p>
     </div>
   </div>
   <div class="stop right wrap" data-stop data-screen="4">
     <div class="copy reveal" data-reveal>
       <span class="n">04</span>
       <h2>And somebody answers for it.</h2>
-      <p>No money moves &#8212; it is a ledger and a reputation, nothing more. Being right is
-        the entire currency, which is a much harder thing to lose.</p>
+      <p>No money moves &#8212; it is a ledger and a reputation, nothing more. Being right is the
+        entire currency, which is a much harder thing to lose.</p>
     </div>
   </div>
 </section>
 
+<!-- ══ ACT 4 · Chaos → order ═════════════════════════════════════════════ -->
 <section class="track" data-track aria-label="Chaos to order">
   <div class="stage" data-stage>
-    <div class="bg bg-chaos"></div>
-    <div class="bg bg-order"></div>
+    <div class="halftone"></div>
     <div class="stage-head">
       <p class="eyebrow">State transition</p>
       <div class="swap">
@@ -306,96 +596,107 @@ code{font-family:var(--mono);font-size:.86em;color:var(--amber)}
     <div class="field" data-field aria-hidden="true"></div>
     <div class="stage-foot">
       <div class="rail"><i></i></div>
-      <p class="tally"><b data-settled>0</b> of 20 settled</p>
+      <p class="tally"><span data-settled>0</span>/20 settled</p>
     </div>
   </div>
 </section>
 
+<div class="ticker cyan" data-ticker><div class="ticker-row" data-ticker-row></div></div>
+
+<!-- ══ ACT 5 · Horizontal ════════════════════════════════════════════════ -->
 <section class="hrail" data-hrail>
   <div class="hrail-stage">
+    <div class="halftone"></div>
     <div class="hrail-head wrap">
       <p class="eyebrow">Horizontal travel</p>
-      <h2>Forty-five screens. Here are eight.</h2>
+      <h2 style="margin-top:14px">Forty-five screens. Here are eight.</h2>
     </div>
     <div class="hrail-row" data-hrow></div>
   </div>
 </section>
 
-<section class="wrap" style="padding-top:clamp(70px,11svh,140px)">
-  <p class="eyebrow">Sticky stack</p>
-  <h2 style="font-size:clamp(28px,4.6vw,58px);max-width:17ch">Rules the build had to keep.</h2>
+<!-- ══ ACT 6 · Counters ══════════════════════════════════════════════════ -->
+<section class="stats" data-stats>
+  <div class="halftone" style="opacity:.1"></div>
+  <div class="wrap">
+    <p class="eyebrow">Scroll-triggered counters</p>
+    <h2 style="margin-top:16px">The house always counts.</h2>
+    <div class="stat-grid" data-statgrid></div>
+  </div>
+</section>
+
+<!-- ══ ACT 7 · Sticky stack ══════════════════════════════════════════════ -->
+<section class="rules-head">
+  <div class="wrap">
+    <p class="eyebrow">Sticky stack</p>
+    <h2 style="margin-top:16px">House rules.</h2>
+  </div>
 </section>
 <section class="stack wrap" data-stack>
   <article class="stack-card" style="--i:0">
     <span class="n">01</span><h3>No money ever moves.</h3>
-    <p>It is a ledger and a reputation, not a wallet. Nothing in the app takes a payment,
-      holds a balance or settles up, and that is a position rather than a missing feature &#8212;
-      the moment real stakes change hands between friends it stops being a game and starts
-      being regulated. Being right is the entire currency, which is a much harder thing to
-      lose than twenty pounds.</p>
+    <p>It is a ledger and a reputation, not a wallet. Nothing in the app takes a payment, holds
+      a balance or settles up, and that is a position rather than a missing feature &#8212; the moment
+      real stakes change hands between friends it stops being a game and starts being regulated.</p>
   </article>
   <article class="stack-card" style="--i:1">
     <span class="n">02</span><h3>Colour means one thing.</h3>
-    <p>A card&#8217;s fill <em>is</em> its status &#8212; amber awaiting, mint won, coral disputed, navy
-      still running &#8212; so colour is never spent on decoration. That forces a second rule:
-      ink is chosen by how light the fill is, not from the global text tokens. Those assume
-      a dark navy background and collapse on a coloured card; an <span style="white-space:nowrap">AWAITING</span>
-      chip was amber-on-amber at 1.00:1, which is not low contrast, it is invisible.</p>
+    <p>A card&#8217;s fill <em>is</em> its status &#8212; amber awaiting, mint won, coral disputed, navy still
+      running &#8212; so colour is never spent on decoration. Ink is then chosen by how light the fill
+      is: an AWAITING chip was once amber-on-amber at 1.00:1, which is not low contrast, it is invisible.</p>
   </article>
   <article class="stack-card" style="--i:2">
     <span class="n">03</span><h3>Never invent a number.</h3>
-    <p>The jar tile showed a hardcoded &#163;23.50 and &#8220;4 violations this week&#8221; to an account
-      whose jar was empty. Every friend&#8217;s profile opened as the same person on the same
-      812 cred with the same 7&#8211;4 head-to-head. Typing any six characters into the join
-      screen produced a confident preview of a group that did not exist. All of it is real
-      data or an em-dash now: a fabricated number is the one kind of wrong that looks
-      completely convincing.</p>
+    <p>The jar tile showed a hardcoded &#163;23.50 to an account whose jar was empty. Every friend&#8217;s
+      profile opened on the same 812 cred and the same 7&#8211;4 record. All of it is real data or an
+      em-dash now: a fabricated number is the one kind of wrong that looks completely convincing.</p>
   </article>
   <article class="stack-card" style="--i:3">
     <span class="n">04</span><h3>Enforce it in the database.</h3>
     <p>The anon key ships inside the app bundle, so anything guarded only in JavaScript is a
-      suggestion to anyone willing to read it. Blocking, private profiles and who may see
-      what in search are enforced in row-level security and security-definer functions, and
-      the client is treated as a display layer that happens to be helpful rather than as a
-      thing that can be trusted.</p>
+      suggestion to anyone willing to read it. Blocking, private profiles and search visibility
+      are enforced in row-level security and security-definer functions.</p>
   </article>
   <article class="stack-card" style="--i:4">
     <span class="n">05</span><h3>Reduce Motion shortens the flight. It never takes the gesture away.</h3>
-    <p>The coin is thrown rather than pressed, and the first version disabled the throw
-      entirely when Reduce Motion was on. On any device where the animation scale is simply
-      unset &#8212; a stock emulator among them &#8212; the coin could not be flicked at all. Reducing
-      motion should shorten the arc, not remove the interaction; the flick still decides,
-      it just decides straight away.</p>
+    <p>The coin is thrown rather than pressed, and the first version disabled the throw entirely
+      when Reduce Motion was on &#8212; so on any device where the animation scale is simply unset, the
+      coin could not be flicked at all. Reducing motion should shorten the arc, not remove the interaction.</p>
   </article>
 </section>
 
-<footer class="sec wrap">
-  <p class="eyebrow">Links</p>
-  <h2>Have a look.</h2>
-  <div class="links">
-    <a class="solid" href="https://github.com/RaghavSamodia1/deadright/releases/latest/download/DeadRight.apk">Download the Android build</a>
-    <a href="https://github.com/RaghavSamodia1/deadright">Source on GitHub</a>
-    <a href="RESUME.pdf" data-resume hidden>R&#233;sum&#233; (PDF)</a>
+<!-- ══ Footer ════════════════════════════════════════════════════════════ -->
+<footer class="foot">
+  <div class="rays" data-rays style="opacity:.18"></div>
+  <div class="wrap" style="position:relative;z-index:3">
+    <h2 class="neon">Called it</h2>
+    <div class="links">
+      <a class="hot" href="https://github.com/RaghavSamodia1/deadright/releases/latest/download/DeadRight.apk">Get the Android build</a>
+      <a href="https://github.com/RaghavSamodia1/deadright">Source</a>
+      <a href="RESUME.pdf" data-resume hidden>R&#233;sum&#233;</a>
+    </div>
+    <p class="smallprint">
+      Built by Raghav Samodia. Nothing here intercepts your wheel: every act is a tall track with a
+      <code>position:sticky</code> child, so the browser pins natively and scroll is only ever read &#8212;
+      momentum, Page Down and find-in-page all behave as they would on a plain document. No GSAP, no
+      ScrollTrigger, no Lenis, no Framer Motion &#8212; one rAF loop, one scroll read per frame. Chips,
+      cards and reel symbols are inline SVG drawn for this page. Screens are real captures from the
+      running app. Respects <code>prefers-reduced-motion</code>.
+    </p>
   </div>
-  <p class="smallprint">
-    Built by Raghav Samodia. Nothing here intercepts your wheel: every act is a tall track
-    with a <code>position:sticky</code> child, so the browser pins natively and scroll is only
-    ever read &#8212; momentum, Page Down and find-in-page all behave as they would on a plain
-    document. No GSAP, no ScrollTrigger, no Lenis, no Framer Motion &#8212; one rAF loop, one
-    scroll read per frame, and a handful of sticky elements. Screens are real captures from the running
-    app. Respects <code>prefers-reduced-motion</code>: with motion reduced every track collapses,
-    nothing pins, and each act renders in its finished state.
-  </p>
 </footer>
 
 <script>
 (function () {
   'use strict';
   var reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  var clamp = function (v, a, b) { return v < a ? a : v > b ? b : v; };
-  var lerp  = function (a, b, t) { return a + (b - a) * t; };
-  var easeInOut = function (t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2; };
-  var easeOut   = function (t) { return 1 - Math.pow(1 - t, 3); };
+  var clamp = function (v,a,b){ return v<a?a:v>b?b:v; };
+  var lerp  = function (a,b,t){ return a+(b-a)*t; };
+  var easeInOut = function (t){ return t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; };
+  var easeOut   = function (t){ return 1-Math.pow(1-t,3); };
+  var svg = function (id,cls,style){
+    return '<svg class="'+(cls||'')+'"'+(style?' style="'+style+'"':'')+'><use href="#'+id+'"/></svg>';
+  };
 
   var SCREENS = [
     ['assets/shot-home.webp','Home'],
@@ -408,247 +709,346 @@ code{font-family:var(--mono);font-size:.86em;color:var(--amber)}
     ['assets/shot-profile.webp','Profile']
   ];
 
-  /* ── The engine ───────────────────────────────────────────────────────────
+  /* ── Engine ─────────────────────────────────────────────────────────────
      Every act registers a scroll range and a render function. One scroll read
      and one rAF loop drive all of them, so nothing can fall out of step. */
-  var acts = [], raf = 0, dirty = true;
-  function act(o) { acts.push(o); return o; }
+  var acts = [], raf = 0, dirty = true, lastY = 0, vel = 0;
+  function act(o){ acts.push(o); return o; }
+  function measureAll(){ for (var i=0;i<acts.length;i++) if (acts[i].measure) acts[i].measure(); dirty = true; schedule(); }
+  function schedule(){ if (!raf) raf = requestAnimationFrame(tick); }
 
-  function measureAll() {
-    for (var i = 0; i < acts.length; i++) if (acts[i].measure) acts[i].measure();
-    dirty = true; schedule();
-  }
-  function schedule() { if (!raf) raf = requestAnimationFrame(tick); }
-
-  function tick() {
+  function tick(){
     raf = 0;
     var y = window.scrollY, settled = true;
-    for (var i = 0; i < acts.length; i++) {
-      var a = acts[i];
-      var span = a.end - a.start;
-      var raw = span > 0 ? clamp((y - a.start) / span, 0, 1) : 0;
-      if (a.damp) {
+    vel = vel * 0.86 + (y - lastY) * 0.14;
+    lastY = y;
+    if (Math.abs(vel) > 0.05) settled = false;
+
+    for (var i=0;i<acts.length;i++){
+      var a = acts[i], span = a.end - a.start;
+      var raw = span > 0 ? clamp((y - a.start)/span, 0, 1) : 0;
+      if (a.damp){
         if (a.cur === undefined) a.cur = raw;
         var d = raw - a.cur;
         /* Chase rather than snap. 12% a frame is what gives it weight. */
-        if (Math.abs(d) < 0.0004) { a.cur = raw; } else { a.cur += d * 0.12; settled = false; }
+        if (Math.abs(d) < 0.0004) a.cur = raw; else { a.cur += d*0.12; settled = false; }
         a.render(a.cur, y);
-      } else {
-        a.render(raw, y);
-      }
+      } else a.render(raw, y);
     }
     hud(y);
-    if (!settled || dirty) { dirty = false; schedule(); }
+    if (!settled || dirty){ dirty = false; schedule(); }
   }
 
   /* ── Phone ─────────────────────────────────────────────────────────────── */
   var phone = document.querySelector('[data-phone]');
   var screenBox = phone.querySelector('.phone-screen');
-  var imgs = SCREENS.map(function (s, i) {
+  var imgs = SCREENS.map(function (s,i){
     var im = document.createElement('img');
     im.src = s[0]; im.alt = ''; im.decoding = 'async';
-    if (i > 1) im.loading = 'lazy';
+    if (i>1) im.loading = 'lazy';
     screenBox.insertBefore(im, screenBox.firstChild);
     return im;
   });
-  /* Crossfade exactly two screens. Lerping the *index* and fading by distance
-     looked right between neighbours and wrong everywhere else: going from
-     screen 0 to screen 3 swept through 1 and 2 on the way, so the phone flashed
-     the soundboard and the coin toss while the copy talked about writing a bet
-     down. Which two screens they are is unrelated to how far apart they sit in
-     the array. */
-  function showScreen(from, to, t) {
-    for (var i = 0; i < imgs.length; i++) {
-      var o = i === from ? 1 - t : i === to ? t : 0;
-      imgs[i].style.opacity = o.toFixed(3);
+  /* Crossfade exactly two screens. Fading by distance from a lerped *index*
+     swept through every screen numerically between them — going from 0 to 3
+     flashed the soundboard and the coin toss on the way. */
+  function showScreen(from,to,t){
+    for (var i=0;i<imgs.length;i++){
+      imgs[i].style.opacity = (i===from ? 1-t : i===to ? t : 0).toFixed(3);
     }
   }
-  function placePhone(x, y, s, rot, tilt, op) {
+  function placePhone(x,s,rot,tilt,op){
     phone.style.opacity = op.toFixed(3);
     phone.style.transform =
-      'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0) ' +
-      'perspective(1100px) rotateY(' + rot.toFixed(2) + 'deg) rotateX(' + tilt.toFixed(2) + 'deg) ' +
-      'scale(' + s.toFixed(3) + ')';
+      'translate3d('+x.toFixed(1)+'px,0,0) perspective(1100px) rotateY('+rot.toFixed(2)+'deg) rotateX('+tilt.toFixed(2)+'deg) scale('+s.toFixed(3)+')';
   }
 
-  /* ── Act 1 — hero parallax ─────────────────────────────────────────────── */
+  /* ── ACT 1 · Hero: rays, parallax chips ────────────────────────────────── */
   var hero = document.querySelector('[data-hero]');
-  var heroBg = document.querySelector('[data-hero-bg]');
-  act({
-    measure: function () { this.start = 0; this.end = hero.offsetHeight; },
-    render: function (p) {
-      heroBg.style.transform =
-        'translate3d(0,' + (p * 90).toFixed(1) + 'px,0) scale(' + (1 + p * 0.06).toFixed(3) + ')';
-    }
-  });
-
-  /* ── Act 2 — pinned waypoints ──────────────────────────────────────────── */
-  var journey = document.querySelector('[data-journey]');
-  var stops = [].slice.call(document.querySelectorAll('[data-stop]'));
-  var reveals = [].slice.call(document.querySelectorAll('[data-reveal]'));
-
-  /* Where the phone sits at each stop, as a fraction of viewport width.
-     Alternating sides and tilt, so it reads as one object being carried down. */
-  var POSE = [
-    { x:  0.26, s: 1.00, rot: -13, tilt:  4 },
-    { x: -0.27, s: 0.92, rot:  14, tilt: -3 },
-    { x:  0.27, s: 1.04, rot: -10, tilt:  2 },
-    { x: -0.26, s: 0.94, rot:  12, tilt: -4 }
+  var chipField = document.querySelector('[data-chips]');
+  var CHIPS = [
+    ['chip','var(--red)',    3, 10, 118, .55],
+    ['chip','var(--cyan)',  85, 14,  86, .8],
+    ['chip','var(--gold)',   5, 60,  96, .35],
+    ['chip','var(--pink)',  88, 68, 126, .62],
+    ['spade','var(--cream)',14, 86,  62, .9],
+    ['heart','var(--red)',  74,  4,  58, .45],
+    ['diamond','var(--cyan)',47, 94, 54, 1.1],
+    ['club','var(--cream)', 93, 42,  50, .7],
+    ['die','var(--cream)',  13, 32,  70, 1.0],
+    ['coin','var(--gold)',  83, 88,  64, .5]
   ];
+  var flyers = CHIPS.map(function (c){
+    var d = document.createElement('div');
+    d.className = 'fly';
+    d.style.left = c[2]+'%'; d.style.top = c[3]+'%';
+    d.style.width = c[4]+'px'; d.style.height = c[4]+'px';
+    d.style.color = c[1];
+    d.innerHTML = svg(c[0], '', 'width:100%;height:100%');
+    chipField.appendChild(d);
+    return { el:d, depth:c[5], spin:(Math.random()*2-1)*40 };
+  });
+  var rayLayers = [].slice.call(document.querySelectorAll('[data-rays]'));
 
   act({
-    damp: true,
-    measure: function () {
-      var top = journey.getBoundingClientRect().top + window.scrollY;
-      this.start = top - window.innerHeight * 0.9;
-      this.end = top + journey.offsetHeight - window.innerHeight * 0.5;
-      this.centres = stops.map(function (s) {
-        return s.getBoundingClientRect().top + window.scrollY + s.offsetHeight / 2 - window.innerHeight / 2;
-      });
-    },
-    render: function (p, y) {
-      var c = this.centres, n = c.length, i = 0;
-      while (i < n - 1 && y > c[i + 1]) i++;
-      var j = Math.min(i + 1, n - 1);
-      var seg = c[j] - c[i];
-      var e = easeInOut(seg > 0 ? clamp((y - c[i]) / seg, 0, 1) : 0);
-      var a = POSE[i], b = POSE[j];
-
-      placePhone(
-        lerp(a.x, b.x, e) * window.innerWidth, 0,
-        lerp(a.s, b.s, e), lerp(a.rot, b.rot, e), lerp(a.tilt, b.tilt, e),
-        clamp(p * 5, 0, 1) * clamp((1 - p) * 5, 0, 1)
-      );
-      showScreen(+stops[i].dataset.screen, +stops[j].dataset.screen, e);
-
-      /* Copy reveals on its own window rather than all together. */
-      for (var k = 0; k < reveals.length; k++) {
-        var inP  = easeOut(clamp((y - (c[k] - window.innerHeight * 0.42)) / (window.innerHeight * 0.5), 0, 1));
-        var outP = clamp(1 - (y - c[k]) / (window.innerHeight * 0.85), 0, 1);
-        var v = inP * outP;
-        reveals[k].style.opacity = v.toFixed(3);
-        reveals[k].style.transform = 'translate3d(0,' + ((1 - v) * 26).toFixed(1) + 'px,0)';
+    measure:function(){ this.start = 0; this.end = hero.offsetHeight; },
+    render:function(p,y){
+      for (var i=0;i<flyers.length;i++){
+        var f = flyers[i];
+        f.el.style.transform =
+          'translate3d(0,'+(p*260*f.depth).toFixed(1)+'px,0) rotate('+(p*f.spin+ i*11).toFixed(1)+'deg)';
+      }
+      for (var k=0;k<rayLayers.length;k++){
+        rayLayers[k].style.transform = 'rotate('+(y*0.012 + k*30).toFixed(2)+'deg)';
       }
     }
   });
 
-  /* ── Act 3 — chaos to order ────────────────────────────────────────────── */
+  /* ── Marquee ticker ────────────────────────────────────────────────────── */
+  var WORDS = ['Called it','Dead right','Pay up','Bet you won’t','Womp womp',
+               'I have receipts','Double or nothing','Prove it','Same time next week'];
+  var PIPS = ['spade','heart','diamond','club','star','seven'];
+  var tickers = [].slice.call(document.querySelectorAll('[data-ticker]')).map(function (t,ti){
+    var row = t.querySelector('[data-ticker-row]');
+    var html = '';
+    /* Two identical runs, so the row can be scrolled by exactly one run width
+       and reset without a visible seam. */
+    for (var run=0; run<2; run++){
+      for (var i=0;i<WORDS.length;i++){
+        html += '<span>'+WORDS[(i+ti*3) % WORDS.length]+svg(PIPS[(i+ti) % PIPS.length])+'</span>';
+      }
+    }
+    row.innerHTML = html;
+    return { row:row, offset:0, dir: ti % 2 ? -1 : 1, w:0 };
+  });
+
+  /* ── ACT 2 · Slot machine ──────────────────────────────────────────────── */
+  var slots = document.querySelector('[data-slots]');
+  var reelsBox = document.querySelector('[data-reels]');
+  var payout = document.querySelector('[data-payout]');
+  var lever = document.querySelector('[data-lever]');
+  var SYMS = [
+    ['seven','var(--red)'], ['cherry','var(--red)'], ['bell','var(--gold)'],
+    ['bar','var(--violet)'], ['star','var(--gold)'], ['horseshoe','var(--cyan)'],
+    ['diamond','var(--pink)']
+  ];
+  /* The result is decided here, before anything spins, and each reel's stop is
+     computed to land on it exactly — the same rule the app's coin toss follows.
+     All three land on the seven. */
+  var TARGET = 0;
+  var REELS = [0,1,2].map(function (i){
+    var r = document.createElement('div');
+    r.className = 'reel';
+    var strip = document.createElement('div');
+    strip.className = 'reel-strip';
+    /* Three copies of the strip so it can travel a long way and still be inside
+       the element when it lands. */
+    var html = '';
+    for (var rep=0; rep<7; rep++){
+      for (var s=0;s<SYMS.length;s++){
+        html += '<div style="color:'+SYMS[s][1]+'">'+svg(SYMS[s][0])+'</div>';
+      }
+    }
+    strip.innerHTML = html;
+    r.appendChild(strip);
+    reelsBox.appendChild(r);
+    return { el:r, strip:strip, from:0.06, to:0.44 + i*0.16 };
+  });
+
+  act({
+    damp:true,
+    measure:function(){
+      var top = slots.getBoundingClientRect().top + window.scrollY;
+      this.start = top;
+      this.end = top + slots.offsetHeight - window.innerHeight;
+      var first = REELS[0].strip.children[0];
+      this.tile = first ? first.getBoundingClientRect().height : 0;
+    },
+    render:function(p){
+      var tile = this.tile || 0;
+      var n = SYMS.length;
+      for (var i=0;i<REELS.length;i++){
+        var R = REELS[i];
+        var t = clamp((p - R.from) / (R.to - R.from), 0, 1);
+        var e = easeOut(t);
+        /* Whole loops plus the exact offset that puts TARGET on the payline.
+           The middle window is index 1 of three, so the strip is offset by one
+           tile to bring the target into it. */
+        var loops = 3 + i;
+        var land = (loops * n + TARGET - 1) * tile;
+        R.strip.style.transform = 'translate3d(0,'+(-land*e).toFixed(1)+'px,0)';
+      }
+      var all = clamp((p - REELS[2].to) / 0.08, 0, 1);
+      payout.style.opacity = all.toFixed(3);
+      payout.style.transform = 'scale('+lerp(.8,1,easeOut(all)).toFixed(3)+') rotate('+lerp(-2,-1,all).toFixed(2)+'deg)';
+      if (lever) lever.style.transform = 'rotate('+lerp(0,22,clamp(p*4,0,1)).toFixed(1)+'deg)';
+    }
+  });
+
+  /* ── ACT 3 · Waypoints ─────────────────────────────────────────────────── */
+  var journey = document.querySelector('[data-journey]');
+  var stops = [].slice.call(document.querySelectorAll('[data-stop]'));
+  var reveals = [].slice.call(document.querySelectorAll('[data-reveal]'));
+  var POSE = [
+    { x: .26, s:1.00, rot:-13, tilt: 4 },
+    { x:-.27, s: .92, rot: 14, tilt:-3 },
+    { x: .27, s:1.04, rot:-10, tilt: 2 },
+    { x:-.26, s: .94, rot: 12, tilt:-4 }
+  ];
+  act({
+    damp:true,
+    measure:function(){
+      var top = journey.getBoundingClientRect().top + window.scrollY;
+      this.start = top - window.innerHeight*0.9;
+      this.end = top + journey.offsetHeight - window.innerHeight*0.5;
+      this.centres = stops.map(function (s){
+        return s.getBoundingClientRect().top + window.scrollY + s.offsetHeight/2 - window.innerHeight/2;
+      });
+    },
+    render:function(p,y){
+      var c = this.centres, n = c.length, i = 0;
+      while (i < n-1 && y > c[i+1]) i++;
+      var j = Math.min(i+1, n-1), seg = c[j]-c[i];
+      var e = easeInOut(seg > 0 ? clamp((y-c[i])/seg, 0, 1) : 0);
+      var a = POSE[i], b = POSE[j];
+      placePhone(lerp(a.x,b.x,e)*window.innerWidth, lerp(a.s,b.s,e), lerp(a.rot,b.rot,e), lerp(a.tilt,b.tilt,e),
+                 clamp(p*5,0,1)*clamp((1-p)*5,0,1));
+      showScreen(+stops[i].dataset.screen, +stops[j].dataset.screen, e);
+      for (var k=0;k<reveals.length;k++){
+        var inP = easeOut(clamp((y - (c[k] - window.innerHeight*0.42)) / (window.innerHeight*0.5), 0, 1));
+        var outP = clamp(1 - (y - c[k]) / (window.innerHeight*0.85), 0, 1);
+        var v = inP*outP;
+        reveals[k].style.opacity = v.toFixed(3);
+        reveals[k].style.transform = 'translate3d(0,'+((1-v)*28).toFixed(1)+'px,0)';
+      }
+    }
+  });
+
+  /* ── ACT 4 · Chaos → order ─────────────────────────────────────────────── */
   var track = document.querySelector('[data-track]');
   var stage = document.querySelector('[data-stage]');
   var field = document.querySelector('[data-field]');
   var settledOut = document.querySelector('[data-settled]');
-
   var CLAIMS = [
-    ['bet you won’t','JD','lost','#F7C846'],
-    ['£20 says he’s late','AM','won','#E2661F'],
-    ['I called it first','RS','won','#63B972'],
-    ['no you didn’t','JD','lost','#F7C846'],
-    ['screenshot this','PK','won','#6C63FF'],
-    ['I’m calling it now','RS','open','#63B972'],
-    ['you said that last week','AM','lost','#E2661F'],
-    ['that’s not what we agreed','TL','lost','#FC574E'],
-    ['loser buys coffee','PK','won','#6C63FF'],
-    ['we never shook on it','JD','lost','#F7C846'],
-    ['I have receipts','RS','won','#63B972'],
-    ['double or nothing','TL','open','#FC574E'],
-    ['it doesn’t count','AM','lost','#E2661F'],
-    ['ask the group chat','PK','won','#6C63FF'],
-    ['you’re paying for this','TL','won','#FC574E'],
-    ['I never said that','JD','lost','#F7C846'],
-    ['put it in writing','RS','won','#63B972'],
-    ['prove it','AM','open','#E2661F'],
-    ['same time next week','PK','won','#6C63FF'],
-    ['dead right, mate','TL','won','#FC574E']
+    ['bet you won’t','JD','lost','#FFC53D'],['£20 says he’s late','AM','won','#E8253F'],
+    ['I called it first','RS','won','#B6F36B'],['no you didn’t','JD','lost','#FFC53D'],
+    ['screenshot this','PK','won','#22D3EE'],['I’m calling it now','RS','open','#B6F36B'],
+    ['you said that last week','AM','lost','#E8253F'],['that’s not what we agreed','TL','lost','#FF3D9A'],
+    ['loser buys coffee','PK','won','#22D3EE'],['we never shook on it','JD','lost','#FFC53D'],
+    ['I have receipts','RS','won','#B6F36B'],['double or nothing','TL','open','#FF3D9A'],
+    ['it doesn’t count','AM','lost','#E8253F'],['ask the group chat','PK','won','#22D3EE'],
+    ['you’re paying for this','TL','won','#FF3D9A'],['I never said that','JD','lost','#FFC53D'],
+    ['put it in writing','RS','won','#B6F36B'],['prove it','AM','open','#E8253F'],
+    ['same time next week','PK','won','#22D3EE'],['dead right, mate','TL','won','#FF3D9A']
   ];
   /* Seeded, so the mess is the same mess every load and can actually be tuned. */
-  function rng(seed) { return function () { seed = (seed*1664525 + 1013904223) % 4294967296; return seed/4294967296; }; }
-
-  var cards = CLAIMS.map(function (c) {
+  function rng(seed){ return function(){ seed = (seed*1664525+1013904223) % 4294967296; return seed/4294967296; }; }
+  var cards = CLAIMS.map(function (c){
     var el = document.createElement('article');
     el.className = 'claim'; el.dataset.status = c[2];
     el.style.setProperty('--tint', c[3]);
     el.innerHTML = '<span class="who"></span><span class="said"></span><span class="verdict"></span>';
     el.querySelector('.who').textContent = c[1];
     el.querySelector('.said').textContent = c[0];
-    el.querySelector('.verdict').textContent = c[2] === 'won' ? 'WON' : c[2] === 'lost' ? 'LOST' : 'OPEN';
+    el.querySelector('.verdict').textContent = c[2]==='won'?'WON':c[2]==='lost'?'LOST':'OPEN';
     field.appendChild(el);
-    return { el: el, from: null, to: null, delay: 0 };
+    return { el:el, from:null, to:null, delay:0 };
   });
   var CARD_SPAN = 0.62;
-
   act({
-    damp: true,
-    measure: function () {
+    damp:true,
+    measure:function(){
       var top = track.getBoundingClientRect().top + window.scrollY;
-      this.start = top;
-      this.end = top + track.offsetHeight - window.innerHeight;
-
+      this.start = top; this.end = top + track.offsetHeight - window.innerHeight;
       var w = field.clientWidth, h = field.clientHeight;
       if (!w || !h) return;
-      var cols = w < 560 ? 2 : w < 900 ? 3 : 4;
-      var cw = Math.min(232, Math.floor((w - (cols - 1) * 14) / cols));
-      var ch = 46, gapX = cols > 1 ? (w - cols * cw) / (cols - 1) : 0;
-      var rowsFit = Math.max(2, Math.floor((h + 12) / (ch + 12)));
-      var rows = Math.min(Math.ceil(cards.length / cols), rowsFit);
-      var vis = Math.min(cards.length, rows * cols);
-      var top0 = Math.max(0, (h - (rows * ch + (rows - 1) * 12)) / 2);
-      var rand = rng(20260820);
-
-      cards.forEach(function (c, i) {
-        c.el.style.setProperty('--cw', cw + 'px');
-        if (i >= vis) { c.el.style.display = 'none'; c.from = null; return; }
-        c.el.style.display = '';
-        c.to = { x: (i % cols) * (cw + gapX), y: top0 + Math.floor(i / cols) * (ch + 12) };
+      var cols = w<560?2:w<900?3:4;
+      var cw = Math.min(238, Math.floor((w-(cols-1)*14)/cols));
+      var ch = 46, gapX = cols>1 ? (w-cols*cw)/(cols-1) : 0;
+      var rowsFit = Math.max(2, Math.floor((h+12)/(ch+12)));
+      var rows = Math.min(Math.ceil(cards.length/cols), rowsFit);
+      var vis = Math.min(cards.length, rows*cols);
+      var top0 = Math.max(0, (h-(rows*ch+(rows-1)*12))/2);
+      var rand = rng(20260823);
+      cards.forEach(function (c,i){
+        c.el.style.setProperty('--cw', cw+'px');
+        if (i>=vis){ c.el.style.display='none'; c.from=null; return; }
+        c.el.style.display='';
+        c.to = { x:(i%cols)*(cw+gapX), y:top0+Math.floor(i/cols)*(ch+12) };
         c.from = {
-          x: (rand() * 1.26 - 0.13) * (w - cw),
-          y: (rand() * 1.20 - 0.10) * (h - ch),
-          r: (rand() * 2 - 1) * 17,
-          s: 0.80 + rand() * 0.42,
-          o: 0.42 + rand() * 0.5
+          x:(rand()*1.26-0.13)*(w-cw), y:(rand()*1.20-0.10)*(h-ch),
+          r:(rand()*2-1)*17, s:0.80+rand()*0.42, o:0.42+rand()*0.5
         };
-        c.delay = rand() * (1 - CARD_SPAN);
+        c.delay = rand()*(1-CARD_SPAN);
       });
     },
-    render: function (p) {
+    render:function(p){
       stage.style.setProperty('--p', p.toFixed(4));
       var done = 0;
-      for (var i = 0; i < cards.length; i++) {
+      for (var i=0;i<cards.length;i++){
         var c = cards[i]; if (!c.from) continue;
-        var t = clamp((p - c.delay) / CARD_SPAN, 0, 1), e = easeInOut(t);
+        var t = clamp((p-c.delay)/CARD_SPAN,0,1), e = easeInOut(t);
         c.el.style.transform =
-          'translate3d(' + lerp(c.from.x, c.to.x, e).toFixed(1) + 'px,' +
-          lerp(c.from.y, c.to.y, e).toFixed(1) + 'px,0) rotate(' +
-          (c.from.r * (1 - e)).toFixed(2) + 'deg) scale(' + lerp(c.from.s, 1, e).toFixed(3) + ')';
-        c.el.style.opacity = lerp(c.from.o, 1, e).toFixed(3);
-        var v = clamp((t - 0.62) / 0.38, 0, 1);
+          'translate3d('+lerp(c.from.x,c.to.x,e).toFixed(1)+'px,'+lerp(c.from.y,c.to.y,e).toFixed(1)+'px,0) rotate('+
+          (c.from.r*(1-e)).toFixed(2)+'deg) scale('+lerp(c.from.s,1,e).toFixed(3)+')';
+        c.el.style.opacity = lerp(c.from.o,1,e).toFixed(3);
+        var v = clamp((t-0.62)/0.38,0,1);
         c.el.style.setProperty('--settled', v.toFixed(3));
-        if (v > 0.5) done++;
+        if (v>0.5) done++;
       }
       if (settledOut) settledOut.textContent = String(done);
     }
   });
 
-  /* ── Act 4 — vertical scroll drives horizontal travel ──────────────────── */
+  /* ── ACT 5 · Horizontal ────────────────────────────────────────────────── */
   var hrail = document.querySelector('[data-hrail]');
   var hrow = document.querySelector('[data-hrow]');
-  SCREENS.forEach(function (s) {
+  SCREENS.forEach(function (s){
     var f = document.createElement('figure');
     var im = document.createElement('img');
-    im.src = s[0]; im.alt = s[1]; im.loading = 'lazy'; im.decoding = 'async';
-    var cap = document.createElement('figcaption');
-    cap.textContent = s[1];
+    im.src = s[0]; im.alt = s[1]; im.loading='lazy'; im.decoding='async';
+    var cap = document.createElement('figcaption'); cap.textContent = s[1];
     f.appendChild(im); f.appendChild(cap); hrow.appendChild(f);
   });
   act({
-    damp: true,
-    measure: function () {
+    damp:true,
+    measure:function(){
       var top = hrail.getBoundingClientRect().top + window.scrollY;
-      this.start = top;
-      this.end = top + hrail.offsetHeight - window.innerHeight;
+      this.start = top; this.end = top + hrail.offsetHeight - window.innerHeight;
       this.travel = Math.max(0, hrow.scrollWidth - window.innerWidth);
     },
-    render: function (p) {
-      hrow.style.transform = 'translate3d(' + (-p * this.travel).toFixed(1) + 'px,0,0)';
+    render:function(p){ hrow.style.transform = 'translate3d('+(-p*this.travel).toFixed(1)+'px,0,0)'; }
+  });
+
+  /* ── ACT 6 · Counters ──────────────────────────────────────────────────── */
+  var statsSec = document.querySelector('[data-stats]');
+  var STATS = [
+    [45, 'screens', 'Designed, built and shipped.'],
+    [20, 'claims',  'Scattered and settled in the act above.'],
+    [0,  'pounds',  'Moved between anybody. That one is the point.'],
+    [10, 'pads',    'On the back of the bento, one of them an airhorn.']
+  ];
+  var grid = document.querySelector('[data-statgrid]');
+  var statEls = STATS.map(function (s){
+    var d = document.createElement('div');
+    d.className = 'stat';
+    d.innerHTML = '<b>0</b><em></em><span></span>';
+    d.querySelector('em').textContent = s[1];
+    d.querySelector('span').textContent = s[2];
+    grid.appendChild(d);
+    return d.querySelector('b');
+  });
+  act({
+    measure:function(){
+      var top = statsSec.getBoundingClientRect().top + window.scrollY;
+      this.start = top - window.innerHeight*0.85;
+      this.end = top + statsSec.offsetHeight*0.4;
+    },
+    render:function(p){
+      var e = easeOut(p);
+      for (var i=0;i<statEls.length;i++){
+        statEls[i].textContent = String(Math.round(STATS[i][0]*e));
+      }
     }
   });
 
@@ -657,57 +1057,69 @@ code{font-family:var(--mono);font-size:.86em;color:var(--amber)}
   var hudLabel = document.querySelector('[data-hud-label]');
   var stackEl = document.querySelector('[data-stack]');
   var lastLabel = '';
-  function hud(y) {
+  function hud(y){
     var h = document.documentElement.scrollHeight - window.innerHeight;
-    hudEl.style.setProperty('--all', h > 0 ? (y / h).toFixed(4) : '0');
-    var vh = window.innerHeight, name = 'Parallax reveal';
-    if (y > journey.offsetTop - vh * 0.5) name = 'Pinned waypoints';
-    if (y > track.offsetTop - vh * 0.5) name = 'State transition';
-    if (y > hrail.offsetTop - vh * 0.5) name = 'Horizontal travel';
-    if (stackEl && y > stackEl.offsetTop - vh * 0.7) name = 'Sticky stack';
-    if (name !== lastLabel) { hudLabel.textContent = name; lastLabel = name; }
-    hudEl.classList.toggle('on', y > vh * 0.4);
+    hudEl.style.setProperty('--all', h>0 ? (y/h).toFixed(4) : '0');
+    var vh = window.innerHeight, name = 'Parallax';
+    if (y > slots.offsetTop - vh*0.5) name = 'Scroll-scrubbed reels';
+    if (y > journey.offsetTop - vh*0.5) name = 'Pinned waypoints';
+    if (y > track.offsetTop - vh*0.5) name = 'State transition';
+    if (y > hrail.offsetTop - vh*0.5) name = 'Horizontal travel';
+    if (y > statsSec.offsetTop - vh*0.7) name = 'Counters';
+    if (stackEl && y > stackEl.offsetTop - vh*0.7) name = 'Sticky stack';
+    if (name !== lastLabel){ hudLabel.textContent = name; lastLabel = name; }
+    hudEl.classList.toggle('on', y > vh*0.4);
+  }
+
+  /* ── Marquee loop ──────────────────────────────────────────────────────── */
+  /* Its own rAF: it moves whether or not you scroll, so it cannot ride the
+     engine's loop, which deliberately stops when the page is still. Scroll
+     velocity is added on top, so flicking the page shoves the ticker along. */
+  function marquee(){
+    for (var i=0;i<tickers.length;i++){
+      var T = tickers[i];
+      if (!T.w) T.w = T.row.scrollWidth / 2;
+      T.offset += (0.55 + Math.abs(vel)*0.06) * T.dir;
+      if (T.w){
+        if (T.offset <= -T.w) T.offset += T.w;
+        if (T.offset >= 0) T.offset -= T.w;
+      }
+      T.row.style.transform = 'translate3d('+T.offset.toFixed(1)+'px,0,0)';
+    }
+    requestAnimationFrame(marquee);
   }
 
   /* ── Boot ──────────────────────────────────────────────────────────────── */
-  function boot() {
-    if (reduced.matches) { document.documentElement.classList.add('ready'); return; }
-    /* One frame late on purpose: adding the class in the same tick as parse
-       means the start state is never painted and the transition is skipped. */
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () { document.documentElement.classList.add('ready'); });
-    });
+  function boot(){
+    if (reduced.matches) return;
     measureAll();
-    addEventListener('scroll', schedule, { passive: true });
+    addEventListener('scroll', schedule, { passive:true });
     addEventListener('resize', measureAll);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measureAll);
     addEventListener('load', measureAll);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measureAll);
+    requestAnimationFrame(marquee);
 
     /* QA hook: ?y=0.42 jumps to that fraction of the document and skips the
        damping, so any single frame can be captured or linked to. */
     var q = /[?&]y=([0-9.]+)/.exec(location.search);
-    if (q) {
-      var jump = function () {
+    if (q){
+      var jump = function(){
         measureAll();
         var h = document.documentElement.scrollHeight - window.innerHeight;
-        window.scrollTo(0, Math.round(parseFloat(q[1]) * h));
-        for (var i = 0; i < acts.length; i++) acts[i].cur = undefined;
+        window.scrollTo(0, Math.round(parseFloat(q[1])*h));
+        for (var i=0;i<acts.length;i++) acts[i].cur = undefined;
         dirty = true; schedule();
       };
-      addEventListener('load', jump); setTimeout(jump, 120); setTimeout(jump, 500);
+      addEventListener('load', jump); setTimeout(jump,120); setTimeout(jump,500);
     }
   }
   boot();
 
   /* The résumé link only appears once the PDF is actually there. A dead link on
-     the page you sent someone is worse than no link, and this one is easy to
-     forget to upload. */
+     the page you sent someone is worse than no link. */
   var cv = document.querySelector('[data-resume]');
-  if (cv) {
-    fetch(cv.getAttribute('href'), { method: 'HEAD' })
-      .then(function (r) { if (r.ok) cv.hidden = false; })
-      .catch(function () {});
-  }
+  if (cv) fetch(cv.getAttribute('href'), { method:'HEAD' })
+    .then(function (r){ if (r.ok) cv.hidden = false; }).catch(function(){});
 })();
 </script>
 </body>

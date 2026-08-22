@@ -24,6 +24,7 @@ import { currencySymbol, formatMoney, parseAmountToCents } from '../lib/money';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 import { humanError } from '../lib/errors';
+import { findDeadline, shortDate } from '../lib/parseDate';
 
 type BetType = 'binary' | 'overunder' | 'ordinal';
 const TYPE_OPTS: { value: BetType; label: string }[] = [
@@ -31,7 +32,7 @@ const TYPE_OPTS: { value: BetType; label: string }[] = [
   { value: 'overunder', label: 'Over / Under' },
   { value: 'ordinal', label: 'Ranking' },
 ];
-type Deadline = '1h' | '24h' | '1w' | 'custom';
+type Deadline = '1h' | '24h' | '1w' | 'custom' | 'read';
 const DEADLINE_OPTS: { value: Deadline; label: string }[] = [
   { value: '1h', label: 'In 1 hour' },
   { value: '24h', label: 'Tomorrow' },
@@ -91,6 +92,28 @@ export function CreateBetScreen({ navigation, route }: any) {
   });
   const [pickerOpen, setPickerOpen] = useState(false);
 
+  /**
+   * The deadline is nearly always already in the sentence — "by October end",
+   * "tomorrow", "15 Oct" — so it is read out of the statement and offered as a
+   * chip rather than asked for a second time.
+   *
+   * It is offered, never imposed: the chip carries the date it read, the hint
+   * underneath carries the words it read it from, and the moment the user picks
+   * anything else the reading stops overriding them. A deadline set silently
+   * from a misread sentence is exactly the kind of confident wrong number this
+   * app is not allowed to produce.
+   */
+  const read = React.useMemo(
+    () => findDeadline(sharpened || statement),
+    [statement, sharpened],
+  );
+  const [deadlineTouched, setDeadlineTouched] = useState(false);
+  useEffect(() => {
+    if (deadlineTouched) return;
+    if (read) setDeadline('read');
+    else setDeadline((d) => (d === 'read' ? '24h' : d));
+  }, [read?.date.getTime(), deadlineTouched]);
+
   // Stakes are ledger-only, but they should still read in the user's own
   // currency rather than a hardcoded pound sign.
   const { data: settings } = useQuery(getSettings, { currency: 'GBP' } as any);
@@ -134,7 +157,13 @@ export function CreateBetScreen({ navigation, route }: any) {
     '24h': 86_400_000,
     '1w': 604_800_000,
     custom: customMs,
+    read: read ? Math.max(60_000, read.date.getTime() - Date.now()) : 86_400_000,
   };
+
+  // The read date leads, because when there is one it is nearly always right.
+  const deadlineOpts = read
+    ? [{ value: 'read' as Deadline, label: shortDate(read.date) }, ...DEADLINE_OPTS]
+    : DEADLINE_OPTS;
 
   const isMoneyStake = stake === 'money' || stake === 'custom';
 
@@ -297,7 +326,16 @@ export function CreateBetScreen({ navigation, route }: any) {
         {at('Deadline') && (
           <>
             <Text style={styles.q}>When do we know?</Text>
-            <ChoiceChipGroup options={DEADLINE_OPTS} value={deadline} onChange={setDeadline} />
+            <ChoiceChipGroup
+              options={deadlineOpts}
+              value={deadline}
+              onChange={(v) => { setDeadlineTouched(true); setDeadline(v); }}
+            />
+            {read && deadline === 'read' && (
+              <Text style={styles.hint}>
+                Read &ldquo;{read.matched}&rdquo; from your bet. Pick another if that&rsquo;s not it.
+              </Text>
+            )}
             {deadline === 'custom' && (
               <>
                 <Pressable

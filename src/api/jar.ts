@@ -58,6 +58,20 @@ export async function ownUp(groupId: string, ruleId: string): Promise<JarViolati
   return data;
 }
 
+/**
+ * Take a violation back out of the jar.
+ *
+ * The reporter or a group admin only, and only while the money is still
+ * pending — once a settle-up has counted it, removing it would change a total
+ * the group has already divided up. The RPC deletes the ledger entry too:
+ * ledger_entries.violation_id is ON DELETE SET NULL, so deleting the violation
+ * on its own would leave the amount in the jar with nothing behind it.
+ */
+export async function deleteViolation(violationId: string) {
+  const { error } = await supabase.rpc('delete_violation', { p_violation: violationId });
+  if (error) throw error;
+}
+
 export async function disputeViolation(violationId: string) {
   const { error } = await supabase
     .from('jar_violations')

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
 import { Avatar } from '../Avatar/Avatar';
 import { Glass } from '../Glass/Glass';
@@ -13,13 +13,21 @@ interface ViolationRowProps {
   ownedUp?: boolean;
   /** Within the 24h dispute window */
   disputable?: boolean;
+  /** Opens the row's menu. Rows without one stay unpressable, as before. */
+  onPress?: () => void;
   style?: ViewStyle;
 }
 
 /** Swear Jar feed row. Own-ups get a 😇 badge — social reward for honesty. */
-export function ViolationRow({ member, rule, amount, timestamp, ownedUp = false, disputable = false, style }: ViolationRowProps) {
+export function ViolationRow({ member, rule, amount, timestamp, ownedUp = false, disputable = false, onPress, style }: ViolationRowProps) {
+  const Container: any = onPress ? Pressable : View;
   return (
-    <View style={[styles.row, style]}>
+    <Container
+      onPress={onPress}
+      style={[styles.row, style]}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityHint={onPress ? 'Opens options for this violation' : undefined}
+    >
       <Glass radius={radius.md} intensity={24} style={StyleSheet.absoluteFillObject} />
       <Avatar size="sm" initials={member.initials} uri={member.avatarUri} tint="b" />
 
@@ -35,7 +43,7 @@ export function ViolationRow({ member, rule, amount, timestamp, ownedUp = false,
       </View>
 
       <Text style={styles.amount}>{amount}</Text>
-    </View>
+    </Container>
   );
 }
 

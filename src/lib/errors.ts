@@ -10,6 +10,7 @@
  */
 const MESSAGES: Record<string, string> = {
   admin_only: 'Only a group admin can do that.',
+  already_settled: 'That one has already been counted into a settle-up, so it can’t be taken back out.',
   already_resolved: 'This bet has already been settled.',
   deadline_passed: 'The deadline for this one has passed.',
   dispute_window_closed: 'The 24 hours to dispute this have run out.',
@@ -18,6 +19,7 @@ const MESSAGES: Record<string, string> = {
   last_admin: 'A group needs at least one admin — promote someone else first.',
   invalid_rule: 'That rule isn’t valid for this jar.',
   no_such_bet: 'That bet no longer exists.',
+  no_such_violation: 'That violation is already gone.',
   not_allowed: 'You don’t have permission to do that.',
   not_an_ordinal_bet: 'That bet isn’t a ranking bet.',
   not_authenticated: 'You’ve been signed out. Sign in and try again.',
@@ -55,6 +57,12 @@ export function humanError(e: unknown): string {
   }
   if (/network|fetch failed|Failed to fetch/i.test(raw)) {
     return 'No connection. Check your signal and try again.';
+  }
+  // PostgREST when the RPC isn't in the schema — i.e. a migration this build
+  // expects hasn't been applied to the project yet. Says that, rather than
+  // handing the user "Could not find the function public.x in the schema cache".
+  if (/could not find the function|schema cache|PGRST202/i.test(raw)) {
+    return 'This needs a database update that hasn’t been applied yet.';
   }
 
   if (IS_CODE.test(key)) return 'Something went wrong. Try that again.';

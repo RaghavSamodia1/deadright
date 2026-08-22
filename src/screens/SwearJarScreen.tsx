@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { spacing, colors } from '../tokens';
 import {
   ScreenBackground,
@@ -9,14 +9,16 @@ import {
   Button,
   Banner,
   EmptyState,
+  ActionSheet,
 } from '../components';
 import { AddViolationSheet } from './AddViolationSheet';
-import { getJar, getJarRules, ownUp } from '../api/jar';
+import { getJar, getJarRules, ownUp, deleteViolation } from '../api/jar';
 import { getMyGroups } from '../api/groups';
 import { useQuery, useAction } from '../hooks/useQuery';
 import { useGroupCurrency } from '../hooks/useGroupCurrency';
 import { formatMoney, DEFAULT_JAR_CAP_CENTS } from '../lib/money';
-import { isBackendConfigured } from '../lib/supabase';
+import { isBackendConfigured, uidOrNull } from '../lib/supabase';
+import { humanError } from '../lib/errors';
 import { Icon } from '../components';
 
 // Amounts as cents, not baked "+$1.00" strings — the demo rows showed dollars
@@ -66,9 +68,42 @@ export function SwearJarScreen({ navigation, route }: any) {
 
   const { run: doOwnUp, loading: owningUp } = useAction(ownUp);
 
+  /**
+   * Violations get mis-tapped — wrong rule, wrong person, or a second tap that
+   * lands twice — and until now the only way back was disputing your own
+   * friend. Whoever reported it can take it out, and so can an admin, who is
+   * who people ask when it was not their tap.
+   *
+   * It lives in a menu behind the row rather than on it: a delete control
+   * sitting next to every entry in a shared ledger invites exactly the kind of
+   * quiet edit the jar exists to prevent.
+   */
+  const { data: me } = useQuery(uidOrNull, null as string | null);
+  const iAmAdmin = ((group?.members ?? []) as any[]).some(
+    (m: any) => m?.user_id === me && m?.role === 'admin',
+  );
+  const [target, setTarget] = useState<any | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  // Called directly rather than through useAction: its error lands in state on
+  // the next render, so reading it straight after the await gives the previous
+  // one. A removal that fails on `already_settled` has to say so — a silent
+  // no-op here is the same bug cancelling a bet had.
+  const removeViolation = async (id: string) => {
+    setDeleting(true);
+    try {
+      await deleteViolation(id);
+      refetch();
+    } catch (e) {
+      Alert.alert('Couldn’t remove that', humanError(e));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const total = jar.totalCents / 100;
   const violations = isBackendConfigured && jar.violations.length
-    ? jar.violations.map((v: any) => toViolationRow(v, currency))
+    ? jar.violations.map((v: any) => toViolationRow(v, currency, me, iAmAdmin))
     : isBackendConfigured
       ? []
       : mockRows(currency);
@@ -141,12 +176,36 @@ export function SwearJarScreen({ navigation, route }: any) {
           <Text style={styles.empty}>Clean sheet so far. Someone will slip.</Text>
         ) : (
           <View style={styles.list}>
-            {violations.map((v: any) => (
-              <ViolationRow key={v.id} {...v} />
-            ))}
+            {violations.map((v: any) => {
+              const { id, canRemove, ...row } = v;
+              return (
+                <ViolationRow
+                  key={id}
+                  {...row}
+                  onPress={canRemove ? () => setTarget(v) : undefined}
+                />
+              );
+            })}
           </View>
         )}
       </ScrollView>
+
+      <ActionSheet
+        visible={!!target}
+        title={target ? `${target.rule} · ${target.amount}` : undefined}
+        options={[
+          {
+            label: deleting ? 'Removing…' : 'Remove from the jar',
+            destructive: true,
+            onPress: () => {
+              const id = target?.id;
+              setTarget(null);
+              if (id) removeViolation(id);
+            },
+          },
+        ]}
+        onDismiss={() => setTarget(null)}
+      />
 
       <AddViolationSheet
         visible={addVisible}
@@ -161,7 +220,7 @@ export function SwearJarScreen({ navigation, route }: any) {
 }
 
 // jar_violations row (with rule + violator joined) → ViolationRow props
-function toViolationRow(v: any, currency?: string | null) {
+function toViolationRow(v: any, currency: string | null | undefined, me: string | null, iAmAdmin: boolean) {
   const name = v.violator?.display_name ?? v.violator?.handle ?? '??';
   return {
     id: v.id,
@@ -174,6 +233,10 @@ function toViolationRow(v: any, currency?: string | null) {
     timestamp: relativeTime(v.created_at),
     ownedUp: !!v.owned_up,
     disputable: v.status === 'pending',
+    // Mirrors delete_violation()'s own guard. The RPC is the authority — this
+    // only decides whether to offer the menu, so a stale read costs a clear
+    // error rather than a silent no-op.
+    canRemove: v.reporter_id === me || iAmAdmin,
   };
 }
 

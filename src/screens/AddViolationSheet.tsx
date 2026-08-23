@@ -11,18 +11,6 @@ import { humanError } from '../lib/errors';
 import { formatMoney } from '../lib/money';
 import { useGroupCurrency } from '../hooks/useGroupCurrency';
 
-const MOCK_MEMBERS = [
-  { id: 'm1', handle: 'Marcus', initials: 'MJ' },
-  { id: 'm2', handle: 'Abi', initials: 'AK' },
-  { id: 'm3', handle: 'Dave', initials: 'DJ' },
-];
-
-const MOCK_RULES = [
-  { id: 'swear', label: 'Swearing', amount: 1 },
-  { id: 'late', label: 'Late to plans', amount: 5 },
-  { id: 'phone', label: 'Phone at dinner', amount: 2 },
-];
-
 interface AddViolationSheetProps {
   visible: boolean;
   onDismiss: () => void;
@@ -37,7 +25,8 @@ export function AddViolationSheet({ visible, onDismiss, groupId }: AddViolationS
 
   const { data: members } = useQuery(
     async () => {
-      if (!groupId) return MOCK_MEMBERS;
+      // Marcus, Abi and Dave were invented people offered as your group.
+      if (!groupId) return [];
       const g: any = await getGroup(groupId);
       return (g.members ?? []).map((m: any) => ({
         id: m.user_id,
@@ -47,20 +36,20 @@ export function AddViolationSheet({ visible, onDismiss, groupId }: AddViolationS
           .toUpperCase(),
       }));
     },
-    MOCK_MEMBERS,
+    [] as any[],
     [groupId],
   );
 
   const { data: rules } = useQuery(
     async () => {
-      if (!groupId) return MOCK_RULES;
+      if (!groupId) return [];
       return (await getJarRules(groupId)).map((r: any) => ({
         id: r.id,
         label: r.label,
         amount: r.amount_cents / 100,
       }));
     },
-    MOCK_RULES,
+    [],
     [groupId],
   );
 
@@ -102,7 +91,7 @@ export function AddViolationSheet({ visible, onDismiss, groupId }: AddViolationS
 
       <Text style={styles.label}>Which rule?</Text>
       {rules.length === 0 ? (
-        <Text style={styles.note}>No rules yet — add one from the rules screen first.</Text>
+        <Text style={styles.note}>No rules yet. Add one from the rules screen first.</Text>
       ) : (
         <View style={styles.ruleWrap}>
           {rules.map((r: any) => (
@@ -121,7 +110,7 @@ export function AddViolationSheet({ visible, onDismiss, groupId }: AddViolationS
           ? humanError(error)
           : member && selectedRule
             ? 'They can dispute within 24h. Fair’s fair.'
-            : 'They get 24h to dispute — same rules as bets.'}
+            : 'They get 24h to dispute, same rules as bets.'}
       </Text>
 
       <Button

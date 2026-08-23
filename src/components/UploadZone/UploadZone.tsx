@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
+import { Icon } from '../Icon/Icon';
 import { colors, radius, spacing } from '../../tokens';
 
 interface UploadedItem {
@@ -21,7 +22,7 @@ export function UploadZone({ onPick, items = [], onRemove, hint = 'Tap to add ph
   return (
     <View style={[styles.wrap, style]}>
       <Pressable onPress={onPick} style={styles.zone} accessibilityRole="button" accessibilityLabel="Add evidence">
-        <Text style={styles.icon}></Text>
+        <Icon name="image" size={34} color={colors.text.tertiary} strokeWidth={1.8} />
         <Text style={styles.hint}>{hint}</Text>
       </Pressable>
 
@@ -56,7 +57,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[8],
     gap: spacing[2],
   },
-  icon: { fontSize: 34 },
   hint: {
     fontFamily: 'Inter-Regular',
     fontSize: 15,

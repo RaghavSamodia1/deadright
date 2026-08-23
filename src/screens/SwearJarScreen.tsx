@@ -21,20 +21,6 @@ import { isBackendConfigured, uidOrNull } from '../lib/supabase';
 import { humanError } from '../lib/errors';
 import { Icon } from '../components';
 
-// Amounts as cents, not baked "+$1.00" strings — the demo rows showed dollars
-// whatever currency the account was set to.
-const MOCK_VIOLATIONS = [
-  { id: '1', member: { handle: 'Marcus', initials: 'MJ' }, rule: 'Swearing', amountCents: 100, timestamp: '2h ago', disputable: true },
-  { id: '2', member: { handle: 'Raghav', initials: 'RS' }, rule: 'Late to plans', amountCents: 500, timestamp: '1d ago', ownedUp: true },
-  { id: '3', member: { handle: 'Abi', initials: 'AK' }, rule: 'Phone at dinner', amountCents: 200, timestamp: '2d ago' },
-];
-
-const mockRows = (currency?: string | null) =>
-  MOCK_VIOLATIONS.map(({ amountCents, ...v }) => ({
-    ...v,
-    amount: `+${formatMoney(amountCents, currency)}`,
-  }));
-
 /**
  * A jar always belongs to a group — rules, violations and the settle-up are all
  * group-scoped. Reached from a group, or from Home which passes your first
@@ -102,11 +88,12 @@ export function SwearJarScreen({ navigation, route }: any) {
   };
 
   const total = jar.totalCents / 100;
-  const violations = isBackendConfigured && jar.violations.length
+  // Marcus, Raghav and Abi used to appear here with invented fines against
+  // their names whenever the backend was not configured. An empty jar says
+  // "clean sheet so far", which is true; three fabricated violations are not.
+  const violations = jar.violations.length
     ? jar.violations.map((v: any) => toViolationRow(v, currency, me, iAmAdmin))
-    : isBackendConfigured
-      ? []
-      : mockRows(currency);
+    : [];
 
   const selfReport = async () => {
     if (!groupId || !rules.length) return setAddVisible(true);

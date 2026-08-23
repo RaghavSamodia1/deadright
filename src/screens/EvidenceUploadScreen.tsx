@@ -44,7 +44,7 @@ export function EvidenceUploadScreen({ navigation, route }: any) {
       }
       navigation.replace(outcome === 'won' ? 'Win' : 'Root', { betId });
     } catch (e) {
-      setError((e as Error).message ?? 'Upload failed — check your connection.');
+      setError((e as Error).message ?? 'Upload failed. Check your connection.');
     } finally {
       setUploading(false);
     }

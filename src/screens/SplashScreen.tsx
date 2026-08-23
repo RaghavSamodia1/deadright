@@ -14,7 +14,7 @@ export function SplashScreen({ navigation }: any) {
     <ScreenBackground tone="base">
       <View style={styles.center}>
         <Text style={styles.brand}>
-          DeadRight<Text style={styles.flame}></Text>
+          DeadRight
         </Text>
         <Text style={styles.tagline}>Your word is your bond.</Text>
       </View>
@@ -30,7 +30,6 @@ const styles = StyleSheet.create({
     color: colors.brand.flame,
     letterSpacing: -1,
   },
-  flame: { fontSize: 34 },
   tagline: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,

@@ -17,12 +17,6 @@ import { formatMoney, DEFAULT_JAR_CAP_CENTS } from '../lib/money';
 import { isBackendConfigured } from '../lib/supabase';
 import { humanError } from '../lib/errors';
 
-const MOCK_RULES = [
-  { id: 'swear', emoji: '🤬', label: 'Swearing', amount_cents: 100 },
-  { id: 'late', emoji: '⏰', label: 'Late to plans', amount_cents: 500 },
-  { id: 'phone', emoji: '📱', label: 'Phone at dinner', amount_cents: 200 },
-];
-
 const EMOJIS = ['🤬', '⏰', '📱', '👻', '🍺', '💤', '🙄', '🧢'];
 const AMOUNTS = [1, 2, 5, 10];
 
@@ -36,8 +30,9 @@ export function JarRulesScreen({ navigation, route }: any) {
   const [amount, setAmount] = useState(1);
 
   const { data: rules, refetch } = useQuery(
-    async () => (groupId ? await getJarRules(groupId) : MOCK_RULES),
-    MOCK_RULES as any[],
+    // A jar with no group has no rules. It used to show three invented ones.
+    async () => (groupId ? await getJarRules(groupId) : []),
+    [] as any[],
     [groupId],
   );
 

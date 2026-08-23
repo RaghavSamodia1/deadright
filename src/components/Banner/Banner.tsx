@@ -54,13 +54,16 @@ export function Banner({ tone = 'info', title, body, actionLabel, onAction, onDi
   return (
     <View style={[styles.banner, { borderColor: `${t.accent}55` }, style]}>
       <Glass radius={radius.md} intensity={22} fill={t.bg} style={StyleSheet.absoluteFillObject} />
-      <View style={[styles.accentBar, { backgroundColor: t.accent }]} />
+      {/* The decorative left stripe is gone. The tint, the border and the bar
+          were three ways of saying one thing, and a coloured rule down the side
+          of a notice is the most borrowed shape in the box. Tone still reads —
+          it is carried by the fill and by the action colour. */}
       <View style={styles.body}>
         <Text style={[styles.title, { color: t.text }]}>{title}</Text>
         {body && <Text style={[styles.text, { color: t.sub }]}>{body}</Text>}
         {actionLabel && onAction && (
           <Pressable onPress={onAction} hitSlop={6}>
-            <Text style={[styles.action, { color: t.accent }]}>{actionLabel} →</Text>
+            <Text style={[styles.action, { color: t.accent }]}>{actionLabel}</Text>
           </Pressable>
         )}
       </View>
@@ -82,11 +85,6 @@ const styles = StyleSheet.create({
     padding: spacing[4],
     gap: spacing[3],
     alignItems: 'flex-start',
-  },
-  accentBar: {
-    width: 3,
-    alignSelf: 'stretch',
-    borderRadius: 2,
   },
   body: { flex: 1, gap: 4 },
   title: {

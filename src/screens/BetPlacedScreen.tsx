@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Icon } from '../components';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, Stamp, Button } from '../components';
 
@@ -9,7 +10,7 @@ export function BetPlacedScreen({ navigation }: any) {
     <ScreenBackground tone="awaiting">
       <View style={styles.root}>
         <View style={styles.center}>
-          <Text style={styles.emoji}></Text>
+          <Icon name="check" size={72} color={colors.semantic.win} strokeWidth={2} />
           <Stamp label="LOCKED IN" color={colors.text.inverse} rotate={-8} fontSize={48} />
           <Text style={styles.sub}>Your bet is live. The clock’s ticking — everyone’s been pinged.</Text>
         </View>
@@ -25,7 +26,6 @@ export function BetPlacedScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   root: { flex: 1, padding: spacing.screenGutter, paddingBottom: spacing[6] },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing[5] },
-  emoji: { fontSize: 80 },
   sub: {
     fontFamily: 'Inter-Medium',
     fontSize: 16,

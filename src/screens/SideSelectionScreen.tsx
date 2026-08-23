@@ -58,7 +58,7 @@ export function SideSelectionScreen({ navigation, route }: any) {
             fullWidth
           />
           {error && <Text style={styles.error}>{humanError(error)}</Text>}
-          <Text style={styles.warn}>Once locked, you can’t switch — but everyone sees if you try</Text>
+          <Text style={styles.warn}>Once locked you can’t switch, but everyone sees if you try</Text>
         </View>
       </View>
     </ScreenBackground>

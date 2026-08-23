@@ -21,8 +21,8 @@ import { links } from '../lib/links';
  * per-bet choice until there is a judge picker.
  */
 const RESOLUTION_METHODS: { code: 'mutual' | 'group_vote'; label: string }[] = [
-  { code: 'mutual', label: 'Mutual — both sides agree' },
-  { code: 'group_vote', label: 'Group vote — the group decides' },
+  { code: 'mutual', label: 'Mutual · both sides agree' },
+  { code: 'group_vote', label: 'Group vote · the group decides' },
 ];
 
 const RESOLUTION_LABEL: Record<string, string> = {

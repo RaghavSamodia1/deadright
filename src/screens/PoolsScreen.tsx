@@ -35,7 +35,7 @@ export function PoolsScreen({ navigation }: any) {
           <EmptyState
             icon="party"
             title={loading ? 'Loading…' : 'No pools yet'}
-            body="A pool is one link you send round a room. Everyone picks from their phone — no app, no signup."
+            body="A pool is one link you send round a room. Everyone picks from their phone. No app, no signup."
           />
         ) : (
           pools.map((p: any) => (

@@ -50,7 +50,7 @@ export function GroupsScreen({ navigation }: any) {
           <EmptyState
             icon="users"
             title={loading ? 'Loading…' : 'No groups yet'}
-            body="Everything lives inside a group — bets, the Cookie Jar, the ledger. Make one, or join with a friend's code."
+            body="Everything lives inside a group: bets, the Cookie Jar, the ledger. Make one, or join with a friend's code."
           />
         ) : (
           groups.map((g: any) => (

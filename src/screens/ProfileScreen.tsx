@@ -8,6 +8,7 @@ import {
   StatsRow,
   FilterChip,
   BetCard,
+  SkeletonBetCard,
   type BetCardData,
   type Stat,
 } from '../components';
@@ -54,33 +55,18 @@ export function ProfileScreen({ navigation }: any) {
     { value: `${cred}`, label: 'Cred', highlight: true },
   ];
 
-  const MOCK_HISTORY: BetCardData[] = [
-    {
-      id: 'h1',
-      title: "England reach the Euros final",
-      status: 'win',
-      author: { handle: 'You', initials: 'RS' },
-      group: 'Sunday League',
-      sideAPercent: 55, sideACount: 6, sideBCount: 5, participantCount: 11,
-      stake: formatMoney(1000, currency), deadline: new Date(Date.now() - 1000 * 60 * 60 * 48),
-    },
-    {
-      id: 'h2',
-      title: "It rains at the BBQ on Saturday",
-      status: 'loss',
-      author: { handle: 'You', initials: 'RS' },
-      group: 'Flatmates',
-      sideAPercent: 40, sideACount: 2, sideBCount: 3, participantCount: 5,
-      deadline: new Date(Date.now() - 1000 * 60 * 60 * 72),
-    },
-  ];
-
-  const { data: history } = useQuery<BetCardData[]>(
+  // Two invented bets used to stand here as the initial value — "England reach
+  // the Euros final", won, eleven people, attributed to you — so your own
+  // profile opened on somebody else's history until the real feed arrived.
+  // Fabricated content dressed as a loading state is the worst of both: it is
+  // not true, and it is not honest about waiting. SkeletonBetCard has existed
+  // since the component library was written and had never once been used.
+  const { data: history, loading: historyLoading } = useQuery<BetCardData[]>(
     async () => {
       const uid = await uidOrNull();
       return (await getFeed()).map((b) => toBetCard(b, uid, currency));
     },
-    MOCK_HISTORY,
+    [],
   );
 
   const filtered =
@@ -122,9 +108,24 @@ export function ProfileScreen({ navigation }: any) {
           <FilterChip label="Losses" active={tab === 'losses'} onPress={() => setTab('losses')} />
         </View>
 
-        {filtered.map((b) => (
-          <BetCard key={b.id} bet={b} onPress={() => navigation.navigate('BetDetail', { id: b.id })} />
-        ))}
+        {historyLoading && history.length === 0 ? (
+          <>
+            <SkeletonBetCard />
+            <SkeletonBetCard />
+          </>
+        ) : filtered.length === 0 ? (
+          <Text style={styles.emptyHistory}>
+            {tab === 'all'
+              ? 'Nothing settled yet.'
+              : tab === 'wins'
+                ? 'No wins on the board yet.'
+                : 'No losses. Yet.'}
+          </Text>
+        ) : (
+          filtered.map((b) => (
+            <BetCard key={b.id} bet={b} onPress={() => navigation.navigate('BetDetail', { id: b.id })} />
+          ))
+        )}
       </ScrollView>
     </ScreenBackground>
   );
@@ -137,6 +138,13 @@ const styles = StyleSheet.create({
     paddingBottom: spacing[8],
   },
   hero: { alignItems: 'center', gap: spacing[2], paddingVertical: spacing[3] },
+  emptyHistory: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: colors.text.tertiary,
+    paddingVertical: spacing[5],
+    textAlign: 'center',
+  },
   handle: {
     fontFamily: 'Barlow-Bold',
     fontSize: 20,

@@ -81,7 +81,7 @@ export function SearchScreen({ navigation }: any) {
           <EmptyState
             icon="search"
             title="Find bets, people, groups"
-            body="Search anything you've called — or someone to call out."
+            body="Search anything you've called, or someone to call out."
           />
         ) : results.length === 0 ? (
           <EmptyState icon="shrug" title="Nothing found" body={`No matches for "${query}".`} />

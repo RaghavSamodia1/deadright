@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { Icon } from '../components';
 import { colors, radius, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, TimelineEvent, Button, ActionSheet } from '../components';
 import { getDispute, castDisputeVote } from '../api/resolution';
@@ -80,7 +81,7 @@ export function DisputeDetailScreen({ navigation, route }: any) {
       <NavHeader variant="back" title="Dispute" onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.banner}>
-          <Text style={styles.bannerText}>Disputed — the group decides</Text>
+          <Text style={styles.bannerText}>Disputed · the group decides</Text>
         </View>
         <Text style={styles.statement}>"{title}"</Text>
 
@@ -123,7 +124,7 @@ export function DisputeDetailScreen({ navigation, route }: any) {
             accessibilityRole="button"
             accessibilityLabel="Add photo evidence"
           >
-            <Text style={styles.addProofIcon}></Text>
+            <Icon name="camera" size={20} color={colors.text.secondary} strokeWidth={1.9} />
             <Text style={styles.addProofLabel}>Add proof</Text>
           </Pressable>
         </View>
@@ -243,7 +244,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 2,
   },
-  addProofIcon: { fontSize: 20 },
   addProofLabel: {
     fontFamily: 'Barlow-SemiBold',
     fontSize: 9,

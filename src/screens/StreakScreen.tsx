@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Icon } from '../components';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, Button } from '../components';
 
@@ -14,7 +15,7 @@ export function StreakScreen({ navigation, route }: any) {
     <ScreenBackground tone="flame">
       <View style={styles.root}>
         <View style={styles.center}>
-          <Text style={styles.emoji}></Text>
+          <Icon name="flame" size={88} color={colors.brand.flame} strokeWidth={1.8} />
           <Text style={styles.count}>{streak}×</Text>
           <Text style={styles.title}>On a heater</Text>
           <Text style={styles.sub}>{streak} calls right in a row. Don’t quit while you’re ahead.</Text>
@@ -28,7 +29,6 @@ export function StreakScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   root: { flex: 1, padding: spacing.screenGutter, paddingBottom: spacing[6] },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing[2] },
-  emoji: { fontSize: 88 },
   count: {
     fontFamily: 'Barlow-Black',
     fontSize: 72,

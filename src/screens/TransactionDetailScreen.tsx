@@ -51,7 +51,7 @@ export function TransactionDetailScreen({ navigation, route }: any) {
             {isJar ? 'Cookie Jar' : positive ? 'You won' : 'You lost'}
             {isPending ? ' · pending' : ' · settled'}
           </Text>
-          <Text style={styles.ledgerNote}>Bookkeeping only — no money changes hands.</Text>
+          <Text style={styles.ledgerNote}>Bookkeeping only. No money changes hands.</Text>
         </View>
 
         {entry?.bet?.title && (
@@ -91,7 +91,7 @@ export function TransactionDetailScreen({ navigation, route }: any) {
             <TimelineEvent text="Marked settled" timestamp={when(entry.settled_at)} tone="win" />
           )}
           <TimelineEvent
-            text={isJar ? 'Added to the Cookie Jar' : 'Bet resolved — ledger entry created'}
+            text={isJar ? 'Added to the Cookie Jar' : 'Bet resolved, ledger entry created'}
             timestamp={entry?.created_at ? when(entry.created_at) : '—'}
             tone={isJar ? 'awaiting' : 'side-a'}
             isLast

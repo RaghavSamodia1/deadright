@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Icon } from '../components';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, Stamp, Button, Confetti } from '../components';
 import { undoResolution, getCredDelta } from '../api/resolution';
@@ -43,7 +44,9 @@ export function WinScreen({ navigation, route }: any) {
       <View style={styles.root}>
         <View style={styles.center}>
           <Stamp label="CALLED IT" color={colors.text.inverse} rotate={-12} fontSize={60} />
-          <Text style={styles.emoji}></Text>
+          <View style={styles.trophy}>
+            <Icon name="trophy" size={56} color={colors.text.inverse} strokeWidth={2} />
+          </View>
           <Text style={styles.sub}>You were dead right.</Text>
           {cred !== null && (
             <View style={styles.credPill}>
@@ -79,7 +82,7 @@ export function WinScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   root: { flex: 1, padding: spacing.screenGutter, paddingBottom: spacing[6] },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing[4] },
-  emoji: { fontSize: 56, marginTop: spacing[4] },
+  trophy: { marginTop: spacing[4] },
   sub: {
     fontFamily: 'Barlow-Bold',
     fontSize: 20,

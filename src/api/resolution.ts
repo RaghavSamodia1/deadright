@@ -128,17 +128,17 @@ export async function listEvidence(betId: string) {
 }
 
 /**
- * The Cred actually awarded for a bet, for the win screen.
+ * The Form actually awarded for a bet, for the win screen.
  *
- * The screen used to show a hardcoded "+12 Cred" because nothing passed it a
+ * The screen used to show a hardcoded "+12 Form" because nothing passed it a
  * real number. Returns null when the event has not landed yet, so the caller
  * can say nothing rather than invent a figure.
  */
-export async function getCredDelta(betId: string): Promise<number | null> {
+export async function getFormDelta(betId: string): Promise<number | null> {
   const uid = (await supabase.auth.getSession()).data.session?.user.id;
   if (!uid) return null;
   const { data, error } = await supabase
-    .from('cred_events')
+    .from('form_events')
     .select('delta')
     .eq('bet_id', betId)
     .eq('user_id', uid)

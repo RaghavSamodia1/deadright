@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
-import { ScreenBackground, NavHeader, CredRing, StatsRow, Button, ActionSheet, type Stat } from '../components';
+import { ScreenBackground, NavHeader, FormRing, StatsRow, Button, ActionSheet, type Stat } from '../components';
 import { searchProfiles } from '../api/profile';
 import { blockUser } from '../api/settings';
 import { useQuery, useAction } from '../hooks/useQuery';
 
-// Friend profile — their Cred + your head-to-head record.
+// Friend profile — their Form + your head-to-head record.
 export function FriendProfileScreen({ navigation, route }: any) {
   const handle = route?.params?.handle ?? 'Marcus';
   const [sheetOpen, setSheetOpen] = React.useState(false);
@@ -24,20 +24,20 @@ export function FriendProfileScreen({ navigation, route }: any) {
 
   const { run: block, loading: blocking } = useAction(blockUser);
 
-  // A withheld Cred is not a Cred of 500. `private_profile` makes the search
+  // A withheld Form is not a Form of 500. `private_profile` makes the search
   // function return null rather than the number (00034), so the ring shows
   // nothing and says why — the previous `?? 500` drew a full ring on an
   // invented score, which is the most convincing way to be wrong.
-  const cred: number | null = person?.cred_score ?? null;
+  const form: number | null = person?.form_score ?? null;
   const hidden: boolean = person?.is_private === true;
 
   // These were hardcoded to 812 / 64% / 3 and a 7-4 head-to-head, so every
   // profile showed the same invented record about a real person — the one kind
-  // of wrong that looks completely convincing. Cred is real; the rest needs
+  // of wrong that looks completely convincing. Form is real; the rest needs
   // per-person aggregates the API does not expose yet, so it says so instead of
   // making a number up.
   const stats: Stat[] = [
-    { value: cred != null ? String(cred) : '—', label: 'Cred', highlight: true },
+    { value: form != null ? String(form) : '—', label: 'Form', highlight: true },
     { value: '—', label: 'Win rate' },
     { value: '—', label: 'Groups' },
   ];
@@ -60,9 +60,9 @@ export function FriendProfileScreen({ navigation, route }: any) {
         {/* The ring, the name and the tagline were all hardcoded: every profile
             opened as "Marcus C" on 812 with a 78% ring, whoever you tapped. */}
         <View style={styles.hero}>
-          <CredRing
-            percent={cred != null ? Math.max(0, Math.min(100, Math.round(((cred - 250) / 500) * 100))) : 0}
-            score={cred ?? undefined}
+          <FormRing
+            percent={form != null ? Math.max(0, Math.min(100, Math.round(((form - 250) / 500) * 100))) : 0}
+            score={form ?? undefined}
             size={132}
             strokeWidth={9}
           />
@@ -72,7 +72,7 @@ export function FriendProfileScreen({ navigation, route }: any) {
           <Text style={styles.sub}>{person?.handle ?? handle}</Text>
           {hidden && (
             <Text style={styles.private}>
-              Private profile — their Cred isn&rsquo;t shown outside their groups.
+              Private profile — their Form isn&rsquo;t shown outside their groups.
             </Text>
           )}
         </View>

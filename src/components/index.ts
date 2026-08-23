@@ -30,7 +30,7 @@ export { SideBar } from './SideBar/SideBar';
 
 export { Timer } from './Timer/Timer';
 
-export { CredRing } from './CredRing/CredRing';
+export { FormRing } from './FormRing/FormRing';
 
 export { BetCard } from './BetCard/BetCard';
 export type { BetCardData } from './BetCard/BetCard';

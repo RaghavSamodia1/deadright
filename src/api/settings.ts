@@ -6,7 +6,7 @@ export interface UserSettings {
   notify_resolutions: boolean;
   notify_disputes: boolean;
   notify_jar: boolean;
-  notify_cred: boolean;
+  notify_form: boolean;
   notify_marketing: boolean;
   private_profile: boolean;
   show_ledger: boolean;

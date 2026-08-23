@@ -6,7 +6,7 @@ import { Glass } from '../Glass/Glass';
 export interface Stat {
   value: string;
   label: string;
-  /** Highlight this stat (amber) — used for Cred */
+  /** Highlight this stat (amber) — used for Form */
   highlight?: boolean;
 }
 

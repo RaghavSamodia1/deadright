@@ -44,7 +44,7 @@ export function PrivacyScreen({ navigation }: any) {
           <SettingsRow
             icon="lock"
             label="Private profile"
-            value="Hides your Cred outside your groups"
+            value="Hides your Form outside your groups"
             toggle
             toggleValue={value('private_profile')}
             onToggle={set('private_profile')}
@@ -57,7 +57,7 @@ export function PrivacyScreen({ navigation }: any) {
         </SettingsSection>
 
         <Text style={styles.note}>
-          A private profile hides your Cred and history from people outside your groups.
+          A private profile hides your Form and history from people outside your groups.
           Group members always see the bets you share with them.
         </Text>
       </ScrollView>

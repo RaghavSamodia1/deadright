@@ -145,7 +145,7 @@ export function subscribeToBetEvents(betId: string, onEvent: (e: BetEvent) => vo
 /**
  * Delete a bet outright. Creator only, and only while nothing has settled on it.
  *
- * Refused once the bet has ledger or cred rows: those columns are ON DELETE SET
+ * Refused once the bet has ledger or form rows: those columns are ON DELETE SET
  * NULL, so they would survive with their link cut — money in everyone's ledger
  * with no bet behind it. Cancel those instead. Participants are notified.
  */
@@ -154,7 +154,7 @@ export async function deleteBet(betId: string): Promise<void> {
   if (error) {
     if (error.message.includes('has_settlement')) {
       throw new Error(
-        "This bet has already moved money or cred, so it can't be deleted — call it off instead",
+        "This bet has already moved money or form, so it can't be deleted — call it off instead",
       );
     }
     if (error.message.includes('not_allowed')) {

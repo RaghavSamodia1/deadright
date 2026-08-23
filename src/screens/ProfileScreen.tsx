@@ -4,7 +4,7 @@ import { colors, spacing } from '../tokens';
 import {
   ScreenBackground,
   NavHeader,
-  CredRing,
+  FormRing,
   StatsRow,
   FilterChip,
   BetCard,
@@ -23,7 +23,7 @@ import { Icon } from '../components';
 
 type Tab = 'all' | 'wins' | 'losses';
 
-// V2-05 Profile (design-v2.md §5) — cred ring hero + stats + filtered history.
+// V2-05 Profile (design-v2.md §5) — form ring hero + stats + filtered history.
 export function ProfileScreen({ navigation }: any) {
   const [tab, setTab] = useState<Tab>('all');
   const currency = useCurrency();
@@ -31,7 +31,7 @@ export function ProfileScreen({ navigation }: any) {
   const { data: profile } = useQuery(getMyProfile, {
     handle: 'You',
     display_name: 'You',
-    cred_score: 500,
+    form_score: 500,
     current_streak: 0,
   } as any);
 
@@ -43,16 +43,16 @@ export function ProfileScreen({ navigation }: any) {
     { total: 0, wins: 0, losses: 0, winRate: 0 },
   );
 
-  const cred = profile.cred_score ?? 500;
-  // Cred runs on a 500-point spread around a 500 baseline (recompute_cred).
-  const percentile = Math.max(0, Math.min(100, Math.round(((cred - 250) / 500) * 100)));
+  const form = profile.form_score ?? 500;
+  // Form runs on a 500-point spread around a 500 baseline (recompute_form).
+  const percentile = Math.max(0, Math.min(100, Math.round(((form - 250) / 500) * 100)));
 
   const stats: Stat[] = [
     // getStats counts resolved bets only, so "Called" read 0 while an open
     // bet of theirs sat right below it. Label what it actually measures.
     { value: `${myStats.total}`, label: 'Settled' },
     { value: `${myStats.winRate}%`, label: 'Win rate' },
-    { value: `${cred}`, label: 'Cred', highlight: true },
+    { value: `${form}`, label: 'Form', highlight: true },
   ];
 
   // Two invented bets used to stand here as the initial value — "England reach
@@ -88,9 +88,9 @@ export function ProfileScreen({ navigation }: any) {
       />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Cred hero */}
+        {/* Form hero */}
         <View style={styles.hero}>
-          <CredRing percent={percentile} score={cred} size={148} strokeWidth={10} />
+          <FormRing percent={percentile} score={form} size={148} strokeWidth={10} />
           <Text style={styles.handle}>{profile.handle}</Text>
           <Text style={styles.sub}>
             {myStats.total > 0

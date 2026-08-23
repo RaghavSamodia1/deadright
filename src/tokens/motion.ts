@@ -21,7 +21,7 @@ export const spring = {
   standard: { damping: 26, stiffness: 180, mass: 1 },
   // Card reveals, sheets, entrance animations. Ratio 0.91 — a hint of give.
   emphasis: { damping: 20, stiffness: 120, mass: 1 },
-  // Win stamp, cred ring fill. Ratio 0.78: still lands with some life, since a
+  // Win stamp, form ring fill. Ratio 0.78: still lands with some life, since a
   // called-it moment is meant to feel like one.
   celebration: { damping: 14, stiffness: 80, mass: 1 },
 } as const;

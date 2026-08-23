@@ -11,10 +11,10 @@ import { colors } from '../../tokens';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
-interface CredRingProps {
+interface FormRingProps {
   /** 0–100 percentile fill */
   percent: number;
-  /** Cred score shown in centre */
+  /** Form score shown in centre */
   score?: number;
   size?: number;
   strokeWidth?: number;
@@ -23,14 +23,14 @@ interface CredRingProps {
   animated?: boolean;
 }
 
-export function CredRing({
+export function FormRing({
   percent,
   score,
   size = 120,
   strokeWidth = 8,
   children,
   animated = true,
-}: CredRingProps) {
+}: FormRingProps) {
   const r = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * r;
   const progress = useSharedValue(0);
@@ -58,7 +58,7 @@ export function CredRing({
           cx={size / 2}
           cy={size / 2}
           r={r}
-          stroke={colors.cred.track}
+          stroke={colors.form.track}
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -67,7 +67,7 @@ export function CredRing({
           cx={size / 2}
           cy={size / 2}
           r={r}
-          stroke={colors.cred.ring}
+          stroke={colors.form.ring}
           strokeWidth={strokeWidth}
           fill="none"
           strokeLinecap="round"
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   },
   score: {
     fontFamily: 'Barlow-Black',
-    color: colors.cred.ring,
+    color: colors.form.ring,
     letterSpacing: -1,
   },
 });

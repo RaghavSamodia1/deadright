@@ -103,7 +103,7 @@ export const colors = {
     destructive: '#FC574E',
   },
 
-  cred: {
+  form: {
     ring: '#F7C846',
     track: '#2A2A2E',
     positive: '#63B972',

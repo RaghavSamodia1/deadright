@@ -30,7 +30,7 @@ export type NotificationType =
   | 'dispute_resolved'
   | 'bet_won'
   | 'bet_lost'
-  | 'cred_change'
+  | 'form_change'
   | 'jar_violation'
   | 'ledger_reset'
   | 'bet_deleted'
@@ -58,7 +58,7 @@ export interface Profile {
   avatar_url: string | null;
   bio: string | null;
   is_public: boolean;
-  cred_score: number;
+  form_score: number;
   current_streak: number;
   best_streak: number;
   created_at: string;
@@ -149,7 +149,7 @@ export interface LedgerEntry {
   created_at: string;
 }
 
-export interface CredEvent {
+export interface FormEvent {
   id: number;
   user_id: string;
   delta: number;

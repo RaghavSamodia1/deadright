@@ -36,7 +36,7 @@ export async function updateProfile(
   return data;
 }
 
-/** Profile stats strip: bets / wins / rate / cred (S27). */
+/** Profile stats strip: bets / wins / rate / form (S27). */
 export async function getStats(userId: string) {
   const { data, error } = await supabase
     .from('bet_participants')
@@ -57,12 +57,12 @@ export async function getStats(userId: string) {
   };
 }
 
-/** Cred score history for the S29 chart. */
-export async function getCredHistory(days = 30) {
+/** Form score history for the S29 chart. */
+export async function getFormHistory(days = 30) {
   const uid = (await supabase.auth.getSession()).data.session?.user.id;
   const since = new Date(Date.now() - days * 86400_000).toISOString();
   const { data, error } = await supabase
-    .from('cred_events')
+    .from('form_events')
     .select('delta, reason, created_at')
     .eq('user_id', uid!)
     .gte('created_at', since)

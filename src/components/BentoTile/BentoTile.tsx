@@ -29,7 +29,7 @@ interface BentoTileProps {
   tone?: TileTone;
   /**
    * Counts the value up on mount instead of printing it. For the figures that
-   * are the point of the tile — what's in the jar, what your cred is — where
+   * are the point of the tile — what's in the jar, what your form is — where
    * arriving at a number reads differently from simply showing one.
    */
   countUp?: number;

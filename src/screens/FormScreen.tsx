@@ -1,15 +1,15 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
-import { ScreenBackground, NavHeader, CredRing, ListRow, EmptyState } from '../components';
-import { getMyProfile, getCredHistory } from '../api/profile';
+import { ScreenBackground, NavHeader, FormRing, ListRow, EmptyState } from '../components';
+import { getMyProfile, getFormHistory } from '../api/profile';
 import { useQuery } from '../hooks/useQuery';
 
 /**
- * Cred is the point of the app — the reputation you build by being right and
+ * Form is the point of the app — the reputation you build by being right and
  * settling honestly. This shows the score, how it moved, and why.
  *
- * Weighting mirrors recompute_cred (00003_functions.sql): accuracy 40,
+ * Weighting mirrors recompute_form (00003_functions.sql): accuracy 40,
  * settlement 20, participation 25, honesty 15, over a 500-point spread.
  */
 const WEIGHTS = [
@@ -19,32 +19,32 @@ const WEIGHTS = [
   { label: 'Honesty', pct: 15, note: 'Owning up, not stalling disputes' },
 ];
 
-export function CredScreen({ navigation }: any) {
+export function FormScreen({ navigation }: any) {
   const { data: profile } = useQuery(getMyProfile, {
     handle: 'you',
-    cred_score: 500,
+    form_score: 500,
     current_streak: 0,
     best_streak: 0,
   } as any);
 
-  const { data: history } = useQuery(() => getCredHistory(30), [] as any[]);
+  const { data: history } = useQuery(() => getFormHistory(30), [] as any[]);
 
-  const cred = profile.cred_score ?? 500;
-  const percentile = Math.max(0, Math.min(100, Math.round(((cred - 250) / 500) * 100)));
+  const form = profile.form_score ?? 500;
+  const percentile = Math.max(0, Math.min(100, Math.round(((form - 250) / 500) * 100)));
 
   // Net movement over the window, and a sparkline of the running score.
   const net = history.reduce((sum: number, e: any) => sum + (e.delta ?? 0), 0);
-  const series = buildSeries(history, cred);
-  const min = Math.min(...series, cred);
-  const max = Math.max(...series, cred);
+  const series = buildSeries(history, form);
+  const min = Math.min(...series, form);
+  const max = Math.max(...series, form);
   const span = Math.max(max - min, 1);
 
   return (
     <ScreenBackground tone="base">
-      <NavHeader variant="back" title="Cred Score" onBack={() => navigation.goBack()} />
+      <NavHeader variant="back" title="Form Score" onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          <CredRing percent={percentile} score={cred} size={168} strokeWidth={12} />
+          <FormRing percent={percentile} score={form} size={168} strokeWidth={12} />
           <Text style={styles.percentile}>Top {Math.max(1, 100 - percentile)}% of callers</Text>
           <Text style={[styles.net, { color: net >= 0 ? colors.semantic.win : colors.semantic.disputed }]}>
             {net >= 0 ? '+' : ''}{net} in the last 30 days
@@ -92,7 +92,7 @@ export function CredScreen({ navigation }: any) {
           <EmptyState
             icon="chart"
             title="Nothing yet"
-            body="Settle a few bets and your Cred history shows up here."
+            body="Settle a few bets and your Form history shows up here."
           />
         ) : (
           history

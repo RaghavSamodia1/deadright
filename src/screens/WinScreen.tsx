@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Icon } from '../components';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, Stamp, Button, Confetti } from '../components';
-import { undoResolution, getCredDelta } from '../api/resolution';
+import { undoResolution, getFormDelta } from '../api/resolution';
 import { useAction } from '../hooks/useQuery';
 
 // Peak — "CALLED IT" win moment. Mint, rotated stamp (the signature moment).
@@ -14,19 +14,19 @@ export function WinScreen({ navigation, route }: any) {
 
   // Was a hardcoded 12, because nothing navigating here passed a number. Ask
   // for the real award and show nothing rather than a made-up figure.
-  const [cred, setCred] = React.useState<number | null>(
-    route?.params?.credGain ?? null,
+  const [form, setForm] = React.useState<number | null>(
+    route?.params?.formGain ?? null,
   );
   React.useEffect(() => {
-    if (!betId || cred !== null) return;
+    if (!betId || form !== null) return;
     let alive = true;
-    getCredDelta(betId).then((d) => {
-      if (alive && d !== null) setCred(d);
+    getFormDelta(betId).then((d) => {
+      if (alive && d !== null) setForm(d);
     });
     return () => {
       alive = false;
     };
-  }, [betId, cred]);
+  }, [betId, form]);
 
   const { run: undo, loading: undoing } = useAction(undoResolution);
   const [secondsLeft, setSecondsLeft] = React.useState(UNDO_WINDOW_SECONDS);
@@ -48,10 +48,10 @@ export function WinScreen({ navigation, route }: any) {
             <Icon name="trophy" size={56} color={colors.text.inverse} strokeWidth={2} />
           </View>
           <Text style={styles.sub}>You were dead right.</Text>
-          {cred !== null && (
-            <View style={styles.credPill}>
-              <Text style={styles.credText}>
-                {cred >= 0 ? '+' : '−'}{Math.abs(cred)} Cred
+          {form !== null && (
+            <View style={styles.formPill}>
+              <Text style={styles.formText}>
+                {form >= 0 ? '+' : '−'}{Math.abs(form)} Form
               </Text>
             </View>
           )}
@@ -88,14 +88,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: colors.text.inverse,
   },
-  credPill: {
+  formPill: {
     backgroundColor: colors.text.inverse,
     borderRadius: 999,
     paddingHorizontal: spacing[5],
     paddingVertical: spacing[2],
     marginTop: spacing[2],
   },
-  credText: {
+  formText: {
     fontFamily: 'Barlow-Black',
     fontSize: 16,
     color: colors.semantic.win,

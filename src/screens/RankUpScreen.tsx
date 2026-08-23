@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
-import { ScreenBackground, CredRing, Button } from '../components';
+import { ScreenBackground, FormRing, Button } from '../components';
 
-// Peak — Cred rank up. Amber.
+// Peak — Form rank up. Amber.
 export function RankUpScreen({ navigation, route }: any) {
   const rank = route?.params?.rank ?? 'Sharp';
-  const cred = route?.params?.cred ?? 850;
+  const form = route?.params?.form ?? 850;
   const percentile = route?.params?.percentile ?? 85;
 
   return (
@@ -14,7 +14,7 @@ export function RankUpScreen({ navigation, route }: any) {
       <View style={styles.root}>
         <View style={styles.center}>
           <Text style={styles.overline}>YOU RANKED UP</Text>
-          <CredRing percent={percentile} score={cred} size={168} strokeWidth={12} />
+          <FormRing percent={percentile} score={form} size={168} strokeWidth={12} />
           <Text style={styles.rank}>{rank}</Text>
           <Text style={styles.sub}>Top {100 - percentile}% of callers. Your word carries weight.</Text>
         </View>

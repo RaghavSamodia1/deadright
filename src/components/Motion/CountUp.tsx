@@ -17,7 +17,7 @@ interface CountUpProps {
  * Driven from JS rather than by animating a TextInput through useAnimatedProps,
  * the usual reanimated trick for live text. That approach keeps the work off the
  * JS thread but drags TextInput's own metrics and padding in with it, and these
- * numbers are the largest type in the app — the jar total and the cred score sit
+ * numbers are the largest type in the app — the jar total and the form score sit
  * in bento tiles where a couple of points of drift is visible. One rAF loop for
  * about half a second, on a screen that isn't scrolling yet, is the cheaper
  * trade.

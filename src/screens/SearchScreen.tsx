@@ -37,7 +37,7 @@ export function SearchScreen({ navigation }: any) {
           kind: 'person' as const,
           id: p.handle,
           title: p.handle,
-          sub: `${p.display_name ?? ''} · Cred ${p.cred_score}`,
+          sub: `${p.display_name ?? ''} · Form ${p.form_score}`,
         })),
         ...bets.map((b: any) => ({
           kind: 'bet' as const,

@@ -15,7 +15,7 @@ npx expo install \
   @expo-google-fonts/space-mono
 ```
 
-`react-native-svg` is required by `CredRing` (animated Cred Score ring).
+`react-native-svg` is required by `FormRing` (animated Form Score ring).
 
 Also install `expo-clipboard` (used by `InviteCodeCard` tap-to-copy):
 

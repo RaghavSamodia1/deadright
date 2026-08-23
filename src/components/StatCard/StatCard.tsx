@@ -27,7 +27,7 @@ const TONES: Record<StatCardTone, { bg: string; text: string; sub: string }> = {
 
 /**
  * Sinport bag-drop-style stat card: huge Barlow Black number on a bold fill.
- * Used for Cred Score, win rate, streaks, pot totals.
+ * Used for Form Score, win rate, streaks, pot totals.
  */
 export function StatCard({ value, label, caption, tone = 'navy', size = 'lg', style }: StatCardProps) {
   const t = TONES[tone];

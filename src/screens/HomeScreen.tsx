@@ -59,7 +59,7 @@ export function HomeScreen({ navigation }: any) {
   const { data: profile } = useQuery(getMyProfile, {
     handle: 'you',
     display_name: 'You',
-    cred_score: 847,
+    form_score: 847,
     current_streak: 5,
     best_streak: 8,
   } as any);
@@ -175,7 +175,7 @@ export function HomeScreen({ navigation }: any) {
           }} />}
           a={
         <View style={styles.bento}>
-        {/* Row 1 — Cookie Jar hero + cred/streak column */}
+        {/* Row 1 — Cookie Jar hero + form/streak column */}
         <Rise index={0}>
         <View style={styles.row}>
           <BentoTile
@@ -214,8 +214,8 @@ export function HomeScreen({ navigation }: any) {
           </BentoTile>
           <View style={styles.col}>
             <BentoTile
-              size="stat" tone="violet-tint" countUp={profile.cred_score} label="Cred" caption="Details"
-              onPress={() => navigation.navigate('Cred')}
+              size="stat" tone="violet-tint" countUp={profile.form_score} label="Form" caption="Details"
+              onPress={() => navigation.navigate('Form')}
             />
             <BentoTile
               size="stat" tone="flame"

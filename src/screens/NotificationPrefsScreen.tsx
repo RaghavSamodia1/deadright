@@ -12,7 +12,7 @@ const DEFAULTS = {
   notify_resolutions: true,
   notify_disputes: true,
   notify_jar: true,
-  notify_cred: false,
+  notify_form: false,
   notify_marketing: false,
 } as UserSettings;
 
@@ -50,7 +50,7 @@ export function NotificationPrefsScreen({ navigation }: any) {
 
         <SettingsSection title="Social">
           <SettingsRow icon="jar" label="Cookie Jar activity" toggle toggleValue={value('notify_jar')} onToggle={set('notify_jar')} />
-          <SettingsRow icon="trophy" label="Cred & rank changes" toggle toggleValue={value('notify_cred')} onToggle={set('notify_cred')} />
+          <SettingsRow icon="trophy" label="Form & rank changes" toggle toggleValue={value('notify_form')} onToggle={set('notify_form')} />
         </SettingsSection>
 
         <SettingsSection title="Other">

@@ -126,7 +126,7 @@ export function BetDetailScreen({ navigation, route }: any) {
         .slice()
         .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at))
         .map((e) => ({
-          text: describeEvent(e, raw?.uid, isOrdinal),
+          text: describeEvent(e, raw?.uid, isOrdinal, !!raw?.call_kind),
           timestamp: relativeTime(e.created_at),
           tone: eventTone(e.kind),
         }))
@@ -275,7 +275,7 @@ export function BetDetailScreen({ navigation, route }: any) {
         ) : canResolve ? (
           <Button
             label="Resolve it"
-            onPress={() => navigation.navigate('Resolution', { id: bet.id, title: bet.title })}
+            onPress={() => navigation.navigate('Resolution', { id: bet.id, title: bet.title, callKind: bet.callKind, callUnit: bet.callUnit })}
             fullWidth
             style={styles.cta}
           />
@@ -284,18 +284,26 @@ export function BetDetailScreen({ navigation, route }: any) {
           // how close you land, so they need the ranker, not the A/B picker.
           <Button
             label={myEntry ? 'Change my ranking' : 'Rank them'}
-            onPress={() => navigation.navigate('RankPicker', { id: bet.id, title: bet.title })}
+            onPress={() => navigation.navigate('RankPicker', { id: bet.id, title: bet.title, callKind: bet.callKind, callUnit: bet.callUnit })}
             fullWidth
             style={styles.cta}
           />
         ) : canJoin ? (
           <>
             <Button
-              label={myEntry ? `You're on Side ${String(myEntry.side).toUpperCase()}` : 'Pick your side'}
-              onPress={() =>
-                navigation.navigate('SideSelection', { id: bet.id, title: bet.title })
+              label={
+                bet.callKind
+                  ? myEntry
+                    ? 'Change my call'
+                    : 'Make your call'
+                  : myEntry
+                    ? `You're on Side ${String(myEntry.side).toUpperCase()}`
+                    : 'Pick your side'
               }
-              disabled={!!myEntry}
+              onPress={() =>
+                navigation.navigate('SideSelection', { id: bet.id, title: bet.title, callKind: bet.callKind, callUnit: bet.callUnit })
+              }
+              disabled={!bet.callKind && !!myEntry}
               fullWidth
               style={styles.cta}
             />
@@ -303,7 +311,7 @@ export function BetDetailScreen({ navigation, route }: any) {
               <Button
                 label="Settle it now"
                 onPress={() =>
-                  navigation.navigate('Resolution', { id: bet.id, title: bet.title })
+                  navigation.navigate('Resolution', { id: bet.id, title: bet.title, callKind: bet.callKind, callUnit: bet.callUnit })
                 }
                 variant="secondary"
                 fullWidth
@@ -371,7 +379,12 @@ export function BetDetailScreen({ navigation, route }: any) {
 }
 
 // bet_events row → a human line in the timeline.
-function describeEvent(e: any, myUserId?: string | null, isOrdinal = false): string {
+function describeEvent(
+  e: any,
+  myUserId?: string | null,
+  isOrdinal = false,
+  isCall = false,
+): string {
   // The trigger never wrote payload.handle, so every line read "Someone" —
   // including your own. actor_id is populated, so resolve through the joined
   // profile and name yourself as "You".
@@ -383,12 +396,15 @@ function describeEvent(e: any, myUserId?: string | null, isOrdinal = false): str
         : e.actor?.display_name ?? (e.payload?.handle ? e.payload.handle : 'Someone');
   switch (e.kind) {
     case 'created': return `${who} opened this`;
-    // An ordinal bet stores side 'a' purely to mark participation, so naming a
-    // side here would be meaningless.
+    // Ordinal and call bets both store side 'a' purely to mark participation,
+    // so naming a side here would be meaningless — and on a call bet it was
+    // actively wrong, since the bet has no sides to join.
     case 'joined':
       return isOrdinal
         ? `${who} locked in a ranking`
-        : `${who} joined Side ${String(e.payload?.side ?? '').toUpperCase()}`;
+        : isCall
+          ? `${who} made a call`
+          : `${who} joined Side ${String(e.payload?.side ?? '').toUpperCase()}`;
     case 'side_switched': return `${who} switched sides`;
     case 'went_live': return 'It kicked off — live now';
     case 'deadline_passed': return 'Deadline passed — needs resolving';

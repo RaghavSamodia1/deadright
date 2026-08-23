@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { colors, spacing } from '../tokens';
+import { View, Text, ScrollView, StyleSheet, Platform, Pressable } from 'react-native';
+import { colors, radius, spacing } from '../tokens';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { ScreenBackground, NavHeader, ChoiceChipGroup, TextInput, Banner, Button } from '../components';
 import { proposeOutcome } from '../api/resolution';
 import { useAction, useQuery } from '../hooks/useQuery';
 import { isBackendConfigured, uidOrNull } from '../lib/supabase';
-import { getBet } from '../api/bets';
+import { getBet, resolveClosest } from '../api/bets';
 import { humanError } from '../lib/errors';
 
 // No push: bet_side is enum ('a','b') and winning_side takes one of them, so a
@@ -24,6 +25,21 @@ export function ResolutionScreen({ navigation, route }: any) {
   const betId = route?.params?.id ?? route?.params?.betId;
   const [outcome, setOutcome] = useState<Outcome>('won');
   const [note, setNote] = useState('');
+
+  /**
+   * A call bet is not resolved by picking a side — there are none. It is
+   * resolved by saying what actually happened, and the closest call wins.
+   */
+  const callKind: 'number' | 'date' | null = route?.params?.callKind ?? null;
+  const callUnit: string | undefined = route?.params?.callUnit;
+  const [actualText, setActualText] = useState('');
+  const [actualDate, setActualDate] = useState<Date>(new Date());
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const { run: settle, loading: settling, error: settleError } = useAction(resolveClosest);
+
+  const actualNumber = actualText.trim() === '' ? null : Number(actualText.replace(',', '.'));
+  const actualOk =
+    callKind === 'number' ? actualNumber !== null && Number.isFinite(actualNumber) : true;
   const { run: propose, loading, error } = useAction(proposeOutcome);
 
   // Which side the viewer is actually on. This used to be hardcoded to 'a', so
@@ -38,6 +54,15 @@ export function ResolutionScreen({ navigation, route }: any) {
     null,
     [betId],
   );
+
+  const submitCall = async () => {
+    if (!betId) return;
+    const ok = await settle(
+      betId,
+      callKind === 'number' ? { number: actualNumber! } : { date: actualDate },
+    );
+    if (ok !== null) navigation.goBack();
+  };
 
   const submit = async () => {
     if (!isBackendConfigured || !betId) {
@@ -65,14 +90,67 @@ export function ResolutionScreen({ navigation, route }: any) {
         automaticallyAdjustKeyboardInsets>
         <Text style={styles.statement}>"{title}"</Text>
 
-        <Banner
-          tone="awaiting"
-          title="Both sides confirm"
-          body="Your proposal goes to the other side. If they disagree, it opens for a group vote."
-        />
+        {callKind ? (
+          <>
+            <Banner
+              tone="awaiting"
+              title="Closest call wins"
+              body="Say what actually happened and the nearest answer takes it. If two are equally close they both win, and the stake splits."
+            />
+            {callKind === 'number' ? (
+              <TextInput
+                label={callUnit ? `How many ${callUnit}?` : 'What was the number?'}
+                value={actualText}
+                onChangeText={setActualText}
+                keyboardType="decimal-pad"
+                placeholder="e.g. 3"
+                autoFocus
+              />
+            ) : (
+              <>
+                <Pressable
+                  onPress={() => setPickerOpen(true)}
+                  style={styles.dateField}
+                  accessibilityRole="button"
+                  accessibilityLabel="Choose what actually happened"
+                >
+                  <Text style={styles.dateLabel}>
+                    {callUnit ? `When ${callUnit}?` : 'What was the date?'}
+                  </Text>
+                  <Text style={styles.dateValue}>
+                    {actualDate.toLocaleDateString(undefined, {
+                      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                    })}
+                  </Text>
+                </Pressable>
+                {(pickerOpen || Platform.OS === 'ios') && (
+                  <DateTimePicker
+                    value={actualDate}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                    themeVariant="dark"
+                    accentColor={colors.semantic.awaiting}
+                    onChange={(_e, picked) => {
+                      if (Platform.OS !== 'ios') setPickerOpen(false);
+                      if (picked) setActualDate(picked);
+                    }}
+                  />
+                )}
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <Banner
+              tone="awaiting"
+              title="Both sides confirm"
+              body="Your proposal goes to the other side. If they disagree, it opens for a group vote."
+            />
 
-        <Text style={styles.q}>How did it land?</Text>
-        <ChoiceChipGroup options={OPTS} value={outcome} onChange={setOutcome} />
+            <Text style={styles.q}>How did it land?</Text>
+            <ChoiceChipGroup options={OPTS} value={outcome} onChange={setOutcome} />
+          </>
+        )}
 
         <TextInput
           label="Add a note (optional)"
@@ -89,14 +167,35 @@ export function ResolutionScreen({ navigation, route }: any) {
           variant="secondary"
           fullWidth
         />
-        {error && <Text style={styles.error}>{humanError(error)}</Text>}
-        <Button label="Submit resolution" onPress={submit} loading={loading} fullWidth />
+        {(error || settleError) && (
+          <Text style={styles.error}>{humanError(error ?? settleError)}</Text>
+        )}
+        <Button
+          label={callKind ? 'Settle it' : 'Submit resolution'}
+          onPress={callKind ? submitCall : submit}
+          disabled={callKind ? !actualOk : false}
+          loading={loading || settling}
+          fullWidth
+        />
       </ScrollView>
     </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  dateField: {
+    backgroundColor: colors.bg.surface1,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    padding: spacing[4],
+    gap: 4,
+  },
+  dateLabel: {
+    fontFamily: 'Barlow-SemiBold', fontSize: 11, letterSpacing: 2,
+    textTransform: 'uppercase', color: colors.semantic.awaiting,
+  },
+  dateValue: { fontFamily: 'Barlow-Bold', fontSize: 17, color: colors.text.primary },
   content: { padding: spacing.screenGutter, gap: spacing[4], paddingBottom: spacing[8] },
   statement: {
     fontFamily: 'Barlow-Bold',

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors, radius, spacing } from '../tokens';
-import { ScreenBackground, NavHeader, Button } from '../components';
-import { joinSide } from '../api/bets';
+import { ScreenBackground, NavHeader, Button, TextInput } from '../components';
+import { joinSide, placeCall } from '../api/bets';
 import { useAction } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 import { humanError } from '../lib/errors';
@@ -16,11 +17,41 @@ export function SideSelectionScreen({ navigation, route }: any) {
   const [side, setSide] = useState<Side>(null);
   const { run: join, loading, error } = useAction(joinSide);
 
+  /**
+   * A call bet has no sides to pick between — everyone names their own number
+   * or date and the closest wins — so this screen becomes an input instead of
+   * a pair of buttons.
+   */
+  const callKind: 'number' | 'date' | null = route?.params?.callKind ?? null;
+  const callUnit: string | undefined = route?.params?.callUnit;
+  const [callText, setCallText] = useState('');
+  const [callDate, setCallDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(12, 0, 0, 0);
+    return d;
+  });
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const { run: call, loading: calling, error: callError } = useAction(placeCall);
+
+  const callNumber = callText.trim() === '' ? null : Number(callText.replace(',', '.'));
+  const numberOk = callNumber !== null && Number.isFinite(callNumber);
+  const canSubmit = callKind ? (callKind === 'number' ? numberOk : true) : !!side;
+
   const submit = async () => {
-    if (!side) return;
+    if (!canSubmit) return;
     if (!isBackendConfigured || !betId) {
       return navigation.replace('BetDetail', { id: betId });
     }
+    if (callKind) {
+      const ok = await call(
+        betId,
+        callKind === 'number' ? { number: callNumber! } : { date: callDate },
+      );
+      if (ok !== null) navigation.replace('BetDetail', { id: betId });
+      return;
+    }
+    if (!side) return;
     const joined = await join(betId, side);
     if (joined) navigation.replace('BetDetail', { id: betId });
   };
@@ -42,23 +73,83 @@ export function SideSelectionScreen({ navigation, route }: any) {
 
   return (
     <ScreenBackground tone="base" glow={false}>
-      <NavHeader variant="modal" title="Pick your side" onBack={() => navigation.goBack()} />
+      <NavHeader
+        variant="modal"
+        title={callKind ? 'Make your call' : 'Pick your side'}
+        onBack={() => navigation.goBack()}
+      />
       <View style={styles.root}>
         <Text style={styles.statement}>"{title}"</Text>
-        <View style={styles.options}>
-          <Option value="a" label="YES" sub="You’re backing the call" color={colors.side.a} />
-          <Option value="b" label="NO" sub="You’re fading it" color={colors.side.b} />
-        </View>
+
+        {callKind === 'number' ? (
+          <View style={styles.callBlock}>
+            <TextInput
+              label={callUnit ? `How many ${callUnit}?` : 'Your number'}
+              value={callText}
+              onChangeText={setCallText}
+              keyboardType="decimal-pad"
+              placeholder="e.g. 3"
+              autoFocus
+              helper="Closest wins. If two of you are equally close, you both do."
+            />
+          </View>
+        ) : callKind === 'date' ? (
+          <View style={styles.callBlock}>
+            <Pressable
+              onPress={() => setPickerOpen(true)}
+              style={styles.dateField}
+              accessibilityRole="button"
+              accessibilityLabel="Choose the date you are calling"
+            >
+              <Text style={styles.dateLabel}>{callUnit ? `When ${callUnit}?` : 'Your date'}</Text>
+              <Text style={styles.dateValue}>
+                {callDate.toLocaleDateString(undefined, {
+                  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                })}
+              </Text>
+            </Pressable>
+            {(pickerOpen || Platform.OS === 'ios') && (
+              <DateTimePicker
+                value={callDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                themeVariant="dark"
+                accentColor={colors.semantic.awaiting}
+                onChange={(_e, picked) => {
+                  if (Platform.OS !== 'ios') setPickerOpen(false);
+                  if (picked) setCallDate(picked);
+                }}
+              />
+            )}
+            <Text style={styles.hint}>
+              Closest wins. If two of you are equally close, you both do.
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.options}>
+            <Option value="a" label="YES" sub="You’re backing the call" color={colors.side.a} />
+            <Option value="b" label="NO" sub="You’re fading it" color={colors.side.b} />
+          </View>
+        )}
         <View style={styles.footer}>
           <Button
-            label="Lock in my side"
+            label={callKind ? 'Lock in my call' : 'Lock in my side'}
             onPress={submit}
-            disabled={!side}
-            loading={loading}
+            disabled={!canSubmit}
+            loading={loading || calling}
             fullWidth
           />
-          {error && <Text style={styles.error}>{humanError(error)}</Text>}
-          <Text style={styles.warn}>Once locked you can’t switch, but everyone sees if you try</Text>
+          {(error || callError) && (
+            <Text style={styles.error}>{humanError(error ?? callError)}</Text>
+          )}
+          {/* The lock warning is about sides. A call can be changed right up
+              to the deadline — place_call replaces your answer rather than
+              adding a second — so saying otherwise here would be a lie. */}
+          <Text style={styles.warn}>
+            {callKind
+              ? 'You can change your call until the deadline.'
+              : 'Once locked you can’t switch, but everyone sees if you try'}
+          </Text>
         </View>
       </View>
     </ScreenBackground>
@@ -66,6 +157,24 @@ export function SideSelectionScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
+  callBlock: { gap: spacing[3] },
+  dateField: {
+    backgroundColor: colors.bg.surface1,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    padding: spacing[4],
+    gap: 4,
+  },
+  dateLabel: {
+    fontFamily: 'Barlow-SemiBold',
+    fontSize: 11,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: colors.semantic.awaiting,
+  },
+  dateValue: { fontFamily: 'Barlow-Bold', fontSize: 17, color: colors.text.primary },
+  hint: { fontFamily: 'Inter-Regular', fontSize: 12, lineHeight: 18, color: colors.text.tertiary },
   root: { flex: 1, padding: spacing.screenGutter },
   statement: {
     fontFamily: 'Barlow-Bold',

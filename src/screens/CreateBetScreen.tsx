@@ -80,6 +80,13 @@ export function CreateBetScreen({ navigation, route }: any) {
   // that everything lives in a group. The first group is now really selected.
   const [group, setGroup] = useState<string>(fromGroup ?? '');
   const [rankOptions, setRankOptions] = useState<string[]>(['', '']);
+  /**
+   * Over/under is a call bet: everyone names their own number or date and the
+   * closest wins. It needs to know what is being counted, or the calls are
+   * bare figures — "3.5" on a card tells you nothing on its own.
+   */
+  const [callKind, setCallKind] = useState<'number' | 'date'>('number');
+  const [callUnit, setCallUnit] = useState('');
   const [customAmount, setCustomAmount] = useState('');
   // A real calendar. This was a "days from now" number field, which is a
   // workaround for a date picker rather than a way to answer "when do we know?"
@@ -173,10 +180,11 @@ export function CreateBetScreen({ navigation, route }: any) {
       groupId: group || null,
       title: (sharpened || statement).trim(),
       type: type === 'ordinal' ? 'ordinal' : 'prediction',
-      // An over/under question has no yes and no in it, and the card was
-      // showing both. The labels are per-bet in the schema; this is the first
-      // thing to set them.
-      ...(type === 'overunder' ? { sideALabel: 'OVER', sideBLabel: 'UNDER' } : {}),
+      // Over/under has no yes and no in it, and no sides either: it is a call
+      // bet, and call_kind is what makes it one.
+      ...(type === 'overunder'
+        ? { callKind, callUnit: callUnit.trim() || undefined }
+        : {}),
       stakeKind: isMoneyStake ? 'money' : 'dare',
       stakeAmountCents: isMoneyStake
         ? (stake === 'custom' ? customCents! : TENNER_CENTS)
@@ -199,7 +207,10 @@ export function CreateBetScreen({ navigation, route }: any) {
   // A ranking bet needs at least two things to rank before it can go further.
   const canNext = at('Statement')
     ? statement.trim().length > 4
-    : at('Type') && type === 'ordinal'
+    : // A call bet with no unit leaves every answer a bare figure.
+      at('Type') && type === 'overunder'
+      ? callUnit.trim().length > 0
+      : at('Type') && type === 'ordinal'
       ? rankOptions.filter((o) => o.trim()).length >= 2
       : // A custom stake with no usable number would post NaN cents.
         at('Stake') && stake === 'custom'
@@ -296,6 +307,30 @@ export function CreateBetScreen({ navigation, route }: any) {
           <>
             <Text style={styles.q}>How is it settled?</Text>
             <ChoiceChipGroup options={TYPE_OPTS} value={type} onChange={setType} />
+
+            {type === 'overunder' && (
+              <>
+                <Text style={styles.hint}>
+                  Nobody picks a side. Everyone names their own answer and whoever
+                  lands closest wins — if two of you are equally close, you both do.
+                </Text>
+                <ChoiceChipGroup
+                  options={[
+                    { value: 'number' as const, label: 'A number' },
+                    { value: 'date' as const, label: 'A date' },
+                  ]}
+                  value={callKind}
+                  onChange={setCallKind}
+                />
+                <TextInput
+                  label={callKind === 'number' ? 'What are we counting?' : 'What are we dating?'}
+                  placeholder={callKind === 'number' ? 'e.g. goals' : 'e.g. he starts'}
+                  value={callUnit}
+                  onChangeText={setCallUnit}
+                  maxChars={24}
+                />
+              </>
+            )}
 
             {type === 'ordinal' && (
               <>

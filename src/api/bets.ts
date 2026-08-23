@@ -19,6 +19,13 @@ export interface CreateBetInput {
   /** Overrides the YES/NO defaults on bets.side_a_label / side_b_label. */
   sideALabel?: string;
   sideBLabel?: string;
+  /**
+   * Makes this a call bet: everyone names their own number or date and the
+   * closest wins, instead of taking one of two sides.
+   */
+  callKind?: 'number' | 'date';
+  /** What is being counted — "goals", "minutes late". */
+  callUnit?: string;
 }
 
 /** FLOW 4 — publish. Only title is truly required; everything else defaults. */
@@ -50,6 +57,8 @@ export async function createBet(input: CreateBetInput): Promise<Bet> {
       // and NO on the card for a question that has neither.
       ...(input.sideALabel ? { side_a_label: input.sideALabel } : {}),
       ...(input.sideBLabel ? { side_b_label: input.sideBLabel } : {}),
+      ...(input.callKind ? { call_kind: input.callKind } : {}),
+      ...(input.callUnit ? { call_unit: input.callUnit } : {}),
       stake_kind: input.stakeKind ?? 'money',
       stake_amount_cents: input.stakeAmountCents ?? (input.stakeKind === 'money' || !input.stakeKind ? 500 : null),
       dare_forfeit: input.dareForfeit ?? null,
@@ -72,7 +81,7 @@ export async function getFeed(groupId?: string) {
       `*,
        creator:profiles!bets_creator_id_fkey(handle, display_name, avatar_url),
        group:groups(name, currency),
-       participants:bet_participants(user_id, side)`,
+       participants:bet_participants(user_id, side, call_number, call_date, is_winner, profile:profiles(handle, display_name))`,
     )
     // A called-off bet is history, not something the group still has to act on.
     .neq('status', 'cancelled')
@@ -91,7 +100,7 @@ export async function getBet(betId: string) {
       `*,
        creator:profiles!bets_creator_id_fkey(handle, display_name, avatar_url),
        group:groups(name, currency),
-       participants:bet_participants(user_id, side, agreed,
+       participants:bet_participants(user_id, side, agreed, call_number, call_date, is_winner,
          profile:profiles(handle, display_name, avatar_url)),
        events:bet_events(
          id, actor_id, kind, payload, created_at,
@@ -182,4 +191,44 @@ export async function cancelBet(betId: string, reason?: string): Promise<Bet> {
   });
   if (error) throw error;
   return data;
+}
+
+
+// ── Call bets ────────────────────────────────────────────────────────────────
+/**
+ * Name your number, or your date.
+ *
+ * Joining a two-sided bet means picking a side; joining a call bet means saying
+ * what you actually think. Calling it again before the deadline replaces your
+ * previous answer rather than adding a second one — it is the same act.
+ */
+export async function placeCall(
+  betId: string,
+  call: { number?: number; date?: Date },
+): Promise<void> {
+  const { error } = await supabase.rpc('place_call', {
+    p_bet: betId,
+    p_number: call.number ?? null,
+    p_date: call.date ? call.date.toISOString() : null,
+  });
+  if (error) throw error;
+}
+
+/**
+ * Settle a call bet by saying what actually happened.
+ *
+ * Whoever is closest wins, and everybody equally close wins together — the
+ * ledger splits each loser's stake across them, which is the same rule a
+ * two-sided bet already uses, so a tie needs no policy of its own.
+ */
+export async function resolveClosest(
+  betId: string,
+  actual: { number?: number; date?: Date },
+): Promise<void> {
+  const { error } = await supabase.rpc('resolve_closest', {
+    p_bet: betId,
+    p_number: actual.number ?? null,
+    p_date: actual.date ? actual.date.toISOString() : null,
+  });
+  if (error) throw error;
 }

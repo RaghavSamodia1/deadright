@@ -32,6 +32,37 @@ export function toBetCard(
     // defaulting to YES and NO, and nothing had ever read them.
     sideALabel: b.side_a_label ?? 'YES',
     sideBLabel: b.side_b_label ?? 'NO',
+    // A call bet has no sides — the A/B bar is replaced by the calls themselves.
+    callKind: b.call_kind ?? undefined,
+    callUnit: b.call_unit ?? undefined,
+    calls: b.call_kind
+      ? participants
+          // Both null- and undefined-checked: a query that forgets to select
+          // the columns hands back undefined, and String(undefined) printed the
+          // literal word "undefined" on the detail screen where somebody's
+          // answer should have been.
+          .filter((p) => p.call_number != null || p.call_date != null)
+          .map((p) => ({
+            handle:
+              p.profile?.display_name ?? p.profile?.handle ?? 'Someone',
+            value:
+              b.call_kind === 'number'
+                ? String(p.call_number)
+                : new Date(p.call_date).toLocaleDateString(undefined, {
+                    day: 'numeric',
+                    month: 'short',
+                  }),
+            isWinner: p.is_winner === true,
+            isMe: !!myUserId && p.user_id === myUserId,
+          }))
+          .sort((x, y) => Number(y.isWinner) - Number(x.isWinner))
+      : undefined,
+    actual:
+      b.actual_number !== null && b.actual_number !== undefined
+        ? String(b.actual_number)
+        : b.actual_date
+          ? new Date(b.actual_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+          : undefined,
     sideAPercent: total > 0 ? Math.round((sideA / total) * 100) : 50,
     sideACount: sideA,
     sideBCount: sideB,

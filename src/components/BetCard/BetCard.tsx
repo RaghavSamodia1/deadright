@@ -21,6 +21,12 @@ export interface BetCardData {
   /** What the two sides are called — YES/NO, OVER/UNDER, or whatever was set. */
   sideALabel?: string;
   sideBLabel?: string;
+  /** Set when this is a call bet: everyone names their own, closest wins. */
+  callKind?: 'number' | 'date';
+  callUnit?: string;
+  calls?: { handle: string; value: string; isWinner: boolean; isMe: boolean }[];
+  /** What actually happened, once it is settled. */
+  actual?: string;
   participantCount: number;
   stake?: string;
   deadline: Date;
@@ -98,8 +104,47 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
         {bet.title}
       </Text>
 
+      {/* A call bet shows what everyone actually said. There is no split to
+          draw: the positions are the answers, not two buckets. */}
+      {!compact && bet.callKind && (
+        <View style={styles.calls}>
+          {(bet.calls ?? []).length === 0 ? (
+            <Text style={styles.callsEmpty}>
+              Nobody has called it yet{bet.callUnit ? ` — how many ${bet.callUnit}?` : ''}
+            </Text>
+          ) : (
+            <>
+              {bet.actual && (
+                <View style={styles.actualRow}>
+                  <Text style={styles.actualLabel}>ACTUAL</Text>
+                  <Text style={styles.actualValue}>{bet.actual}</Text>
+                </View>
+              )}
+              {(bet.calls ?? []).slice(0, 4).map((c, i) => (
+                <View key={i} style={[styles.callRow, c.isWinner && styles.callRowWon]}>
+                  <Text
+                    style={[styles.callWho, c.isMe && styles.callWhoMe]}
+                    numberOfLines={1}
+                  >
+                    {c.isMe ? 'You' : c.handle}
+                  </Text>
+                  <Text style={[styles.callValue, c.isWinner && styles.callValueWon]}>
+                    {c.value}
+                  </Text>
+                </View>
+              ))}
+              {(bet.calls ?? []).length > 4 && (
+                <Text style={styles.callsEmpty}>
+                  +{(bet.calls ?? []).length - 4} more
+                </Text>
+              )}
+            </>
+          )}
+        </View>
+      )}
+
       {/* Side distribution — a ranking bet has no sides to distribute. */}
-      {!compact && !bet.isOrdinal && (
+      {!compact && !bet.isOrdinal && !bet.callKind && (
         <View style={styles.sides}>
           <SideBar
             sideAPercent={bet.sideAPercent}
@@ -185,6 +230,40 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border.default,
   },
   sides: { marginTop: 14 },
+  calls: { marginTop: 14, gap: 6 },
+  callRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  callRowWon: { backgroundColor: 'rgba(99,185,114,0.18)' },
+  callWho: { fontFamily: 'Inter-Medium', fontSize: 13, color: colors.text.secondary, flexShrink: 1 },
+  callWhoMe: { color: colors.text.primary },
+  callValue: { fontFamily: 'SpaceMono-Bold', fontSize: 15, color: colors.text.primary },
+  callValueWon: { color: colors.semantic.win },
+  callsEmpty: { fontFamily: 'Inter-Regular', fontSize: 12.5, color: colors.text.tertiary },
+  actualRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: colors.semantic.awaiting,
+    marginBottom: 2,
+  },
+  actualLabel: {
+    fontFamily: 'Barlow-Black', fontSize: 11, letterSpacing: 1,
+    color: colors.cardInk.onLight.primary,
+  },
+  actualValue: {
+    fontFamily: 'SpaceMono-Bold', fontSize: 15,
+    color: colors.cardInk.onLight.primary,
+  },
   timer: { marginLeft: 'auto' },
   metaGroup: { flexDirection: 'row', alignItems: 'center', gap: 4 },
 });

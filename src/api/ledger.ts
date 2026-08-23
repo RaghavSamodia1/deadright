@@ -90,29 +90,53 @@ export interface Balance {
 }
 
 /**
- * Running balance per person, from the entries that have not been settled.
+ * One person you have a ledger with, in one currency.
  *
- * The ledger listed transactions but never netted them, so two people who had
- * bet a dozen times had to add it up in their heads to answer the only question
- * that matters — who is down, and by how much.
+ * `Balance` is the subset of this where something is still owed. The wider
+ * shape exists because "who do I owe?" and "what happened between us?" are
+ * different questions: the first wants only open debts, the second has to
+ * include the people you have already squared up with, or settling would make
+ * a friend — and every bet you ever had with them — disappear from the app.
+ */
+export interface Counterparty {
+  userId: string;
+  handle: string;
+  displayName: string;
+  /** Positive = they owe you. Negative = you owe them. Pending only, in cents. */
+  netCents: number;
+  /** Entries still open. Zero means square, which is not the same as no history. */
+  openEntries: number;
+  /** Every entry ever, open or settled. */
+  totalEntries: number;
+  /** Newest entry, epoch ms — what the settled-up list is ordered by. */
+  lastAt: number;
+  /**
+   * The unit this balance is in. One person can owe you in two currencies — a
+   * ₹ group and a $ group — and those are two debts, not one. Netting them
+   * together would invent a number that is true in neither.
+   */
+  currency: string;
+}
+
+/**
+ * Everyone you share a ledger with, netted per person and per currency.
  *
  * Jar entries have no counterparty (to_user is null: you owe the jar, not a
  * person), so they are left out of a person-to-person balance.
  */
-export async function getBalances(): Promise<Balance[]> {
+export async function getCounterparties(): Promise<Counterparty[]> {
   const uid = (await supabase.auth.getSession()).data.session?.user.id;
   const { data, error } = await supabase
     .from('ledger_entries')
     .select(
-      `from_user, to_user, amount_cents, status, currency,
+      `from_user, to_user, amount_cents, status, currency, created_at,
        from:profiles!ledger_entries_from_user_fkey(handle, display_name),
        to:profiles!ledger_entries_to_user_fkey(handle, display_name)`,
     )
-    .eq('status', 'pending')
     .or(`from_user.eq.${uid},to_user.eq.${uid}`);
   if (error) throw error;
 
-  const by = new Map<string, Balance>();
+  const by = new Map<string, Counterparty>();
   for (const e of (data ?? []) as any[]) {
     if (!e.from_user || !e.to_user) continue; // jar entry, no counterparty
     const theyOweMe = e.to_user === uid;
@@ -120,8 +144,6 @@ export async function getBalances(): Promise<Balance[]> {
     const other = theyOweMe ? e.from : e.to;
     if (!otherId || otherId === uid) continue;
 
-    // Keyed per person *and* per currency, so a ₹ debt and a $ debt with the
-    // same person stay apart.
     const currency = (e.currency ?? 'GBP').toUpperCase();
     const key = `${otherId}:${currency}`;
     const row = by.get(key) ?? {
@@ -129,19 +151,95 @@ export async function getBalances(): Promise<Balance[]> {
       handle: other?.handle ?? 'someone',
       displayName: other?.display_name ?? other?.handle ?? 'Someone',
       netCents: 0,
-      entries: 0,
+      openEntries: 0,
+      totalEntries: 0,
+      lastAt: 0,
       currency,
     };
-    row.netCents += theyOweMe ? e.amount_cents : -e.amount_cents;
-    row.entries += 1;
+    row.totalEntries += 1;
+    row.lastAt = Math.max(row.lastAt, new Date(e.created_at).getTime());
+    // Only what is unsettled counts towards the balance; settled entries are
+    // history, and history nets to nothing by definition.
+    if (e.status === 'pending') {
+      row.netCents += theyOweMe ? e.amount_cents : -e.amount_cents;
+      row.openEntries += 1;
+    }
     by.set(key, row);
   }
 
-  // A net of zero is square — two people who have cancelled each other out do
-  // not need a row telling them so.
-  return [...by.values()]
+  // People you owe first, biggest first; everyone you are square with after,
+  // most recent first.
+  return [...by.values()].sort((a, b) => {
+    const openA = a.netCents !== 0, openB = b.netCents !== 0;
+    if (openA !== openB) return openA ? -1 : 1;
+    if (openA) return Math.abs(b.netCents) - Math.abs(a.netCents);
+    return b.lastAt - a.lastAt;
+  });
+}
+
+/**
+ * Running balance per person, from the entries that have not been settled.
+ *
+ * The ledger listed transactions but never netted them, so two people who had
+ * bet a dozen times had to add it up in their heads to answer the only question
+ * that matters — who is down, and by how much.
+ *
+ * A net of zero is square — two people who have cancelled each other out do not
+ * need a row telling them so. They keep a row in getCounterparties, which is
+ * where their history stays reachable.
+ */
+export async function getBalances(): Promise<Balance[]> {
+  return (await getCounterparties())
     .filter((b) => b.netCents !== 0)
-    .sort((a, b) => Math.abs(b.netCents) - Math.abs(a.netCents));
+    .map((b) => ({ ...b, entries: b.openEntries }));
+}
+
+/** One entry in the history between you and one other person. */
+export interface PersonEntry {
+  id: string;
+  /** Signed from your side: positive when they owe you. */
+  amountCents: number;
+  currency: string;
+  status: 'pending' | 'settled';
+  /** The bet it came from, where the bet still exists. */
+  betTitle: string | null;
+  betId: string | null;
+  createdAt: string;
+  at: number;
+}
+
+/**
+ * Every entry between you and one person, newest first — the answer to "why do
+ * I owe you fourteen pounds?".
+ *
+ * The balance list can only say what the total is. Until this existed the only
+ * way to see what made up that total was to read the whole ledger and pick out
+ * the rows with their name on, which is exactly the arithmetic the balances
+ * were added to stop people doing.
+ */
+export async function getLedgerWith(otherUserId: string): Promise<PersonEntry[]> {
+  const uid = (await supabase.auth.getSession()).data.session?.user.id;
+  if (!uid) throw new Error('not_authenticated');
+  const { data, error } = await supabase
+    .from('ledger_entries')
+    .select('id, from_user, to_user, amount_cents, status, currency, created_at, bet:bets(id, title)')
+    .or(
+      `and(from_user.eq.${uid},to_user.eq.${otherUserId}),` +
+        `and(from_user.eq.${otherUserId},to_user.eq.${uid})`,
+    )
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+
+  return ((data ?? []) as any[]).map((e) => ({
+    id: e.id,
+    amountCents: e.to_user === uid ? e.amount_cents : -e.amount_cents,
+    currency: (e.currency ?? 'GBP').toUpperCase(),
+    status: e.status === 'settled' ? 'settled' : 'pending',
+    betTitle: e.bet?.title ?? null,
+    betId: e.bet?.id ?? null,
+    createdAt: e.created_at,
+    at: new Date(e.created_at).getTime(),
+  }));
 }
 
 /**

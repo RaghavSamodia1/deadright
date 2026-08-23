@@ -20,7 +20,7 @@ export type TileSize =
   | 'stat'
   | 'nav';
 export type TileTone =
-  | 'amber' | 'mint' | 'flame' | 'navy'
+  | 'amber' | 'mint' | 'coral' | 'flame' | 'navy'
   | 'amber-tint' | 'mint-tint' | 'violet-tint' | 'teal-tint' | 'flame-tint';
 
 interface BentoTileProps {
@@ -133,6 +133,9 @@ export const TILE_SIZES = tileSizesFor(390);
 const TONES: Record<TileTone, { bg: string; border?: string; text: string; sub: string }> = {
   amber: { bg: colors.card.amber, text: colors.text.inverse, sub: 'rgba(10,10,11,0.6)' },
   mint: { bg: colors.card.mint, text: colors.text.inverse, sub: 'rgba(10,10,11,0.6)' },
+  // Card fill = card status, and a hero showing a number you are down should
+  // not be wearing the win colour. Dark ink on coral measures 6.2:1.
+  coral: { bg: colors.card.coral, text: colors.text.inverse, sub: 'rgba(10,10,11,0.65)' },
   flame: { bg: colors.brand.flame, text: colors.text.inverse, sub: 'rgba(10,10,11,0.65)' },
   navy: { bg: colors.bg.surface1, border: colors.border.default, text: colors.text.primary, sub: colors.text.tertiary },
   // The tint fills sit ~12–15% above the page, which is enough to push

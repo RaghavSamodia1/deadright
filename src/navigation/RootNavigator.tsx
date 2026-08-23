@@ -11,6 +11,8 @@ import {
   ProfileSetupScreen,
   HomeScreen,
   LedgerScreen,
+  BalancesScreen,
+  PersonLedgerScreen,
   BetDetailScreen,
   ProfileScreen,
   FormScreen,
@@ -95,6 +97,8 @@ export function RootNavigator() {
       {/* Hub + spokes */}
       <Stack.Screen name="Root" component={HomeScreen} />
       <Stack.Screen name="Ledger" component={LedgerScreen} />
+      <Stack.Screen name="Balances" component={BalancesScreen} />
+      <Stack.Screen name="PersonLedger" component={PersonLedgerScreen} />
       <Stack.Screen name="BetDetail" component={BetDetailScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Form" component={FormScreen} />

@@ -1,12 +1,11 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, BentoTile, ListRow } from '../components';
-import { getLedger, getLedgerSummary, getBalances, settleUpWith, type Balance } from '../api/ledger';
+import { getLedger, getLedgerSummary, getBalances, type Balance } from '../api/ledger';
 import { getMyGroups } from '../api/groups';
 import { getJar } from '../api/jar';
-import { useQuery, useAction } from '../hooks/useQuery';
-import { humanError } from '../lib/errors';
+import { useQuery } from '../hooks/useQuery';
 import { plural } from '../lib/plural';
 import { useCurrency } from '../hooks/useCurrency';
 import { formatMoney, formatTotals, totalsByCurrency } from '../lib/money';
@@ -72,32 +71,9 @@ export function LedgerScreen({ navigation }: any) {
     return buckets.map((net) => ({ net, pct: 12 + (Math.abs(net) / peak) * 88 }));
   }, [txns]);
 
-  // The jar tile mirrors your first group's pot — the jar is group-scoped, so
-  // there's no such thing as a personal total.
-  const { data: balances, refetch: refetchBalances } = useQuery<Balance[]>(getBalances, []);
-  const { run: doSettle, error: settleError } = useAction(settleUpWith);
-
-  const confirmSettle = (b: Balance) => {
-    const theyOwe = b.netCents > 0;
-    Alert.alert(
-      `Square up with ${b.displayName}?`,
-      `${theyOwe ? 'They owe you' : 'You owe them'} ${money(Math.abs(b.netCents), b.currency)} across ${plural(b.entries, 'open item')}. This marks those ${b.currency} items settled — it doesn't move any money.`,
-      [
-        { text: 'Not yet', style: 'cancel' },
-        {
-          text: 'Mark settled',
-          onPress: async () => {
-            const ok = await doSettle(b.userId, b.currency);
-            if (ok === null) {
-              Alert.alert('Couldn’t settle up', humanError(settleError));
-              return;
-            }
-            refetchBalances();
-          },
-        },
-      ],
-    );
-  };
+  // Only people something is still owed to or by. Everyone else — including
+  // anyone already squared up with — is on the Balances screen.
+  const { data: balances } = useQuery<Balance[]>(getBalances, []);
 
   // The jar is group-scoped, so it is read in that group's currency — carry it
   // out of the query rather than formatting with the viewer's default.
@@ -143,7 +119,7 @@ export function LedgerScreen({ navigation }: any) {
         <View style={styles.row}>
           <BentoTile
             size="hero"
-            tone="mint"
+            tone={netCents >= 0 ? 'mint' : 'coral'}
             icon="coin"
             value={money(netCents, netCurrency)}
             label={netMixed ? `Net · ${netCurrency}` : 'Net this season'}
@@ -153,7 +129,8 @@ export function LedgerScreen({ navigation }: any) {
             <BentoTile
               size="stat" tone="amber-tint"
               value={formatMoney(pendingCents, pendingCurrency)}
-              label={pendingMixed ? `Pending · ${pendingCurrency}` : 'Pending'}
+              label={pendingMixed ? `Pending · ${pendingCurrency} →` : 'Pending →'}
+              onPress={() => navigation.navigate('Balances')}
             />
             <BentoTile
               size="stat"
@@ -187,12 +164,15 @@ export function LedgerScreen({ navigation }: any) {
                   styles.bar,
                   {
                     height: `${w.pct}%`,
+                    // Sign first, emphasis second. The newest bar used to be
+                    // win-green whatever it was, so a week you finished down
+                    // was drawn in the colour of a week you finished up.
                     backgroundColor:
-                      i === weekly.length - 1
-                        ? colors.semantic.win
-                        : w.net >= 0
-                          ? colors.border.strong
-                          : colors.semantic.loss,
+                      w.net < 0
+                        ? colors.semantic.disputed
+                        : i === weekly.length - 1
+                          ? colors.semantic.win
+                          : colors.border.strong,
                   },
                 ]}
               />
@@ -200,28 +180,36 @@ export function LedgerScreen({ navigation }: any) {
           </View>
         </BentoTile>
 
-        {/* Who is up, who is down. The list below shows every transaction; this
-            is the only part most people actually want to read. */}
-        {balances.length > 0 && (
-          <>
-            <Text style={styles.section}>WHERE YOU STAND</Text>
-            {balances.map((b) => {
-              const theyOwe = b.netCents > 0;
-              return (
-                <ListRow
-                  key={`${b.userId}:${b.currency}`}
-                  title={b.displayName}
-                  subtitle={`${theyOwe ? 'owes you' : 'you owe'} · ${plural(b.entries, 'open item')}${
-                    netMixed ? ` · ${b.currency}` : ''
-                  }`}
-                  value={money(Math.abs(b.netCents), b.currency)}
-                  valueColor={theyOwe ? colors.semantic.win : colors.semantic.disputed}
-                  onPress={() => confirmSettle(b)}
-                />
-              );
-            })}
-          </>
-        )}
+        {/* Who is up, who is down. Tapping a name opens what it is made of —
+            the balance alone cannot say why it is what it is. */}
+        <Text style={styles.section}>WHERE YOU STAND</Text>
+        {balances.map((b) => {
+          const theyOwe = b.netCents > 0;
+          return (
+            <ListRow
+              key={`${b.userId}:${b.currency}`}
+              title={b.displayName}
+              subtitle={`${theyOwe ? 'owes you' : 'you owe'} · ${plural(b.entries, 'open item')}${
+                netMixed ? ` · ${b.currency}` : ''
+              }`}
+              value={money(b.netCents, b.currency)}
+              valueColor={theyOwe ? colors.semantic.win : colors.semantic.disputed}
+              onPress={() =>
+                navigation.navigate('PersonLedger', {
+                  userId: b.userId,
+                  handle: b.handle,
+                  displayName: b.displayName,
+                })
+              }
+            />
+          );
+        })}
+        <ListRow
+          title="All balances"
+          subtitle="Everyone, including who you've squared up with"
+          showChevron
+          onPress={() => navigation.navigate('Balances')}
+        />
 
         {/* Transactions */}
         <Text style={styles.section}>RECENT</Text>

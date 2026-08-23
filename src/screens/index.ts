@@ -8,6 +8,8 @@ export { ProfileSetupScreen } from './ProfileSetupScreen';
 // ── v2 hub-and-spoke (design-v2.md §2, §5) ───────────────────────────────────
 export { HomeScreen } from './HomeScreen';           // V2-01 bento hub (route: Root)
 export { LedgerScreen } from './LedgerScreen';        // V2-03
+export { BalancesScreen } from './BalancesScreen';
+export { PersonLedgerScreen } from './PersonLedgerScreen';
 export { BetDetailScreen } from './BetDetailScreen';  // V2-04
 export { ProfileScreen } from './ProfileScreen';      // V2-05
 export { FormScreen } from './FormScreen';            // Form score detail

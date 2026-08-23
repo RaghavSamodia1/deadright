@@ -4,10 +4,36 @@ import { colors, radius, spacing } from '../../tokens';
 import { Button } from '../Button/Button';
 import { Icon, type IconName } from '../Icon/Icon';
 
+/**
+ * Empty states all wore the same orange halo around the same grey icon,
+ * whatever they were empty of. The colour follows the subject now — the jar is
+ * amber because the jar is amber, people are violet, a search is teal — so the
+ * emptiest screens in the app are the ones carrying the most colour, which is
+ * the right way round. Anything not listed keeps the brand flame.
+ */
+const SUBJECT_TINT: Partial<Record<IconName, string>> = {
+  jar: colors.semantic.awaiting,
+  bell: colors.semantic.awaiting,
+  users: colors.side.a,
+  person: colors.side.a,
+  party: colors.brand.flame,
+  search: colors.side.b,
+  link: colors.side.b,
+  chart: colors.semantic.win,
+  ledger: colors.semantic.win,
+  trophy: colors.semantic.awaiting,
+  target: colors.semantic.disputed,
+  ban: colors.semantic.disputed,
+  scales: colors.semantic.disputed,
+  dice: '#B3AEFF',
+  ladder: '#B3AEFF',
+  inbox: '#7FD6CD',
+};
+
 interface EmptyStateProps {
   /** Drawn icon rather than an emoji — see components/Icon. */
   icon: IconName;
-  /** Accent colour for the illustration halo */
+  /** Overrides the colour the subject would otherwise choose. */
   tint?: string;
   title: string;
   body: string;
@@ -20,7 +46,7 @@ interface EmptyStateProps {
 
 export function EmptyState({
   icon,
-  tint = colors.brand.flame,
+  tint,
   title,
   body,
   ctaLabel,
@@ -29,10 +55,14 @@ export function EmptyState({
   onSecondaryPress,
   style,
 }: EmptyStateProps) {
+  const accent = tint ?? SUBJECT_TINT[icon] ?? colors.brand.flame;
+
   return (
     <View style={[styles.container, style]}>
-      <View style={[styles.halo, { backgroundColor: hexWithAlpha(tint, 0.12) }]}>
-        <Icon name={icon} size={40} color={colors.text.tertiary} strokeWidth={1.6} />
+      <View style={[styles.halo, { backgroundColor: hexWithAlpha(accent, 0.14) }]}>
+        {/* The icon takes the accent rather than sitting grey inside a coloured
+            ring, which read as a placeholder waiting for real artwork. */}
+        <Icon name={icon} size={40} color={accent} strokeWidth={1.7} />
       </View>
 
       <View style={styles.textBlock}>

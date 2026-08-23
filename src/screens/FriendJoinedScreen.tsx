@@ -12,7 +12,7 @@ export function FriendJoinedScreen({ navigation, route }: any) {
     <ScreenBackground tone="flame">
       <View style={styles.root}>
         <View style={styles.center}>
-          <Avatar size="xl" initials={initials} tint="a" />
+          <Avatar size="xl" initials={initials} seed={initials} />
           <Text style={styles.title}>{handle} joined!</Text>
           <Text style={styles.sub}>They came in on your invite. Time to start one and drag them in.</Text>
         </View>

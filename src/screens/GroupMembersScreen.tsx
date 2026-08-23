@@ -74,7 +74,7 @@ export function GroupMembersScreen({ navigation, route }: any) {
                       size="sm"
                       initials={(name || '??').slice(0, 2).toUpperCase()}
                       uri={p.avatar_url ?? undefined}
-                      tint="a"
+                      seed={p.handle ?? name}
                     />
                   }
                   title={isMe ? `${name} (you)` : name}

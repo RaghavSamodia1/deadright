@@ -8,8 +8,15 @@ interface AvatarProps {
   size?: AvatarSize;
   initials?: string;
   uri?: string;
-  // Side A or B colour — used on participant stacks
-  tint?: 'a' | 'b' | 'neutral';
+  /**
+   * 'auto' (the default) colours the circle from `seed`, so a person is the
+   * same colour everywhere they appear. 'a' and 'b' are the side colours and
+   * stay reserved for places where which side someone took is the point;
+   * 'neutral' opts out entirely.
+   */
+  tint?: 'a' | 'b' | 'neutral' | 'auto';
+  /** What the colour is derived from — a handle where there is one. */
+  seed?: string;
   // Show "You" badge overlay
   isMe?: boolean;
   style?: ViewStyle;
@@ -37,10 +44,39 @@ const TINT_MAP = {
   neutral: colors.bg.surface2,
 };
 
-export function Avatar({ size = 'sm', initials, uri, tint = 'neutral', isMe = false, style }: AvatarProps) {
+/**
+ * Ten colours from the app's own palette. Every avatar in the app used to be
+ * one of three greys, and almost every caller asked for the same one — the most
+ * repeated element in the product carried no information at all. A colour
+ * derived from the handle means a person looks the same in a member list, on a
+ * bet card and in the jar feed, so you start recognising people before you have
+ * read the name.
+ *
+ * All ten take the same dark ink: the worst pairing is violet at 4.59:1, so
+ * there is no per-colour exception to remember.
+ */
+const IDENTITY = [
+  colors.semantic.awaiting, colors.brand.flame, colors.semantic.disputed,
+  colors.semantic.win, colors.side.a, colors.side.b,
+  '#B3AEFF', '#7FD6CD', '#FFB37A', '#6C63FF',
+];
+const IDENTITY_INK = '#0A0A0B';
+
+/** FNV-1a. Stable across platforms and sessions, which is the whole point. */
+function pick(seed: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return IDENTITY[h % IDENTITY.length];
+}
+
+export function Avatar({ size = 'sm', initials, uri, tint = 'auto', seed, isMe = false, style }: AvatarProps) {
   const dim = SIZE_MAP[size];
   const fontSize = FONT_SIZE_MAP[size];
-  const bg = TINT_MAP[tint];
+  const auto = tint === 'auto';
+  const bg = auto ? pick(seed ?? initials ?? '?') : TINT_MAP[tint];
 
   return (
     <View style={[styles.wrapper, { width: dim, height: dim, borderRadius: dim / 2 }, style]}>
@@ -48,7 +84,7 @@ export function Avatar({ size = 'sm', initials, uri, tint = 'neutral', isMe = fa
         {uri ? (
           <Image source={{ uri }} style={{ width: dim, height: dim, borderRadius: dim / 2 }} />
         ) : (
-          <Text style={[styles.initials, { fontSize }]}>
+          <Text style={[styles.initials, { fontSize }, auto && { color: IDENTITY_INK }]}>
             {(initials ?? '?').slice(0, 2).toUpperCase()}
           </Text>
         )}

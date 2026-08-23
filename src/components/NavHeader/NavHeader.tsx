@@ -103,7 +103,7 @@ export function NavHeader({
           ))}
           {showAvatar && (
             <Pressable onPress={onAvatarPress} accessibilityRole="button" accessibilityLabel="Open profile">
-              <Avatar size="sm" initials={avatarInitials} tint="a" />
+              <Avatar size="sm" initials={avatarInitials} seed={avatarInitials} />
             </Pressable>
           )}
         </View>

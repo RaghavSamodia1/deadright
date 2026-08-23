@@ -39,7 +39,7 @@ export function NotificationRow({ avatar, text, meta, unread = false, action = n
         fill={unread ? 'rgba(247,200,70,0.09)' : undefined}
         style={StyleSheet.absoluteFillObject}
       />
-      <Avatar size="md" initials={avatar.initials} uri={avatar.uri} tint={avatar.tint ?? 'neutral'} />
+      <Avatar size="md" initials={avatar.initials} uri={avatar.uri} tint={avatar.tint ?? 'auto'} />
 
       <View style={styles.body}>
         <Text style={styles.text} numberOfLines={2}>{text}</Text>

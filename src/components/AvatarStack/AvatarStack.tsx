@@ -11,8 +11,8 @@ interface Person {
 
 interface AvatarStackProps {
   people: Person[];
-  /** Side tint for all avatars in the stack */
-  tint?: 'a' | 'b' | 'neutral';
+  /** Side tint for the whole stack. Omit it and each person keeps their own colour. */
+  tint?: 'a' | 'b' | 'neutral' | 'auto';
   size?: AvatarSize;
   max?: number;
   style?: ViewStyle;
@@ -22,7 +22,7 @@ const SIZE_PX: Record<AvatarSize, number> = { xs: 24, sm: 32, md: 40, lg: 64, xl
 
 export function AvatarStack({
   people,
-  tint = 'neutral',
+  tint = 'auto',
   size = 'xs',
   max = 4,
   style,
@@ -37,7 +37,7 @@ export function AvatarStack({
       {shown.map((p, i) => (
         <View key={i} style={{ marginLeft: i === 0 ? 0 : -overlap, zIndex: shown.length - i }}>
           <View style={styles.ring}>
-            <Avatar size={size} initials={p.initials} uri={p.avatarUri} tint={tint} isMe={p.isMe} />
+            <Avatar size={size} initials={p.initials} uri={p.avatarUri} tint={tint} seed={p.initials} isMe={p.isMe} />
           </View>
         </View>
       ))}

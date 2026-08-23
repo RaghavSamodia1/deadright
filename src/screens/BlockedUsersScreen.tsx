@@ -27,7 +27,7 @@ export function BlockedUsersScreen({ navigation }: any) {
                 key={b.blocked_id}
                 title={b.blocked?.handle ? b.blocked.handle : 'Blocked user'}
                 subtitle={b.blocked?.display_name ?? undefined}
-                left={<Avatar size="sm" initials={name.slice(0, 2).toUpperCase()} tint="neutral" />}
+                left={<Avatar size="sm" initials={name.slice(0, 2).toUpperCase()} seed={name} />}
                 right={
                   <Button
                     label="Unblock"

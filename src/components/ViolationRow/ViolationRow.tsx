@@ -29,7 +29,7 @@ export function ViolationRow({ member, rule, amount, timestamp, ownedUp = false,
       accessibilityHint={onPress ? 'Opens options for this violation' : undefined}
     >
       <Glass radius={radius.md} intensity={24} style={StyleSheet.absoluteFillObject} />
-      <Avatar size="sm" initials={member.initials} uri={member.avatarUri} tint="b" />
+      <Avatar size="sm" initials={member.initials} uri={member.avatarUri} seed={member.handle} />
 
       <View style={styles.body}>
         <View style={styles.titleRow}>

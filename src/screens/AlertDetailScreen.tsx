@@ -55,7 +55,7 @@ export function AlertDetailScreen({ navigation, route }: any) {
             size="lg"
             initials={actorName.slice(0, 2).toUpperCase()}
             uri={alert?.actor?.avatar_url ?? undefined}
-            tint="a"
+            seed={actorName}
           />
           <Text style={styles.text}>{alert?.title ?? 'Alert'}</Text>
           <Text style={styles.meta}>

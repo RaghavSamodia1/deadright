@@ -59,7 +59,7 @@ export function ProfileSetupScreen({ navigation }: any) {
       >
         <View style={styles.body}>
           <Pressable style={styles.avatarWrap} accessibilityLabel="Add photo">
-            <Avatar size="xl" initials={handle.slice(0, 2).toUpperCase() || '??'} tint="a" />
+            <Avatar size="xl" initials={handle.slice(0, 2).toUpperCase() || '??'} seed={handle} />
             <View style={styles.badge}>
               <Text style={styles.badgeIcon}>＋</Text>
             </View>

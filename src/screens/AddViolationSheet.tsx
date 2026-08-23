@@ -81,7 +81,7 @@ export function AddViolationSheet({ visible, onDismiss, groupId }: AddViolationS
             accessibilityRole="button"
             accessibilityState={{ selected: member === m.id }}
           >
-            <Avatar size="md" initials={m.initials} tint={member === m.id ? 'b' : 'neutral'} />
+            <Avatar size="md" initials={m.initials} tint={member === m.id ? 'b' : 'auto'} seed={m.handle} />
             <Text style={[styles.memberHandle, member === m.id && { color: colors.text.primary }]}>
               {m.handle}
             </Text>

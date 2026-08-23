@@ -69,7 +69,7 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
 
       {/* Author row */}
       <View style={styles.authorRow}>
-        <Avatar size="sm" initials={bet.author.initials} uri={bet.author.avatarUri} tint="a" />
+        <Avatar size="sm" initials={bet.author.initials} uri={bet.author.avatarUri} seed={bet.author.handle} />
         <View style={styles.authorMeta}>
           <Text style={[styles.handle, { color: titleColor }]}>{bet.author.handle}</Text>
           {bet.group && (

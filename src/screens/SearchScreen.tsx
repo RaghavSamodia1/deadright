@@ -93,7 +93,7 @@ export function SearchScreen({ navigation }: any) {
               subtitle={r.sub}
               left={
                 r.kind === 'person' ? (
-                  <Avatar size="sm" initials={r.title.slice(0, 2).toUpperCase()} tint="a" />
+                  <Avatar size="sm" initials={r.title.slice(0, 2).toUpperCase()} seed={r.title} />
                 ) : (
                   <Icon name={r.kind === 'bet' ? 'target' : 'users'} size={16} color={colors.text.tertiary} strokeWidth={1.9} />
                 )

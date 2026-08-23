@@ -204,6 +204,11 @@ export function LedgerScreen({ navigation }: any) {
             />
           );
         })}
+        {/* Specifically person-to-person. The jar can still be owed — it has
+            no counterparty — so this cannot claim everything is settled. */}
+        {balances.length === 0 && (
+          <Text style={styles.mixedNote}>No open balances with anyone.</Text>
+        )}
         <ListRow
           title="All balances"
           subtitle="Everyone, including who you've squared up with"

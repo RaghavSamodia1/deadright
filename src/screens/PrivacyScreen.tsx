@@ -35,8 +35,20 @@ export function PrivacyScreen({ navigation }: any) {
       <NavHeader variant="back" title="Privacy" onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.content}>
         <SettingsSection title="Visibility">
-          <SettingsRow icon="lock" label="Private profile" toggle toggleValue={value('private_profile')} onToggle={set('private_profile')} />
-          <SettingsRow icon="ledger" label="Show my ledger to groups" toggle toggleValue={value('show_ledger')} onToggle={set('show_ledger')} />
+          {/* "Show my ledger to groups" is gone rather than left switched on
+              doing nothing. A ledger entry is between two people and both of
+              them can see it — that is what makes it a ledger — and there is no
+              screen anywhere that shows one person's balances to another. A
+              switch that cannot change anything is worse than no switch, which
+              is the argument 00019 made about the other three. */}
+          <SettingsRow
+            icon="lock"
+            label="Private profile"
+            value="Hides your Cred outside your groups"
+            toggle
+            toggleValue={value('private_profile')}
+            onToggle={set('private_profile')}
+          />
           <SettingsRow icon="search" label="Discoverable by handle" toggle toggleValue={value('discoverable')} onToggle={set('discoverable')} />
         </SettingsSection>
 

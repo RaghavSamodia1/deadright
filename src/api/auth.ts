@@ -122,12 +122,13 @@ export async function claimHandle(handle: string, displayName: string) {
 export async function isHandleAvailable(handle: string): Promise<boolean> {
   const clean = handle.trim().toLowerCase();
   if (!/^[a-z0-9_]{3,20}$/.test(clean)) return false;
-  const { count, error } = await supabase
-    .from('profiles')
-    .select('id', { count: 'exact', head: true })
-    .eq('handle', clean);
+  // Counting rows in `profiles` stopped working the moment profiles became
+  // readable only to co-members (00034): a taken handle looked free, and the
+  // claim then failed on the unique constraint. The function answers the one
+  // question without handing over the table to do it.
+  const { data, error } = await supabase.rpc('handle_available', { p_handle: clean });
   if (error) throw error;
-  return (count ?? 0) === 0;
+  return data === true;
 }
 
 // Strips spaces/dashes; assumes E.164 if it already starts with +.

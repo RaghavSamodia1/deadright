@@ -38,13 +38,23 @@ export async function updateSettings(patch: Partial<UserSettings>): Promise<User
 
 // ── Blocking ─────────────────────────────────────────────────────────────────
 
+/**
+ * Via an RPC, not a joined read.
+ *
+ * Profiles are only readable to people you share a group with (00034), and
+ * blocking someone you met through search is precisely the case where you share
+ * none — the join came back with the names stripped and the screen listed
+ * people you could not identify. You are allowed to see who you have blocked.
+ */
 export async function getBlockedUsers() {
-  const { data, error } = await supabase
-    .from('blocks')
-    .select('blocked_id, created_at, blocked:profiles!blocks_blocked_id_fkey(handle, display_name, avatar_url)')
-    .order('created_at', { ascending: false });
+  const { data, error } = await supabase.rpc('list_blocked');
   if (error) throw error;
-  return data;
+  // Kept in the shape the screen already reads.
+  return (data ?? []).map((r: any) => ({
+    blocked_id: r.blocked_id,
+    created_at: r.created_at,
+    blocked: { handle: r.handle, display_name: r.display_name, avatar_url: r.avatar_url },
+  }));
 }
 
 export async function blockUser(blockedId: string) {

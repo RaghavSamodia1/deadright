@@ -50,7 +50,23 @@ const STAKE_OPTS: { value: Stake; label: string }[] = [
 /** The preset money option. Custom overrides this with whatever they type. */
 const TENNER_CENTS = 1000;
 
-const ALL_STEPS = ['Statement', 'Type', 'Deadline', 'Stake', 'Group', 'Review'];
+/**
+ * Four steps, not six.
+ *
+ * Type, Deadline and Stake were a screen each, and all three are the same
+ * thing: a row of chips with a sensible default already selected. Three taps of
+ * Next to confirm three defaults is ceremony, not a flow — and the deadline is
+ * usually answered before you get there anyway, because it is read out of the
+ * statement. They are one Details step now.
+ *
+ * Statement and Group stay separate on purpose. Statement is the only screen
+ * where anything is written, and it carries the AI suggestion; Group is a real
+ * gate rather than a formality, since a bet with no group has no audience and
+ * nobody to take the other side. Review stays because it is the last place the
+ * card is seen as it will actually appear — that preview is what caught the
+ * deadline showing 23:59 for every custom date.
+ */
+const ALL_STEPS = ['Statement', 'Details', 'Group', 'Review'];
 
 export function CreateBetScreen({ navigation, route }: any) {
   // Started from inside a group: that group is the answer, so asking again is
@@ -205,19 +221,22 @@ export function CreateBetScreen({ navigation, route }: any) {
   };
 
   // A ranking bet needs at least two things to rank before it can go further.
+  // Details carries what used to be three separate gates, so it fails if any
+  // of them would have: a call bet needs a unit or every answer is a bare
+  // figure, a ranking needs things to rank, and a custom stake with no usable
+  // number would post NaN cents.
+  const detailsOk =
+    (type !== 'overunder' || callUnit.trim().length > 0) &&
+    (type !== 'ordinal' || rankOptions.filter((o) => o.trim()).length >= 2) &&
+    (stake !== 'custom' || customCents !== null);
+
   const canNext = at('Statement')
     ? statement.trim().length > 4
-    : // A call bet with no unit leaves every answer a bare figure.
-      at('Type') && type === 'overunder'
-      ? callUnit.trim().length > 0
-      : at('Type') && type === 'ordinal'
-      ? rankOptions.filter((o) => o.trim()).length >= 2
-      : // A custom stake with no usable number would post NaN cents.
-        at('Stake') && stake === 'custom'
-        ? customCents !== null
-        : // A bet with no group has no audience and no opposing side, so the
-          // Group step is a real gate rather than a formality.
-          at('Group')
+    : at('Details')
+      ? detailsOk
+      : // A bet with no group has no audience and no opposing side, so the
+        // Group step is a real gate rather than a formality.
+        at('Group')
         ? !!group
         : true;
   const preview: BetCardData = {
@@ -303,7 +322,7 @@ export function CreateBetScreen({ navigation, route }: any) {
           </>
         )}
 
-        {at('Type') && (
+        {at('Details') && (
           <>
             <Text style={styles.q}>How is it settled?</Text>
             <ChoiceChipGroup options={TYPE_OPTS} value={type} onChange={setType} />
@@ -359,11 +378,7 @@ export function CreateBetScreen({ navigation, route }: any) {
                 )}
               </>
             )}
-          </>
-        )}
 
-        {at('Deadline') && (
-          <>
             <Text style={styles.q}>When do we know?</Text>
             <ChoiceChipGroup
               options={deadlineOpts}
@@ -416,11 +431,7 @@ export function CreateBetScreen({ navigation, route }: any) {
                 )}
               </>
             )}
-          </>
-        )}
 
-        {at('Stake') && (
-          <>
             <Text style={styles.q}>What’s at stake?</Text>
             <Text style={styles.hint}>No real money moves — it’s tracked on the ledger.</Text>
             <ChoiceChipGroup options={STAKE_OPTS} value={stake} onChange={setStake} />

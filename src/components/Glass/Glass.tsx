@@ -31,17 +31,16 @@ interface GlassProps {
 
 const FILL: Record<string, string> = {
   /**
-   * Not white.
+   * No fill at all.
    *
-   * White over a navy page composites to grey — the panel came out the colour
-   * of dirty plastic rather than of glass, because glass takes the colour of
-   * whatever is behind it. This is a cool steel that keeps the room's blue:
-   * the composite goes from #252931 to #222937, which is nearly twice the
-   * saturation at the same lightness, and the dimmest text on it still clears
-   * 4.78:1. The rim gradient stays white — a specular highlight is the one
-   * part that genuinely is.
+   * This went white, then cool steel, then fainter, and every version was a
+   * tint too many — a panel that announces itself as a lighter rectangle is
+   * not glass, it is a card with a wash on it. What is left is the honest
+   * version: the pane is defined by its lit edge, its sheen and its shadow,
+   * and everything else is whatever is behind it. Text sits effectively on the
+   * page, so contrast can only be better than it was.
    */
-  neutral: 'rgba(150,176,220,0.06)',
+  neutral: 'transparent',
   warm: 'rgba(247,200,70,0.10)',
   cool: 'rgba(79,168,160,0.10)',
   hot: 'rgba(226,102,31,0.12)',

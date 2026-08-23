@@ -60,19 +60,14 @@ export const colors = {
   },
 
   bg: {
-    // Lifted off pure black and given the navy the design doc always specified.
-    // Near-black made every surface read as a hole cut in the screen; a floor
-    // with some light in it lets the glass sit *on* something. text.primary
-    // still clears 16:1 here, and text.tertiary 5.98:1.
-    base: '#11151E',
-    // surface-1 follows the base into the navy family. surface-2 and -3 stay
-    // put: lifting them dropped text.tertiary to 4.21 and 3.41:1, and they are
-    // what chips and inputs sit on.
-    surface1: '#232834',
+    // Back to near-black. The navy lift was tried and the blue was not wanted;
+    // the colour on this app comes from the tiles and the people, not the floor.
+    base: '#0A0A0B',
+    surface1: '#212125',
     surface2: '#2A2A2F',
     surface3: '#34343A',
     overlay: 'rgba(0,0,0,0.72)',
-    sheet: '#161B26',
+    sheet: '#131315',
   },
 
   border: {

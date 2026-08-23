@@ -63,7 +63,11 @@ export function LedgerScreen({ navigation }: any) {
     const WEEK = 604_800_000;
     const buckets = Array.from({ length: 7 }, () => 0);
     for (const t of txns) {
-      const age = Date.now() - (t.at ?? 0);
+      // Clamped at zero. created_at comes from the database's clock, which can
+      // sit a moment ahead of the device's; a negative age floored to -1, put
+      // the entry in bucket 7 and dropped it from the chart altogether. A
+      // just-created entry belongs to this week.
+      const age = Math.max(0, Date.now() - (t.at ?? 0));
       const idx = 6 - Math.floor(age / WEEK);
       if (idx >= 0 && idx < 7) buckets[idx] += t.amountCents;
     }
@@ -245,17 +249,17 @@ function toTxn(e: any, uid: string | null): Txn {
   const incoming = e.to_user === uid;
   const other = incoming ? e.from : e.to;
   const otherHandle = other?.handle ? other.handle : 'Someone';
-  // Nothing behind it but somebody typing it in, so it has to speak for
-  // itself — there is no bet title to borrow.
-  const manual = !e.bet?.id && !e.violation_id;
+  // A hand-recorded entry is named by its note; everything else takes its name
+  // from the bet, as before. Keyed off the note rather than the absence of a
+  // joined bet, which getLedger cannot see — it selects bets(title) with no id,
+  // so every entry looked hand-recorded and the derby loss rendered as
+  // "Recorded".
   return {
     id: e.id,
     title: e.violation_id
       ? 'Cookie Jar'
-      : manual
-        ? (e.note ?? 'Recorded')
-        : `${incoming ? 'Won vs' : 'Lost vs'} ${otherHandle}`,
-    group: manual
+      : (e.note ?? `${incoming ? 'Won vs' : 'Lost vs'} ${otherHandle}`),
+    group: e.note
       ? `with ${otherHandle}`
       : (e.bet?.title ?? (e.status === 'pending' ? 'Pending' : 'Settled')),
     amountCents: incoming ? e.amount_cents : -e.amount_cents,

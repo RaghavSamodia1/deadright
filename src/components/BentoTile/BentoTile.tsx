@@ -244,7 +244,14 @@ export function BentoTile({
         numberOfLines={1}
       />
     ) : value != null && VALUE_SIZE[size] > 0 ? (
-      <Text style={valueStyle} numberOfLines={1}>
+      <Text
+        style={valueStyle}
+        numberOfLines={1}
+        // A truncated amount is not an amount — "£13..." could be anything up
+        // to £13.99. Shrink to fit instead of ellipsising.
+        adjustsFontSizeToFit
+        minimumFontScale={0.6}
+      >
         {value}
       </Text>
     ) : null;

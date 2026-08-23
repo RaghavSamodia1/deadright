@@ -227,7 +227,7 @@ export async function getLedgerWith(otherUserId: string): Promise<PersonEntry[]>
   const { data, error } = await supabase
     .from('ledger_entries')
     .select(
-      'id, from_user, to_user, amount_cents, status, currency, created_at, note, violation_id, bet:bets(id, title)',
+      'id, from_user, to_user, amount_cents, status, currency, created_at, note, bet_id, violation_id, bet:bets(id, title)',
     )
     .or(
       `and(from_user.eq.${uid},to_user.eq.${otherUserId}),` +
@@ -244,7 +244,7 @@ export async function getLedgerWith(otherUserId: string): Promise<PersonEntry[]>
     betTitle: e.bet?.title ?? null,
     betId: e.bet?.id ?? null,
     note: e.note ?? null,
-    isManual: !e.bet?.id && !e.violation_id,
+    isManual: !e.bet_id && !e.violation_id,
     createdAt: e.created_at,
     at: new Date(e.created_at).getTime(),
   }));

@@ -9,7 +9,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing, spring } from '../../tokens';
-import { Glass } from '../Glass/Glass';
 
 interface SegmentedControlProps<T extends string> {
   segments: { value: T; label: string }[];
@@ -53,7 +52,6 @@ export function SegmentedControl<T extends string>({
 
   return (
     <View style={[styles.container, style]} onLayout={onLayout}>
-      <Glass radius={radius.full} intensity={22} style={StyleSheet.absoluteFillObject} />
       {seg > 0 && <Animated.View style={[styles.pill, pill]} />}
 
       {segments.map((s) => {
@@ -80,7 +78,7 @@ export function SegmentedControl<T extends string>({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: 'transparent',
+    backgroundColor: colors.bg.surface2,
     borderRadius: radius.full,
     padding: 4,
     gap: 4,

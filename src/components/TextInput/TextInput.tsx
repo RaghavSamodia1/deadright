@@ -8,7 +8,6 @@ import {
   TextInputProps as RNTextInputProps,
 } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
-import { Glass } from '../Glass/Glass';
 
 interface TextInputProps extends Omit<RNTextInputProps, 'style'> {
   label?: string;
@@ -55,7 +54,6 @@ export function TextInput({
           { borderColor, minHeight: multiline ? 88 : 52 },
         ]}
       >
-        <Glass radius={radius.sm} intensity={18} style={StyleSheet.absoluteFillObject} />
         <RNTextInput
           value={value}
           onChangeText={onChangeText}
@@ -95,7 +93,7 @@ const styles = StyleSheet.create({
     color: colors.semantic.awaiting,
   },
   inputWrap: {
-    backgroundColor: 'transparent',
+    backgroundColor: colors.bg.surface3,
     borderRadius: radius.sm,
     borderWidth: 1,
     paddingHorizontal: spacing[4],

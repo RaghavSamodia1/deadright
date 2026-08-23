@@ -3,7 +3,6 @@ import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../tokens';
 import { StyleSheet as RNStyleSheet } from 'react-native';
-import { Glass } from '../Glass/Glass';
 import { Icon } from '../Icon/Icon';
 import { AvatarStack } from '../AvatarStack/AvatarStack';
 import { plural } from '../../lib/plural';
@@ -39,9 +38,10 @@ export function GroupCard({
   return (
     <Pressable
       onPress={handlePress}
-      style={[
+      style={({ pressed }) => [
         styles.card,
         {
+          backgroundColor: pressed ? colors.bg.surface2 : colors.bg.surface1,
           // Unselected, the glass rim is the edge. Selection still gets a real
           // amber ring — it's the only thing telling one card from the next, so
           // it can't be a subtle shift in fill.
@@ -54,14 +54,6 @@ export function GroupCard({
       accessibilityState={{ selected }}
       accessibilityLabel={`${name}, ${plural(memberCount, 'member')}`}
     >
-      {({ pressed }) => (
-      <>
-      <Glass
-        radius={radius.md}
-        intensity={24}
-        fill={pressed ? 'rgba(255,255,255,0.12)' : undefined}
-        style={RNStyleSheet.absoluteFillObject}
-      />
       <View style={styles.emojiBox}>
         <Text style={styles.emoji}>{emoji}</Text>
       </View>
@@ -85,8 +77,6 @@ export function GroupCard({
           <Icon name="check" size={13} color={colors.text.inverse} strokeWidth={2.6} />
         </View>
       )}
-      </>
-      )}
     </Pressable>
   );
 }
@@ -98,7 +88,7 @@ const styles = StyleSheet.create({
     gap: spacing[3],
     borderRadius: radius.md,
     padding: spacing[4],
-    backgroundColor: 'transparent',
+    backgroundColor: colors.bg.surface1,
     overflow: 'hidden',
   },
   emojiBox: {

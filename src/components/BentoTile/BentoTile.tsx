@@ -3,7 +3,6 @@ import { View, Text, Pressable, StyleSheet, ViewStyle, useWindowDimensions } fro
 import Animated from 'react-native-reanimated';
 import { usePressScale, AnimatedPressable } from '../Motion/usePressScale';
 import { CountUp } from '../Motion/CountUp';
-import { Glass } from '../Glass/Glass';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../tokens';
 import { Icon, type IconName } from '../Icon/Icon';
@@ -193,11 +192,6 @@ export function BentoTile({
       }
     : undefined;
 
-  // Neutral tiles become glass; the coloured ones stay solid. If everything
-  // were frosted nothing would read as an accent, and the amber jar tile is
-  // supposed to be the loudest thing on the screen.
-  const isGlass = tone === 'navy';
-
   const tileStyle: (ViewStyle | undefined)[] = [
     styles.tile,
     {
@@ -205,14 +199,10 @@ export function BentoTile({
       height: dims.h,
       padding: Math.round(spacing[4] * scale),
       borderRadius: dims.r,
-      backgroundColor: isGlass ? 'transparent' : t.bg,
+      backgroundColor: t.bg,
     },
     style,
   ];
-
-  const pane = isGlass ? (
-    <Glass radius={dims.r} intensity={30} style={StyleSheet.absoluteFillObject} />
-  ) : null;
 
   const a11yLabel = [label, value, caption].filter(Boolean).join(', ');
 
@@ -303,7 +293,6 @@ export function BentoTile({
   if (!handlePress) {
     return (
       <View style={tileStyle} accessibilityLabel={a11yLabel}>
-        {pane}
         {body}
       </View>
     );
@@ -317,7 +306,6 @@ export function BentoTile({
       accessibilityRole="button"
       accessibilityLabel={a11yLabel}
     >
-      {pane}
       <Animated.View
         pointerEvents="none"
         style={[

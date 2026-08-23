@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, TextInput, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
 import { StyleSheet as RNStyleSheet } from 'react-native';
-import { Glass } from '../Glass/Glass';
 
 interface SearchBarProps {
   value: string;
@@ -32,7 +31,6 @@ export function SearchBar({
         style,
       ]}
     >
-      <Glass radius={radius.full} intensity={22} style={RNStyleSheet.absoluteFillObject} />
       <Text style={styles.icon}>⌕</Text>
       <TextInput
         value={value}
@@ -62,7 +60,7 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: colors.bg.surface2,
     borderRadius: radius.full,
     borderWidth: 1,
     paddingHorizontal: spacing[4],

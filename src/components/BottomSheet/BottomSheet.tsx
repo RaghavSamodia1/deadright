@@ -10,7 +10,6 @@ import Animated, {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, spring } from '../../tokens';
-import { Glass } from '../Glass/Glass';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const DISMISS_THRESHOLD = 100;
@@ -99,19 +98,6 @@ export function BottomSheet({
       {/* The pane is dropped a corner-radius below the sheet so its bottom
           corners round off-screen — the sheet is flush to the bottom edge and
           two rounded notches there would show the scrim through them. */}
-      <Glass
-        radius={radius.lg}
-        intensity={44}
-        // A modal has to occlude. Frosted at the same strength as a card, the
-        // sheet let the screen behind it read straight through — the settings
-        // rows interleaved with the sheet's own options and both became
-        // unreadable. The wash is mostly opaque, so the sheet still catches the
-        // light in the room and keeps its rim without competing with content it
-        // is supposed to be covering. This also means it does not depend on the
-        // blur landing: on a device where expo-blur is weak it still occludes.
-        fill="rgba(18,18,21,0.82)"
-        style={[StyleSheet.absoluteFillObject, { bottom: -radius.lg }]}
-      />
       {showHandle &&
         (dragFromHandleOnly ? (
           // The only draggable area, so the list below scrolls normally. Padded
@@ -156,7 +142,7 @@ const styles = StyleSheet.create({
     // Auto-height sheets grew past the top of the screen with no way back —
     // a 41-row list put its first options off-screen and unreachable.
     maxHeight: SCREEN_HEIGHT * 0.9,
-    backgroundColor: 'transparent',
+    backgroundColor: colors.bg.sheet,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
     paddingHorizontal: 20,

@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
 import { StyleSheet as RNStyleSheet } from 'react-native';
-import { Glass } from '../Glass/Glass';
 import { Toggle } from '../Toggle/Toggle';
 import { Icon, type IconName } from '../Icon/Icon';
 
@@ -66,7 +65,6 @@ export function SettingsSection({ title, children, style }: { title: string; chi
     <View style={[styles.section, style]}>
       <Text style={styles.sectionTitle}>{title.toUpperCase()}</Text>
       <View style={styles.group}>
-        <Glass radius={radius.md} intensity={24} style={RNStyleSheet.absoluteFillObject} />
         {children}
       </View>
     </View>
@@ -118,7 +116,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[1],
   },
   group: {
-    backgroundColor: 'transparent',
+    backgroundColor: colors.bg.surface1,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
     borderRadius: radius.md,
     overflow: 'hidden',
   },

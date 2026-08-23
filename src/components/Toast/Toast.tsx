@@ -9,7 +9,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, spacing, spring } from '../../tokens';
-import { Glass } from '../Glass/Glass';
 
 export type ToastType = 'info' | 'success' | 'error' | 'undo';
 
@@ -76,7 +75,6 @@ export function Toast({
         animatedStyle,
       ]}
     >
-      <Glass radius={radius.md} intensity={40} style={StyleSheet.absoluteFillObject} />
       <Text style={styles.message} numberOfLines={2}>
         {message}
       </Text>
@@ -94,7 +92,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: spacing.screenGutter,
     right: spacing.screenGutter,
-    backgroundColor: 'transparent',
+    backgroundColor: colors.bg.surface2,
     borderRadius: radius.md,
     overflow: 'hidden',
     borderLeftWidth: 3,

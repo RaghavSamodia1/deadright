@@ -3,7 +3,6 @@ import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
 import { colors, radius, spacing } from '../../tokens';
-import { Glass } from '../Glass/Glass';
 
 interface InviteCodeCardProps {
   code: string; // 6-char group invite code
@@ -35,7 +34,6 @@ export function InviteCodeCard({
       accessibilityRole="button"
       accessibilityLabel={`Invite code ${code.split('').join(' ')}. Tap to copy.`}
     >
-      <Glass radius={radius.lg} intensity={28} tint="warm" style={StyleSheet.absoluteFillObject} />
       <Text style={styles.overline}>INVITE CODE</Text>
       <View style={styles.codeRow}>
         {code.toUpperCase().split('').map((ch, i) => (
@@ -51,7 +49,9 @@ export function InviteCodeCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'transparent',
+    backgroundColor: colors.bg.surface2,
+    borderWidth: 1,
+    borderColor: colors.border.default,
     borderRadius: radius.lg,
     overflow: 'hidden',
     padding: spacing[6],

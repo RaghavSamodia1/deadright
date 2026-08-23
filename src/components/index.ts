@@ -115,7 +115,6 @@ export { Rise } from './Motion/Rise';
 export { Swap } from './Motion/Swap';
 export { CountUp } from './Motion/CountUp';
 export { usePressScale, AnimatedPressable } from './Motion/usePressScale';
-export { Glass } from './Glass/Glass';
 export { Atmosphere } from './Atmosphere/Atmosphere';
 export { Confetti } from './Confetti/Confetti';
 export { SoundBoard } from './SoundBoard/SoundBoard';

@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
-import { Glass } from '../Glass/Glass';
 
 export type StatCardTone = 'navy' | 'amber' | 'mint' | 'coral' ;
 
@@ -34,7 +33,6 @@ export function StatCard({ value, label, caption, tone = 'navy', size = 'lg', st
   const isLg = size === 'lg';
   // Same rule as the bento: neutral surfaces frost, coloured ones stay solid.
   // A frosted amber card is a washed-out amber card.
-  const isGlass = tone === 'navy';
   const r = isLg ? radius.lg : radius.md;
 
   return (
@@ -42,7 +40,9 @@ export function StatCard({ value, label, caption, tone = 'navy', size = 'lg', st
       style={[
         styles.card,
         {
-          backgroundColor: isGlass ? 'transparent' : t.bg,
+          backgroundColor: t.bg,
+          borderWidth: tone === 'navy' ? 1 : 0,
+          borderColor: colors.border.default,
           borderRadius: r,
           padding: isLg ? spacing[6] : spacing[4],
           overflow: 'hidden',
@@ -50,7 +50,6 @@ export function StatCard({ value, label, caption, tone = 'navy', size = 'lg', st
         style,
       ]}
     >
-      {isGlass && <Glass radius={r} intensity={26} style={StyleSheet.absoluteFillObject} />}
       <Text
         style={[
           styles.value,

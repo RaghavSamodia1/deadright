@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../../tokens';
-import { Glass } from '../Glass/Glass';
 
 export type BannerTone = 'awaiting' | 'dispute' | 'info' | 'invite';
 
@@ -52,8 +51,7 @@ export function Banner({ tone = 'info', title, body, actionLabel, onAction, onDi
   const t = TONES[tone];
 
   return (
-    <View style={[styles.banner, { borderColor: `${t.accent}55` }, style]}>
-      <Glass radius={radius.md} intensity={22} fill={t.bg} style={StyleSheet.absoluteFillObject} />
+    <View style={[styles.banner, { backgroundColor: t.bg, borderColor: `${t.accent}55` }, style]}>
       {/* The decorative left stripe is gone. The tint, the border and the bar
           were three ways of saying one thing, and a coloured rule down the side
           of a notice is the most borrowed shape in the box. Tone still reads —

@@ -12,7 +12,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing } from '../../tokens';
-import { Glass } from '../Glass/Glass';
 import { Icon } from '../Icon/Icon';
 import { useTileSizes, tileScaleFor, type TileSize } from '../BentoTile/BentoTile';
 import { useWindowDimensions } from 'react-native';
@@ -129,10 +128,15 @@ function PadButton({ pad, index, onHit }: { pad: Pad; index: number; onHit: (key
         accessibilityLabel={`Play ${pad.label}`}
         style={[
           styles.pad,
-          { width: dims.w, height: dims.h, borderRadius: dims.r, padding: Math.round(spacing[3] * scale) },
+          {
+            width: dims.w,
+            height: dims.h,
+            borderRadius: dims.r,
+            padding: Math.round(spacing[3] * scale),
+            backgroundColor: pad.hue,
+          },
         ]}
       >
-        <Glass radius={dims.r} intensity={30} fill={pad.hue} style={StyleSheet.absoluteFillObject} />
         <Animated.View
           pointerEvents="none"
           style={[
@@ -268,12 +272,6 @@ function ClosePad({ index, onPress }: { index: number; onPress: () => void }) {
           },
         ]}
       >
-        <Glass
-          radius={dims.r}
-          intensity={30}
-          fill="rgba(255,255,255,0.07)"
-          style={StyleSheet.absoluteFillObject}
-        />
         <View style={styles.body}>
           <Icon name="cross" size={Math.round(18 * scale)} color={colors.text.secondary} strokeWidth={2.2} />
           <View>
@@ -298,7 +296,7 @@ const styles = StyleSheet.create({
   strip: { gap: spacing[3] },
   pad: {
     overflow: 'hidden',
-    backgroundColor: 'transparent',
+    backgroundColor: colors.bg.surface1,
   },
   body: {
     flex: 1,

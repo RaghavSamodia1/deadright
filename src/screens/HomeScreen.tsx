@@ -10,7 +10,6 @@ import {
   Rise,
   Swap,
   SoundBoard,
-  SoundToggle,
   BetCard,
   Icon,
   type BetCardData,
@@ -135,15 +134,6 @@ export function HomeScreen({ navigation }: any) {
         onAvatarPress={() => navigation.navigate('Profile')}
         rightActions={[
           {
-            icon: <SoundToggle active={board} />,
-            wide: true,
-            onPress: () => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              setBoard((v) => !v);
-            },
-            accessibilityLabel: board ? 'Close the soundboard' : 'Open the soundboard',
-          },
-          {
             icon: (
               <View>
                 <Icon name="bell" size={21} color={colors.text.secondary} strokeWidth={1.9} />
@@ -179,7 +169,10 @@ export function HomeScreen({ navigation }: any) {
       >
         <Swap
           showing={board}
-          b={<SoundBoard active={board} />}
+          b={<SoundBoard active={board} onClose={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            setBoard(false);
+          }} />}
           a={
         <View style={styles.bento}>
         {/* Row 1 — Cookie Jar hero + cred/streak column */}
@@ -282,14 +275,27 @@ export function HomeScreen({ navigation }: any) {
               onPress={() => navigation.navigate('CreateBet')}
             />
           </View>
+          {/* Three small tiles rather than two halves. A line of identical
+              tiles reads more like a toolbar than a bento, which is why this
+              row was a 1/2+1/2 before — but the soundboard belongs in the grid
+              rather than hiding behind a header button, and the smallest tile
+              is the honest size for it. The row above stays unequal, so the
+              strip as a whole still has a shape. */}
           <View style={styles.row}>
             <BentoTile
-              size="half" tone="navy" label="Settle it" icon="dice"
+              size="nav" tone="navy" label="Settle it" icon="dice"
               onPress={() => navigation.navigate('Settle')}
             />
             <BentoTile
-              size="half" tone="navy" label="Join code" icon="link"
+              size="nav" tone="navy" label="Join code" icon="link"
               onPress={() => navigation.navigate('JoinGroup')}
+            />
+            <BentoTile
+              size="nav" tone="navy" label="Sounds" icon="waveform"
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                setBoard(true);
+              }}
             />
           </View>
         </View>

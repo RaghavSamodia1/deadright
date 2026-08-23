@@ -70,13 +70,13 @@ export const PADS: Pad[] = [
     size: 'band', module: require('../../../assets/sfx/trombone.wav'),
   },
   {
-    key: 'suspense', label: 'SUSPENSE', caption: 'dun dun DUNNN', icon: 'bolt',
+    key: 'suspense', label: 'SUSPENSE', caption: 'dramatic', icon: 'bolt',
     hue: 'rgba(108,99,255,0.26)', ink: '#C4C0FF', weight: 'medium',
-    size: 'half', module: require('../../../assets/sfx/suspense.wav'),
+    size: 'nav', module: require('../../../assets/sfx/suspense.wav'),
   },
   {
     key: 'tada', label: 'TA-DA', caption: 'called it', icon: 'trophy',
     hue: 'rgba(226,102,31,0.26)', ink: '#FFC49A', weight: 'medium',
-    size: 'half', module: require('../../../assets/sfx/tada.wav'),
+    size: 'nav', module: require('../../../assets/sfx/tada.wav'),
   },
 ];

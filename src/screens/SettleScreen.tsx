@@ -8,6 +8,7 @@ import Animated, {
   withSequence,
   withSpring,
   withRepeat,
+  withDelay,
   runOnJS,
   Easing,
 } from 'react-native-reanimated';
@@ -32,6 +33,8 @@ import {
   TextInput,
   Button,
   Icon,
+  Emblem,
+  type EmblemName,
 } from '../components';
 
 /**
@@ -42,7 +45,7 @@ import {
  * record nothing: a coin toss is a way to stop arguing, not a result the ledger
  * should remember. Anything worth keeping is already a bet.
  */
-type Game = 'coin' | 'dice' | 'picker' | 'odds';
+type Game = 'coin' | 'dice' | 'slots' | 'picker' | 'odds';
 
 export function SettleScreen({ navigation }: any) {
   const [game, setGame] = useState<Game>('coin');
@@ -61,6 +64,7 @@ export function SettleScreen({ navigation }: any) {
           segments={[
             { value: 'coin' as Game, label: 'Coin' },
             { value: 'dice' as Game, label: 'Dice' },
+            { value: 'slots' as Game, label: 'Slots' },
             { value: 'picker' as Game, label: 'Picker' },
             { value: 'odds' as Game, label: 'Odds' },
           ]}
@@ -70,6 +74,7 @@ export function SettleScreen({ navigation }: any) {
 
         {game === 'coin' && <CoinToss />}
         {game === 'dice' && <DiceRoll />}
+        {game === 'slots' && <SlotMachine />}
         {game === 'picker' && <RandomPicker />}
         {game === 'odds' && <OddsAre />}
 
@@ -538,8 +543,250 @@ function OddsAre() {
   );
 }
 
+// ── Slots ───────────────────────────────────────────────────────────────────
+/** Five symbols. Three reels. 1 in 25 for the jackpot, and no thumb on it. */
+const SLOT_SYMS: { name: EmblemName; color: string }[] = [
+  { name: 'seven', color: colors.semantic.disputed },
+  { name: 'cherry', color: colors.semantic.disputed },
+  { name: 'bell', color: colors.semantic.awaiting },
+  { name: 'bar', color: colors.side.b },
+  { name: 'star', color: colors.brand.flame },
+];
+const SLOT_N = SLOT_SYMS.length;
+/** Enough strip that the longest spin never runs off the end of it. */
+const SLOT_REPS = 8;
+const TILE = 62;
+
+/**
+ * A fidget toy that happens to look like a slot machine.
+ *
+ * The point of it is the hand, not the outcome. Each reel ticks a light haptic
+ * every time a symbol crosses the line, and because the ticks are scheduled off
+ * the *same* easing curve the reel is animated with, they arrive fast, then
+ * spread out, then stop — so the phone feels the reel slowing down rather than
+ * buzzing on a timer. The three reels land in sequence, each with a heavier
+ * knock, and only then does anything get announced.
+ *
+ * As with the coin, the result is drawn before the reels move and each reel's
+ * travel is computed to land on it exactly. Nothing is decided on arrival.
+ */
+function SlotMachine() {
+  const reduced = useReducedMotion();
+  const [faces, setFaces] = useState<number[] | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const r0 = useSharedValue(0);
+  const r1 = useSharedValue(0);
+  const r2 = useSharedValue(0);
+  const reels = [r0, r1, r2];
+  const grab = useSharedValue(0);
+
+  // Every scheduled haptic, so a re-spin or an unmount cannot leave the phone
+  // ticking to a reel that is no longer turning.
+  const timers = React.useRef<ReturnType<typeof setTimeout>[]>([]);
+  const clearTicks = React.useCallback(() => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+  }, []);
+  React.useEffect(() => clearTicks, [clearTicks]);
+
+  /**
+   * Tick once per symbol crossing the payline.
+   *
+   * position(t) = land * (1 - (1 - t/D)^3) is the easing the reel is animated
+   * with, so symbol k is on the line at t = D * (1 - (1 - k/n)^(1/3)). Early
+   * crossings are milliseconds apart and would just smear into a buzz, so
+   * anything closer than 45ms to the last one is dropped — which leaves exactly
+   * the part where the reel is visibly slowing.
+   */
+  const scheduleTicks = (steps: number, duration: number, delay: number) => {
+    let last = -Infinity;
+    for (let k = 1; k <= steps; k++) {
+      const t = duration * (1 - Math.pow(1 - k / steps, 1 / 3));
+      if (t - last < 45) continue;
+      last = t;
+      timers.current.push(
+        setTimeout(() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }, delay + t),
+      );
+    }
+  };
+
+  const land = (result: number[]) => {
+    setFaces(result);
+    setBusy(false);
+    const three = result[0] === result[1] && result[1] === result[2];
+    Haptics.notificationAsync(
+      three
+        ? Haptics.NotificationFeedbackType.Success
+        : Haptics.NotificationFeedbackType.Warning,
+    );
+  };
+
+  // Plain JS, not a worklet: it schedules timers and sets state, and neither is
+  // safe on the UI runtime.
+  const pull = (power = 0.6) => {
+    if (busy) return;
+    clearTicks();
+    const result = [0, 1, 2].map(() => Math.floor(Math.random() * SLOT_N));
+
+    if (reduced) {
+      reels.forEach((r, i) => {
+        r.value = (3 * SLOT_N + result[i] - 1) * TILE;
+      });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      land(result);
+      return;
+    }
+
+    setBusy(true);
+    setFaces(null);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+
+    let longest = 0;
+    reels.forEach((r, i) => {
+      const loops = 3 + i + Math.round(power * 2);
+      const steps = loops * SLOT_N + result[i] - 1;
+      const duration = 900 + i * 420 + power * 300;
+      const delay = i * 90;
+
+      r.value = 0;
+      r.value = withDelay(
+        delay,
+        withTiming(steps * TILE, { duration, easing: Easing.out(Easing.cubic) }),
+      );
+      scheduleTicks(steps, duration, delay);
+      // The knock as this reel stops.
+      timers.current.push(
+        setTimeout(() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        }, delay + duration),
+      );
+      longest = Math.max(longest, delay + duration);
+    });
+
+    timers.current.push(setTimeout(() => land(result), longest + 90));
+  };
+
+  // Pull it like a lever. Reduce Motion shortens the spin; it never takes the
+  // gesture away.
+  const lever = Gesture.Pan()
+    .enabled(!busy)
+    .onUpdate((e) => {
+      grab.value = Math.max(0, Math.min(72, e.translationY));
+    })
+    .onEnd((e) => {
+      const pulled = grab.value > 34 || e.velocityY > 900;
+      grab.value = withSpring(0, spring.fast);
+      if (pulled) runOnJS(pull)(Math.min(1, grab.value / 72 + 0.4));
+    });
+
+  const knob = useAnimatedStyle(() => ({ transform: [{ translateY: grab.value }] }));
+
+  const label = !faces
+    ? busy
+      ? ''
+      : 'Pull it'
+    : faces[0] === faces[1] && faces[1] === faces[2]
+      ? 'Three of a kind'
+      : faces[0] === faces[1] || faces[1] === faces[2] || faces[0] === faces[2]
+        ? 'Two of a kind'
+        : 'Nothing';
+
+  return (
+    <Stage label={label} cta="Spin" onPlay={() => pull(0.6)} busy={busy}>
+      <View style={styles.machine}>
+        {/* The payline lives in a bare row, not in the padded cabinet. React
+            Native places an absolutely positioned child from its parent's
+            *border* edge, so the parent's padding does not shift it — top:'50%'
+            inside the cabinet sat a full padding above the middle tile, which
+            measured 7.8dp high on screen. Against a row whose height is exactly
+            three tiles, 50% is exactly the payline. */}
+        <View style={styles.cabinet}>
+          <View style={styles.reelRow}>
+            {reels.map((r, i) => (
+              <Reel key={i} offset={r} />
+            ))}
+            <View style={styles.payline} pointerEvents="none" />
+          </View>
+        </View>
+
+        <GestureDetector gesture={lever}>
+          <Animated.View style={[styles.leverHit, knob]}>
+            <View style={styles.leverStem} />
+            <View style={styles.leverKnob} />
+          </Animated.View>
+        </GestureDetector>
+      </View>
+    </Stage>
+  );
+}
+
+/** One reel: a long strip behind a three-tall window. */
+function Reel({ offset }: { offset: Animated.SharedValue<number> }) {
+  const style = useAnimatedStyle(() => ({ transform: [{ translateY: -offset.value }] }));
+  const tiles = React.useMemo(
+    () =>
+      Array.from({ length: SLOT_N * SLOT_REPS }, (_, i) => SLOT_SYMS[i % SLOT_N]),
+    [],
+  );
+  return (
+    <View style={styles.reel}>
+      <Animated.View style={style}>
+        {tiles.map((sym, i) => (
+          <View key={i} style={styles.reelTile}>
+            <Emblem name={sym.name} color={sym.color} size={TILE * 0.62} />
+          </View>
+        ))}
+      </Animated.View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   content: { padding: spacing.screenGutter, gap: spacing[4], paddingBottom: spacing[8] },
+
+  machine: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
+  cabinet: {
+    padding: spacing[2],
+    borderRadius: radius.md,
+    backgroundColor: colors.bg.surface1,
+    borderWidth: 2,
+    borderColor: colors.semantic.awaiting,
+  },
+  reelRow: { flexDirection: 'row', gap: spacing[2], position: 'relative' },
+  reel: {
+    width: TILE + 8,
+    height: TILE * 3,
+    overflow: 'hidden',
+    borderRadius: radius.xs,
+    backgroundColor: colors.text.primary,
+  },
+  reelTile: { height: TILE, alignItems: 'center', justifyContent: 'center' },
+  payline: {
+    position: 'absolute',
+    left: 2,
+    right: 2,
+    top: '50%',
+    height: 3,
+    marginTop: -1.5,
+    borderRadius: 2,
+    backgroundColor: colors.semantic.disputed,
+  },
+  // A generous touch area around a thin lever — the stem itself is 8pt wide.
+  leverHit: { width: 44, height: 132, alignItems: 'center', justifyContent: 'flex-start' },
+  leverStem: { width: 8, height: 92, borderRadius: 4, backgroundColor: colors.bg.surface3 },
+  leverKnob: {
+    position: 'absolute',
+    top: 0,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: colors.semantic.disputed,
+    borderWidth: 2,
+    borderColor: colors.bg.base,
+  },
   stage: { gap: spacing[4], alignItems: 'stretch' },
   face: { alignItems: 'center', justifyContent: 'center', minHeight: 210 },
   result: {

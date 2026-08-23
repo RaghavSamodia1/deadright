@@ -109,6 +109,7 @@ export {
 export type { TileSize, TileTone, TileDims } from './BentoTile/BentoTile';
 
 export { Icon, type IconName } from './Icon/Icon';
+export { Emblem, type EmblemName } from './Emblem/Emblem';
 
 export { Rise } from './Motion/Rise';
 export { Swap } from './Motion/Swap';
@@ -118,4 +119,3 @@ export { Glass } from './Glass/Glass';
 export { Atmosphere } from './Atmosphere/Atmosphere';
 export { Confetti } from './Confetti/Confetti';
 export { SoundBoard } from './SoundBoard/SoundBoard';
-export { SoundToggle } from './SoundBoard/SoundToggle';

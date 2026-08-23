@@ -11,7 +11,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { spacing } from '../../tokens';
+import { colors, spacing } from '../../tokens';
 import { Glass } from '../Glass/Glass';
 import { Icon } from '../Icon/Icon';
 import { useTileSizes, tileScaleFor, type TileSize } from '../BentoTile/BentoTile';
@@ -187,7 +187,7 @@ function PadButton({ pad, index, onHit }: { pad: Pad; index: number; onHit: (key
   );
 }
 
-export function SoundBoard({ active }: { active: boolean }) {
+export function SoundBoard({ active, onClose }: { active: boolean; onClose: () => void }) {
   const { ready, play } = useSoundBoard(active);
   const [a, b, c, d, e, f, g, h, i, j] = PADS;
 
@@ -219,8 +219,74 @@ export function SoundBoard({ active }: { active: boolean }) {
         <View style={styles.row}>
           <PadButton pad={i} index={8} onHit={play} />
           <PadButton pad={j} index={9} onHit={play} />
+          {/* The way back. It occupies the same slot the Soundboard tile does
+              on the other face, so whatever opened the board closes it — which
+              is the only affordance there is now the header button is gone. */}
+          <ClosePad index={10} onPress={onClose} />
         </View>
       </View>
+    </Animated.View>
+  );
+}
+
+/** Pad-shaped, but it puts the bento back rather than making a noise. */
+function ClosePad({ index, onPress }: { index: number; onPress: () => void }) {
+  const { width } = useWindowDimensions();
+  const dims = useTileSizes().nav;
+  const scale = tileScaleFor(width);
+  const reduced = useReducedMotion();
+
+  // Deals in with the rest of the board rather than sitting there already
+  // placed while the others arrive.
+  const deal = useSharedValue(reduced ? 1 : 0);
+  React.useEffect(() => {
+    if (reduced) return;
+    deal.value = withDelay(index * 45, withSpring(1, { damping: 14, stiffness: 190, mass: 0.7 }));
+  }, []);
+  const dealt = useAnimatedStyle(() => ({
+    opacity: deal.value,
+    transform: [
+      { translateY: (1 - deal.value) * 26 },
+      { rotate: `${(1 - deal.value) * 3}deg` },
+      { scale: 0.92 + deal.value * 0.08 },
+    ],
+  }));
+
+  return (
+    <Animated.View style={dealt}>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel="Close the soundboard"
+        style={[
+          styles.pad,
+          {
+            width: dims.w,
+            height: dims.h,
+            borderRadius: dims.r,
+            padding: Math.round(spacing[3] * scale),
+          },
+        ]}
+      >
+        <Glass
+          radius={dims.r}
+          intensity={30}
+          fill="rgba(255,255,255,0.07)"
+          style={StyleSheet.absoluteFillObject}
+        />
+        <View style={styles.body}>
+          <Icon name="cross" size={Math.round(18 * scale)} color={colors.text.secondary} strokeWidth={2.2} />
+          <View>
+            <Text
+              style={[styles.label, { color: colors.text.secondary, fontSize: Math.round(13 * scale) }]}
+              numberOfLines={1}
+            >
+              DONE
+            </Text>
+            <Text style={styles.caption} numberOfLines={1}>go back</Text>
+          </View>
+        </View>
+      </Pressable>
     </Animated.View>
   );
 }

@@ -173,6 +173,10 @@ export function CreateBetScreen({ navigation, route }: any) {
       groupId: group || null,
       title: (sharpened || statement).trim(),
       type: type === 'ordinal' ? 'ordinal' : 'prediction',
+      // An over/under question has no yes and no in it, and the card was
+      // showing both. The labels are per-bet in the schema; this is the first
+      // thing to set them.
+      ...(type === 'overunder' ? { sideALabel: 'OVER', sideBLabel: 'UNDER' } : {}),
       stakeKind: isMoneyStake ? 'money' : 'dare',
       stakeAmountCents: isMoneyStake
         ? (stake === 'custom' ? customCents! : TENNER_CENTS)

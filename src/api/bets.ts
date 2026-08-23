@@ -16,6 +16,9 @@ export interface CreateBetInput {
   resolutionMethod?: 'mutual' | 'group_vote' | 'judge';
   judgeId?: string;
   privacy?: 'group' | 'link';
+  /** Overrides the YES/NO defaults on bets.side_a_label / side_b_label. */
+  sideALabel?: string;
+  sideBLabel?: string;
 }
 
 /** FLOW 4 — publish. Only title is truly required; everything else defaults. */
@@ -42,6 +45,11 @@ export async function createBet(input: CreateBetInput): Promise<Bet> {
       creator_id,
       title: input.title,
       type: input.type ?? 'prediction',
+      // The columns default to YES/NO, which is right for a straight
+      // prediction and wrong for an over/under — those bets were showing YES
+      // and NO on the card for a question that has neither.
+      ...(input.sideALabel ? { side_a_label: input.sideALabel } : {}),
+      ...(input.sideBLabel ? { side_b_label: input.sideBLabel } : {}),
       stake_kind: input.stakeKind ?? 'money',
       stake_amount_cents: input.stakeAmountCents ?? (input.stakeKind === 'money' || !input.stakeKind ? 500 : null),
       dare_forfeit: input.dareForfeit ?? null,

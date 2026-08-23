@@ -6,128 +6,112 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { colors, spring } from '../../tokens';
-import { CountUp } from '../Motion/CountUp';
 
 interface SideBarProps {
   sideAPercent: number; // 0–100
   sideACount?: number;
   sideBCount?: number;
+  /** What the two sides are actually called. bets.side_a_label / side_b_label. */
+  labelA?: string;
+  labelB?: string;
   animated?: boolean;
-  showLabels?: boolean;
-  /**
-   * Text colours, when this sits on a coloured card fill rather than a dark
-   * surface. The defaults (tertiary grey, side violet/coral) are unreadable on
-   * amber, mint and coral — see colors.cardInk. When set, both percentages use
-   * the same ink and the A/B identity is carried by the bars below them.
-   */
-  ink?: { primary: string; muted: string };
   style?: ViewStyle;
 }
 
+/**
+ * Who is on which side, as one bar.
+ *
+ * It used to be two rows: a line of labels reading "Side A 50% 0 people …
+ * 0 people 50% Side B", and a thin track underneath. Every number appeared
+ * twice, the two halves said the same thing in mirror image, and "Side A" told
+ * you nothing about what anyone had actually called — while the database has
+ * carried side_a_label and side_b_label, defaulting to YES and NO, since the
+ * first migration. Nothing ever read them.
+ *
+ * Now the bar *is* the layout: the split shows the proportion, so the
+ * percentages do not need printing, and the names sit inside the colour they
+ * belong to. One row instead of two, and it reads like a scoreboard rather than
+ * a form field.
+ */
 export function SideBar({
   sideAPercent,
   sideACount,
   sideBCount,
+  labelA = 'YES',
+  labelB = 'NO',
   animated = true,
-  showLabels = true,
-  ink,
   style,
 }: SideBarProps) {
-  const sideBPercent = 100 - sideAPercent;
-  const aWidth = useSharedValue(0);
+  /**
+   * The bar's geometry is clamped, the numbers are not.
+   *
+   * A side with nobody on it is 0% wide, which leaves its name nowhere to go —
+   * so each half keeps at least a quarter of the width to stand its label in.
+   * The counts beside the labels stay exactly true, which is the part that
+   * would be a lie if it were fudged.
+   */
+  const geom = Math.max(26, Math.min(74, sideAPercent));
+  const aFlex = useSharedValue(geom / 100);
 
   useEffect(() => {
-    aWidth.value = withSpring(sideAPercent / 100, spring.emphasis);
-  }, [sideAPercent]);
+    aFlex.value = animated
+      ? withSpring(geom / 100, spring.emphasis)
+      : geom / 100;
+  }, [geom, animated]);
 
-  const aBarStyle = useAnimatedStyle(() => ({
-    flex: animated ? aWidth.value : sideAPercent / 100,
-  }));
+  const aStyle = useAnimatedStyle(() => ({ flex: aFlex.value }));
+  const bStyle = useAnimatedStyle(() => ({ flex: 1 - aFlex.value }));
 
-  const mutedStyle = ink ? { color: ink.muted } : undefined;
+  const hasCounts = sideACount !== undefined || sideBCount !== undefined;
 
   return (
-    <View style={[styles.container, style]}>
-      {showLabels && (
-        <View style={styles.labels}>
-          <View style={styles.labelLeft}>
-            <Text style={[styles.sideLabel, mutedStyle]}>Side A</Text>
-            <CountUp
-              value={sideAPercent}
-              format={(n) => `${Math.round(n)}%`}
-              style={[styles.pct, { color: ink?.primary ?? colors.side.aLift }]}
-            />
-            {sideACount !== undefined && (
-              <Text style={[styles.count, mutedStyle]}>{sideACount} {sideACount === 1 ? 'person' : 'people'}</Text>
-            )}
-          </View>
-          <View style={styles.labelRight}>
-            {sideBCount !== undefined && (
-              <Text style={[styles.count, mutedStyle]}>{sideBCount} {sideBCount === 1 ? 'person' : 'people'}</Text>
-            )}
-            <CountUp
-              value={sideBPercent}
-              format={(n) => `${Math.round(n)}%`}
-              style={[styles.pct, { color: ink?.primary ?? colors.side.b }]}
-            />
-            <Text style={[styles.sideLabel, mutedStyle]}>Side B</Text>
-          </View>
-        </View>
-      )}
+    <View style={[styles.bar, style]}>
+      <Animated.View style={[styles.half, styles.halfA, aStyle]}>
+        <Text style={styles.label} numberOfLines={1}>
+          {labelA.toUpperCase()}
+        </Text>
+        {hasCounts && <Text style={styles.count}>{sideACount ?? 0}</Text>}
+      </Animated.View>
 
-      <View style={styles.track}>
-        {animated ? (
-          <Animated.View style={[styles.fillA, aBarStyle]} />
-        ) : (
-          <View style={[styles.fillA, { flex: sideAPercent / 100 }]} />
-        )}
-        <View style={styles.gap} />
-        <View style={[styles.fillB, { flex: sideBPercent / 100 }]} />
-      </View>
+      <Animated.View style={[styles.half, styles.halfB, bStyle]}>
+        {hasCounts && <Text style={styles.count}>{sideBCount ?? 0}</Text>}
+        <Text style={styles.label} numberOfLines={1}>
+          {labelB.toUpperCase()}
+        </Text>
+      </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { gap: 6 },
-  labels: {
+  bar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
+    height: 34,
+    borderRadius: 999,
+    overflow: 'hidden',
+    gap: 2,
   },
-  labelLeft: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
-  labelRight: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
-  sideLabel: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 11,
-    lineHeight: 16,
-    color: colors.text.tertiary,
+  half: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    gap: 8,
+    minWidth: 0,
   },
-  pct: {
-    fontFamily: 'Barlow-Bold',
+  // Ink on both is the dark card ink: 12.5:1 on amber, 7.0:1 on teal.
+  halfA: { backgroundColor: colors.side.a, justifyContent: 'flex-start', borderTopLeftRadius: 999, borderBottomLeftRadius: 999 },
+  halfB: { backgroundColor: colors.side.b, justifyContent: 'flex-end', borderTopRightRadius: 999, borderBottomRightRadius: 999 },
+  label: {
+    fontFamily: 'Barlow-Black',
     fontSize: 12,
-    lineHeight: 16,
+    letterSpacing: 0.6,
+    color: colors.cardInk.onLight.primary,
+    flexShrink: 1,
   },
   count: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 11,
-    lineHeight: 16,
-    color: colors.text.tertiary,
-  },
-  track: {
-    height: 8,
-    borderRadius: 999,
-    flexDirection: 'row',
-    backgroundColor: colors.bg.surface2,
-    overflow: 'hidden',
-  },
-  fillA: {
-    backgroundColor: colors.side.a,
-    borderRadius: 999,
-  },
-  gap: { width: 2 },
-  fillB: {
-    backgroundColor: colors.side.b,
-    borderRadius: 999,
+    fontFamily: 'SpaceMono-Bold',
+    fontSize: 13,
+    color: colors.cardInk.onLight.primary,
+    opacity: 0.75,
   },
 });

@@ -41,7 +41,7 @@ const FILL: Record<string, string> = {
    * 4.78:1. The rim gradient stays white — a specular highlight is the one
    * part that genuinely is.
    */
-  neutral: 'rgba(150,176,220,0.13)',
+  neutral: 'rgba(150,176,220,0.06)',
   warm: 'rgba(247,200,70,0.10)',
   cool: 'rgba(79,168,160,0.10)',
   hot: 'rgba(226,102,31,0.12)',
@@ -73,8 +73,8 @@ export function Glass({
 
   return (
     <LinearGradient
-      colors={[a(0.30), a(0.07), a(0.02)]}
-      locations={[0, 0.4, 1]}
+      colors={[a(0.55), a(0.14), a(0.03)]}
+      locations={[0, 0.28, 1]}
       start={{ x: 0.15, y: 0 }}
       end={{ x: 0.7, y: 1 }}
       style={[{ borderRadius: radius, padding: 1 }, style]}
@@ -88,6 +88,41 @@ export function Glass({
           />
         )}
         <View style={[StyleSheet.absoluteFill, { backgroundColor: fill ?? FILL[tint] }]} />
+
+        {/* The sheen.
+            Glass reads as glass because of what it does to light, and until now
+            these panels were relying entirely on blurring the background to do
+            it — which stopped working when the atmosphere behind the app was
+            turned down to almost nothing. A flat pane over a flat page is a
+            translucent rectangle whatever you tint it.
+            So the pane carries its own optics: a hard-edged specular band
+            across the upper left, where a sheet of glass catches the light,
+            fading out well before the middle. It is doing the job the backdrop
+            blur cannot. */}
+        <LinearGradient
+          pointerEvents="none"
+          colors={[
+            'rgba(255,255,255,0.16)',
+            'rgba(255,255,255,0.05)',
+            'rgba(255,255,255,0)',
+          ]}
+          locations={[0, 0.18, 0.46]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0.85, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+
+        {/* Thickness. A pane has a bottom edge that sits in its own shadow;
+            without it the panel floats with no sense of being a physical
+            object at all. */}
+        <LinearGradient
+          pointerEvents="none"
+          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.18)']}
+          locations={[0.72, 1]}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
         {children}
       </View>
     </LinearGradient>

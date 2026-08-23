@@ -18,6 +18,9 @@ export interface BetCardData {
   sideAPercent: number;
   sideACount: number;
   sideBCount: number;
+  /** What the two sides are called — YES/NO, OVER/UNDER, or whatever was set. */
+  sideALabel?: string;
+  sideBLabel?: string;
   participantCount: number;
   stake?: string;
   deadline: Date;
@@ -102,6 +105,8 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
             sideAPercent={bet.sideAPercent}
             sideACount={bet.sideACount}
             sideBCount={bet.sideBCount}
+            labelA={bet.sideALabel}
+            labelB={bet.sideBLabel}
           />
         </View>
       )}

@@ -28,6 +28,10 @@ export function toBetCard(
       avatarUri: creator.avatar_url ?? undefined,
     },
     group: b.group?.name ?? undefined,
+    // The labels have been on the bets table since the first migration,
+    // defaulting to YES and NO, and nothing had ever read them.
+    sideALabel: b.side_a_label ?? 'YES',
+    sideBLabel: b.side_b_label ?? 'NO',
     sideAPercent: total > 0 ? Math.round((sideA / total) * 100) : 50,
     sideACount: sideA,
     sideBCount: sideB,

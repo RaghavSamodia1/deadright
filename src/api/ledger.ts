@@ -204,6 +204,10 @@ export interface PersonEntry {
   /** The bet it came from, where the bet still exists. */
   betTitle: string | null;
   betId: string | null;
+  /** What a hand-recorded entry was for. Null on anything from a bet. */
+  note: string | null;
+  /** No bet behind it — recorded by one of the two people. */
+  isManual: boolean;
   createdAt: string;
   at: number;
 }
@@ -222,7 +226,9 @@ export async function getLedgerWith(otherUserId: string): Promise<PersonEntry[]>
   if (!uid) throw new Error('not_authenticated');
   const { data, error } = await supabase
     .from('ledger_entries')
-    .select('id, from_user, to_user, amount_cents, status, currency, created_at, bet:bets(id, title)')
+    .select(
+      'id, from_user, to_user, amount_cents, status, currency, created_at, note, violation_id, bet:bets(id, title)',
+    )
     .or(
       `and(from_user.eq.${uid},to_user.eq.${otherUserId}),` +
         `and(from_user.eq.${otherUserId},to_user.eq.${uid})`,
@@ -237,6 +243,8 @@ export async function getLedgerWith(otherUserId: string): Promise<PersonEntry[]>
     status: e.status === 'settled' ? 'settled' : 'pending',
     betTitle: e.bet?.title ?? null,
     betId: e.bet?.id ?? null,
+    note: e.note ?? null,
+    isManual: !e.bet?.id && !e.violation_id,
     createdAt: e.created_at,
     at: new Date(e.created_at).getTime(),
   }));
@@ -287,4 +295,43 @@ export async function resetMyLedger(): Promise<number> {
     throw error;
   }
   return typeof data === 'number' ? data : 0;
+}
+
+/**
+ * Write down something that was not a bet — a round, a taxi, a tenner.
+ *
+ * The ledger only ever filled itself: entries appeared when a bet resolved or a
+ * jar violation was logged, so the two people who split a taxi had nowhere to
+ * put it and the balance between them was true only about the betting. This is
+ * the same row as any other, so it nets into the same balance and settles the
+ * same way.
+ *
+ * `iOwe` is the direction and the only thing easy to get backwards, so the
+ * screen asks it as a sentence rather than a checkbox.
+ */
+export async function recordEntry(args: {
+  otherUserId: string;
+  amountCents: number;
+  note: string;
+  iOwe: boolean;
+  currency?: string;
+}): Promise<void> {
+  const { error } = await supabase.rpc('record_entry', {
+    p_other: args.otherUserId,
+    p_amount_cents: args.amountCents,
+    p_note: args.note,
+    p_i_owe: args.iOwe,
+    p_currency: args.currency ?? null,
+  });
+  if (error) throw error;
+}
+
+/**
+ * Delete a hand-recorded entry. The database refuses for anything that came
+ * from a bet or a jar violation — those are a record of something that
+ * happened, and settling is how they end.
+ */
+export async function deleteEntry(entryId: string): Promise<void> {
+  const { error } = await supabase.rpc('delete_entry', { p_entry: entryId });
+  if (error) throw error;
 }

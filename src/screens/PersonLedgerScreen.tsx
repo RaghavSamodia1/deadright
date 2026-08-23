@@ -11,7 +11,13 @@ import {
   ActionSheet,
   type ActionSheetOption,
 } from '../components';
-import { getLedgerWith, settleUpWith, markSettled, type PersonEntry } from '../api/ledger';
+import {
+  getLedgerWith,
+  settleUpWith,
+  markSettled,
+  deleteEntry,
+  type PersonEntry,
+} from '../api/ledger';
 import { useQuery } from '../hooks/useQuery';
 import { formatMoney, totalsByCurrency } from '../lib/money';
 import { plural, relativeTime } from '../lib/plural';
@@ -108,7 +114,27 @@ export function PersonLedgerScreen({ navigation, route }: any) {
       label: 'Open transaction',
       onPress: () => navigation.navigate('TransactionDetail', { id: e.id }),
     },
+    ...(e.isManual
+      ? [{ label: 'Delete', destructive: true, onPress: () => confirmDelete(e) }]
+      : []),
   ];
+
+  /** A bet lends its title; a hand-recorded entry carries its own note. */
+  const label = (e: PersonEntry) => e.betTitle ?? e.note ?? 'Ledger entry';
+
+  const confirmDelete = (e: PersonEntry) =>
+    Alert.alert(
+      'Delete this entry?',
+      `"${label(e)}" disappears for both of you. Nothing that came from a bet can be deleted — this one was recorded by hand, so it can.`,
+      [
+        { text: 'Keep it', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => run(e.id, () => deleteEntry(e.id), 'Couldn’t delete that'),
+        },
+      ],
+    );
 
   const initials = displayName
     .split(/\s+/)
@@ -175,6 +201,15 @@ export function PersonLedgerScreen({ navigation, route }: any) {
           />
         ))}
 
+        <Button
+          label="Record something"
+          variant="secondary"
+          fullWidth
+          onPress={() =>
+            navigation.navigate('RecordEntry', { userId, handle, displayName })
+          }
+        />
+
         {open.length > 0 && (
           <>
             <Text style={styles.section}>STILL OPEN</Text>
@@ -183,8 +218,10 @@ export function PersonLedgerScreen({ navigation, route }: any) {
               return (
                 <ListRow
                   key={e.id}
-                  title={e.betTitle ?? 'Ledger entry'}
-                  subtitle={`${owed ? 'Owes you' : 'You owe'} · ${relativeTime(e.createdAt)}`}
+                  title={label(e)}
+                  subtitle={`${owed ? 'Owes you' : 'You owe'}${
+                    e.isManual ? ' · recorded' : ''
+                  } · ${relativeTime(e.createdAt)}`}
                   value={`${owed ? '+' : '−'}${formatMoney(Math.abs(e.amountCents), e.currency)}`}
                   valueColor={owed ? colors.semantic.win : colors.semantic.disputed}
                   onPress={() => setSheetFor(e)}
@@ -203,8 +240,10 @@ export function PersonLedgerScreen({ navigation, route }: any) {
               return (
                 <ListRow
                   key={e.id}
-                  title={e.betTitle ?? 'Ledger entry'}
-                  subtitle={`${won ? 'You won' : 'You lost'} · settled · ${relativeTime(e.createdAt)}`}
+                  title={label(e)}
+                  subtitle={`${
+                    e.isManual ? (won ? 'Owed you' : 'You owed') : won ? 'You won' : 'You lost'
+                  } · settled · ${relativeTime(e.createdAt)}`}
                   value={`${won ? '+' : '−'}${formatMoney(Math.abs(e.amountCents), e.currency)}`}
                   valueColor={won ? colors.semantic.win : colors.semantic.loss}
                   onPress={() => navigation.navigate('TransactionDetail', { id: e.id })}
@@ -218,14 +257,14 @@ export function PersonLedgerScreen({ navigation, route }: any) {
           <EmptyState
             icon="scales"
             title="No ledger with them yet"
-            body="Once a money bet between the two of you is settled, it lands here."
+            body="Settle a money bet between the two of you, or record something that wasn't a bet."
           />
         )}
       </ScrollView>
 
       <ActionSheet
         visible={!!sheetFor}
-        title={sheetFor?.betTitle ?? 'Ledger entry'}
+        title={sheetFor ? label(sheetFor) : 'Ledger entry'}
         options={sheetFor ? sheetOptions(sheetFor) : []}
         onDismiss={() => setSheetFor(null)}
       />

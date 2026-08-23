@@ -215,6 +215,12 @@ export function LedgerScreen({ navigation }: any) {
           showChevron
           onPress={() => navigation.navigate('Balances')}
         />
+        <ListRow
+          title="Record something"
+          subtitle="A round, a taxi, a tenner — anything that wasn't a bet"
+          showChevron
+          onPress={() => navigation.navigate('RecordEntry')}
+        />
 
         {/* Transactions */}
         <Text style={styles.section}>RECENT</Text>
@@ -239,12 +245,19 @@ function toTxn(e: any, uid: string | null): Txn {
   const incoming = e.to_user === uid;
   const other = incoming ? e.from : e.to;
   const otherHandle = other?.handle ? other.handle : 'Someone';
+  // Nothing behind it but somebody typing it in, so it has to speak for
+  // itself — there is no bet title to borrow.
+  const manual = !e.bet?.id && !e.violation_id;
   return {
     id: e.id,
     title: e.violation_id
       ? 'Cookie Jar'
-      : `${incoming ? 'Won vs' : 'Lost vs'} ${otherHandle}`,
-    group: e.bet?.title ?? (e.status === 'pending' ? 'Pending' : 'Settled'),
+      : manual
+        ? (e.note ?? 'Recorded')
+        : `${incoming ? 'Won vs' : 'Lost vs'} ${otherHandle}`,
+    group: manual
+      ? `with ${otherHandle}`
+      : (e.bet?.title ?? (e.status === 'pending' ? 'Pending' : 'Settled')),
     amountCents: incoming ? e.amount_cents : -e.amount_cents,
     currency: (e.currency ?? 'GBP').toUpperCase(),
     when: relativeTime(e.created_at),

@@ -10,6 +10,7 @@ export { HomeScreen } from './HomeScreen';           // V2-01 bento hub (route: 
 export { LedgerScreen } from './LedgerScreen';        // V2-03
 export { BalancesScreen } from './BalancesScreen';
 export { PersonLedgerScreen } from './PersonLedgerScreen';
+export { RecordEntryScreen } from './RecordEntryScreen';
 export { BetDetailScreen } from './BetDetailScreen';  // V2-04
 export { ProfileScreen } from './ProfileScreen';      // V2-05
 export { FormScreen } from './FormScreen';            // Form score detail

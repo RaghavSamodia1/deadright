@@ -13,6 +13,7 @@ import {
   LedgerScreen,
   BalancesScreen,
   PersonLedgerScreen,
+  RecordEntryScreen,
   BetDetailScreen,
   ProfileScreen,
   FormScreen,
@@ -99,6 +100,7 @@ export function RootNavigator() {
       <Stack.Screen name="Ledger" component={LedgerScreen} />
       <Stack.Screen name="Balances" component={BalancesScreen} />
       <Stack.Screen name="PersonLedger" component={PersonLedgerScreen} />
+      <Stack.Screen name="RecordEntry" component={RecordEntryScreen} />
       <Stack.Screen name="BetDetail" component={BetDetailScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Form" component={FormScreen} />

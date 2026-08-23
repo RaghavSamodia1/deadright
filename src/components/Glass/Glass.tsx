@@ -30,7 +30,10 @@ interface GlassProps {
 }
 
 const FILL: Record<string, string> = {
-  neutral: 'rgba(255,255,255,0.05)',
+  // Lifted from 0.05. A panel at 5% over a near-black page is a slightly
+  // different shade of nothing; at 8.5% it reads as a lit surface, and the
+  // dimmest text on it still clears 4.78:1.
+  neutral: 'rgba(255,255,255,0.085)',
   warm: 'rgba(247,200,70,0.10)',
   cool: 'rgba(79,168,160,0.10)',
   hot: 'rgba(226,102,31,0.12)',

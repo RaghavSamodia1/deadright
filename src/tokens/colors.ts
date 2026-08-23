@@ -60,12 +60,19 @@ export const colors = {
   },
 
   bg: {
-    base: '#0A0A0B',
-    surface1: '#212125',
+    // Lifted off pure black and given the navy the design doc always specified.
+    // Near-black made every surface read as a hole cut in the screen; a floor
+    // with some light in it lets the glass sit *on* something. text.primary
+    // still clears 16:1 here, and text.tertiary 5.98:1.
+    base: '#11151E',
+    // surface-1 follows the base into the navy family. surface-2 and -3 stay
+    // put: lifting them dropped text.tertiary to 4.21 and 3.41:1, and they are
+    // what chips and inputs sit on.
+    surface1: '#232834',
     surface2: '#2A2A2F',
     surface3: '#34343A',
     overlay: 'rgba(0,0,0,0.72)',
-    sheet: '#131315',
+    sheet: '#161B26',
   },
 
   border: {
@@ -80,6 +87,10 @@ export const colors = {
     // #5A697D failed WCAG AA on every surface (2.75:1 on surface-2).
     // Lightened to clear 4.5:1 on base, surface-1 and surface-2.
     tertiary: '#93939A',
+    // Captions on a tinted tile. #9C9CA3 lands at 4.49:1 on amber-tint over the
+    // lifted base — a hair under AA — and this clears 5.18:1 on the worst of
+    // the five tints.
+    onTint: '#A8A8AF',
     brand: '#E2661F',
     link: '#F7C846',
     inverse: '#0A0A0B',

@@ -22,7 +22,7 @@ export type TileSize =
   | 'nav';
 export type TileTone =
   | 'amber' | 'mint' | 'flame' | 'navy'
-  | 'amber-tint' | 'mint-tint';
+  | 'amber-tint' | 'mint-tint' | 'violet-tint' | 'teal-tint' | 'flame-tint';
 
 interface BentoTileProps {
   size?: TileSize;
@@ -140,8 +140,16 @@ const TONES: Record<TileTone, { bg: string; border?: string; text: string; sub: 
   // text.tertiary under AA (4.35:1 on amber-tint, 4.29:1 on mint-tint), so the
   // labels use text.secondary. side.a on violet-tint was worse at 3.74:1 —
   // lifted to a brighter violet that keeps the hue and clears 5.40:1.
-  'amber-tint': { bg: 'rgba(247,200,70,0.18)', border: 'rgba(247,200,70,0.4)', text: colors.semantic.awaiting, sub: colors.text.secondary },
-  'mint-tint': { bg: 'rgba(99,185,114,0.18)', border: 'rgba(99,185,114,0.45)', text: colors.semantic.win, sub: colors.text.secondary },
+  'amber-tint': { bg: 'rgba(247,200,70,0.18)', border: 'rgba(247,200,70,0.4)', text: colors.semantic.awaiting, sub: colors.text.onTint },
+  'mint-tint': { bg: 'rgba(99,185,114,0.18)', border: 'rgba(99,185,114,0.45)', text: colors.semantic.win, sub: colors.text.onTint },
+  // Navigation, not status. The rule that colour means one thing is about the
+  // cards that carry a verdict — a tile that takes you somewhere is free to
+  // wear the colour of the thing it opens, and a grid of nine identical greys
+  // was the dullest part of the app. Every ink below was measured against its
+  // own composited fill: the worst pair is 5.18:1.
+  'violet-tint': { bg: 'rgba(108,99,255,0.20)', border: 'rgba(108,99,255,0.42)', text: '#B3AEFF', sub: colors.text.onTint },
+  'teal-tint': { bg: 'rgba(79,168,160,0.20)', border: 'rgba(79,168,160,0.42)', text: '#7FD6CD', sub: colors.text.onTint },
+  'flame-tint': { bg: 'rgba(226,102,31,0.20)', border: 'rgba(226,102,31,0.42)', text: '#FFB37A', sub: colors.text.onTint },
 };
 
 const VALUE_SIZE: Record<TileSize, number> = {

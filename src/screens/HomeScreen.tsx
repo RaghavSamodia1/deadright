@@ -214,7 +214,7 @@ export function HomeScreen({ navigation }: any) {
           </BentoTile>
           <View style={styles.col}>
             <BentoTile
-              size="stat" tone="navy" countUp={profile.cred_score} label="Cred" caption="Details"
+              size="stat" tone="violet-tint" countUp={profile.cred_score} label="Cred" caption="Details"
               onPress={() => navigation.navigate('Cred')}
             />
             <BentoTile
@@ -244,7 +244,7 @@ export function HomeScreen({ navigation }: any) {
               onPress={() => navigation.navigate('Ledger')}
             />
             <BentoTile
-              size="nav" tone="navy" label="Search" icon="search"
+              size="nav" tone="teal-tint" label="Search" icon="search"
               onPress={() => navigation.navigate('Search')}
             />
           </View>
@@ -265,7 +265,7 @@ export function HomeScreen({ navigation }: any) {
         <View style={styles.strip}>
           <View style={styles.row}>
             <BentoTile
-              size="stat" tone="navy" label="Pools" icon="party"
+              size="stat" tone="violet-tint" label="Pools" icon="party"
               onPress={() => navigation.navigate('Pools')}
             />
             {/* The primary action gets the widest tile on the strip. */}
@@ -283,7 +283,7 @@ export function HomeScreen({ navigation }: any) {
               strip as a whole still has a shape. */}
           <View style={styles.row}>
             <BentoTile
-              size="nav" tone="navy" label="Settle it" icon="dice"
+              size="nav" tone="teal-tint" label="Settle it" icon="dice"
               onPress={() => navigation.navigate('Settle')}
             />
             <BentoTile
@@ -291,7 +291,7 @@ export function HomeScreen({ navigation }: any) {
               onPress={() => navigation.navigate('JoinGroup')}
             />
             <BentoTile
-              size="nav" tone="navy" label="Sounds" icon="waveform"
+              size="nav" tone="flame-tint" label="Sounds" icon="waveform"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 setBoard(true);

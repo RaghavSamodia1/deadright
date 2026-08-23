@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, ViewStyle } from 'react-native';
+import { PEEPS } from './peeps';
 import { colors, radius } from '../../tokens';
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -63,26 +64,37 @@ const IDENTITY = [
 const IDENTITY_INK = '#0A0A0B';
 
 /** FNV-1a. Stable across platforms and sessions, which is the whole point. */
-function pick(seed: string): string {
+function hash(seed: string): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < seed.length; i++) {
     h ^= seed.charCodeAt(i);
     h = Math.imul(h, 0x01000193) >>> 0;
   }
-  return IDENTITY[h % IDENTITY.length];
+  return h;
 }
+
+/**
+ * Below this the drawn face is mush and two initials are simply more use — a
+ * 24pt avatar in a stack is there to say how many people, not who.
+ */
+const FACE_MIN = 32;
 
 export function Avatar({ size = 'sm', initials, uri, tint = 'auto', seed, isMe = false, style }: AvatarProps) {
   const dim = SIZE_MAP[size];
   const fontSize = FONT_SIZE_MAP[size];
   const auto = tint === 'auto';
-  const bg = auto ? pick(seed ?? initials ?? '?') : TINT_MAP[tint];
+  const h = hash(seed ?? initials ?? '?');
+  const bg = auto ? IDENTITY[h % IDENTITY.length] : TINT_MAP[tint];
+  // One hash decides both, so a person's colour and their face always agree.
+  const face = dim >= FACE_MIN ? PEEPS[h % PEEPS.length] : null;
 
   return (
     <View style={[styles.wrapper, { width: dim, height: dim, borderRadius: dim / 2 }, style]}>
       <View style={[styles.circle, { width: dim, height: dim, borderRadius: dim / 2, backgroundColor: bg }]}>
         {uri ? (
           <Image source={{ uri }} style={{ width: dim, height: dim, borderRadius: dim / 2 }} />
+        ) : face ? (
+          <Image source={face} style={{ width: dim, height: dim }} resizeMode="contain" />
         ) : (
           <Text style={[styles.initials, { fontSize }, auto && { color: IDENTITY_INK }]}>
             {(initials ?? '?').slice(0, 2).toUpperCase()}

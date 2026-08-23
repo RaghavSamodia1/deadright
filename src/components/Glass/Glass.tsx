@@ -30,10 +30,18 @@ interface GlassProps {
 }
 
 const FILL: Record<string, string> = {
-  // Lifted from 0.05. A panel at 5% over a near-black page is a slightly
-  // different shade of nothing; at 8.5% it reads as a lit surface, and the
-  // dimmest text on it still clears 4.78:1.
-  neutral: 'rgba(255,255,255,0.085)',
+  /**
+   * Not white.
+   *
+   * White over a navy page composites to grey — the panel came out the colour
+   * of dirty plastic rather than of glass, because glass takes the colour of
+   * whatever is behind it. This is a cool steel that keeps the room's blue:
+   * the composite goes from #252931 to #222937, which is nearly twice the
+   * saturation at the same lightness, and the dimmest text on it still clears
+   * 4.78:1. The rim gradient stays white — a specular highlight is the one
+   * part that genuinely is.
+   */
+  neutral: 'rgba(150,176,220,0.13)',
   warm: 'rgba(247,200,70,0.10)',
   cool: 'rgba(79,168,160,0.10)',
   hot: 'rgba(226,102,31,0.12)',

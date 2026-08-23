@@ -70,31 +70,40 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
       {/* Author row */}
       <View style={styles.authorRow}>
         <Avatar size="sm" initials={bet.author.initials} uri={bet.author.avatarUri} seed={bet.author.handle} />
+        {/* Author and group on one line. Stacked, they were two lines of small
+            text competing with the title for the top of the card; the person
+            who called it is context, not the headline. */}
         <View style={styles.authorMeta}>
-          <Text style={[styles.handle, { color: titleColor }]}>{bet.author.handle}</Text>
-          {bet.group && (
-            <Text style={[styles.groupLabel, { color: metaColor }]}>{bet.group}</Text>
-          )}
+          <Text style={[styles.handle, { color: metaColor }]} numberOfLines={1}>
+            {bet.author.handle}
+            {bet.group ? <Text style={styles.groupLabel}>{`  ·  ${bet.group}`}</Text> : null}
+          </Text>
         </View>
         <StatusChip status={bet.status} isCreator={bet.isCreator} />
       </View>
 
       {/* Bet title */}
+      {/* The claim is the card. It was set at 17 in the same weight as
+          everything else and wrapped in quote marks, so nothing on the card was
+          louder than anything else and the eye had nowhere to land. Quotes
+          removed too: they add a pair of marks to every card in the feed to say
+          something the card already says. */}
       <Text
-        style={[styles.title, { color: titleColor }]}
-        numberOfLines={compact ? 1 : 2}
+        style={[styles.title, compact && styles.titleCompact, { color: titleColor }]}
+        numberOfLines={compact ? 1 : 3}
       >
-        "{bet.title}"
+        {bet.title}
       </Text>
 
       {/* Side distribution — a ranking bet has no sides to distribute. */}
       {!compact && !bet.isOrdinal && (
-        <SideBar
-          sideAPercent={bet.sideAPercent}
-          sideACount={bet.sideACount}
-          sideBCount={bet.sideBCount}
-         
-        />
+        <View style={styles.sides}>
+          <SideBar
+            sideAPercent={bet.sideAPercent}
+            sideACount={bet.sideACount}
+            sideBCount={bet.sideBCount}
+          />
+        </View>
       )}
 
       {/* Footer */}
@@ -124,8 +133,11 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
 const styles = StyleSheet.create({
   card: {
     borderRadius: radius.md,
-    padding: spacing[3],
-    gap: 8,
+    padding: spacing[4],
+    // No uniform gap: the rhythm is what carries the hierarchy. Author sits
+    // close under nothing, the claim gets air, the footer is pushed away from
+    // it so the countdown reads as its own thing.
+    gap: 0,
   },
   authorRow: {
     flexDirection: 'row',
@@ -134,25 +146,29 @@ const styles = StyleSheet.create({
   },
   authorMeta: {
     flex: 1,
-    gap: 1,
   },
   handle: {
     fontFamily: 'Barlow-SemiBold',
-    fontSize: 13,
+    fontSize: 12,
+    letterSpacing: 0.2,
   },
   groupLabel: {
     fontFamily: 'Inter-Regular',
-    fontSize: 11,
+    fontSize: 12,
   },
   title: {
-    fontFamily: 'Barlow-Bold',
-    fontSize: 17,
-    lineHeight: 23,
+    fontFamily: 'Barlow-Black',
+    fontSize: 21,
+    lineHeight: 25,
+    letterSpacing: -0.4,
+    marginTop: 12,
   },
+  titleCompact: { fontSize: 17, lineHeight: 21, marginTop: 10 },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    marginTop: 14,
   },
   meta: {
     fontFamily: 'Inter-Regular',
@@ -163,6 +179,7 @@ const styles = StyleSheet.create({
     height: 12,
     backgroundColor: colors.border.default,
   },
+  sides: { marginTop: 14 },
   timer: { marginLeft: 'auto' },
   metaGroup: { flexDirection: 'row', alignItems: 'center', gap: 4 },
 });

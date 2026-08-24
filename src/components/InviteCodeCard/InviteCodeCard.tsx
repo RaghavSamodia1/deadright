@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
-import { colors, radius, spacing } from '../../tokens';
+import { colors, radius, spacing, elevation } from '../../tokens';
 
 interface InviteCodeCardProps {
   code: string; // 6-char group invite code
@@ -49,6 +49,7 @@ export function InviteCodeCard({
 
 const styles = StyleSheet.create({
   card: {
+    ...elevation.card,
     backgroundColor: colors.bg.surface2,
     borderWidth: 1,
     borderColor: colors.border.default,

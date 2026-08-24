@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { colors, spacing } from '../tokens';
-import { ScreenBackground, NavHeader, Avatar, TextInput, Button, ActionSheet } from '../components';
+import { ScreenBackground, NavHeader, Avatar, TextInput, Button, ActionSheet, PeepPicker } from '../components';
 import { getMyProfile, updateProfile, uploadAvatar, removeAvatar, isHandleAvailable } from '../api/profile';
 import { takePhoto, pickFromLibrary } from '../lib/evidence';
 import { useQuery } from '../hooks/useQuery';
@@ -44,6 +44,7 @@ export function ProfileEditScreen({ navigation }: any) {
   const [bio, setBio] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
+  const [peepOpen, setPeepOpen] = useState(false);
   const [busyPhoto, setBusyPhoto] = useState(false);
   const [saving, setSaving] = useState(false);
   const [handleState, setHandleState] = useState<HandleState>({ kind: 'idle' });
@@ -102,6 +103,19 @@ export function ProfileEditScreen({ navigation }: any) {
       }
     } catch (e) {
       Alert.alert('Couldn’t change your photo', humanError(e));
+    } finally {
+      setBusyPhoto(false);
+    }
+  };
+
+  /** A chosen face is stored in the same column a photo is — see peepUri. */
+  const setCharacter = async (uri: string) => {
+    setBusyPhoto(true);
+    try {
+      await updateProfile({ avatar_url: uri } as any);
+      refetch();
+    } catch (e) {
+      Alert.alert('Couldn’t set that', humanError(e));
     } finally {
       setBusyPhoto(false);
     }
@@ -195,7 +209,7 @@ export function ProfileEditScreen({ navigation }: any) {
             <ActivityIndicator color={colors.semantic.awaiting} />
           ) : (
             <Text style={styles.change}>
-              {profile?.avatar_url ? 'Change photo' : 'Add a photo'}
+              {profile?.avatar_url ? 'Change picture' : 'Add a picture'}
             </Text>
           )}
         </Pressable>
@@ -239,7 +253,7 @@ export function ProfileEditScreen({ navigation }: any) {
 
       <ActionSheet
         visible={photoOpen}
-        title="Profile photo"
+        title="Profile picture"
         options={[
           {
             label: 'Take a photo',
@@ -247,6 +261,10 @@ export function ProfileEditScreen({ navigation }: any) {
               setPhoto(() =>
                 takePhoto({ square: true, reason: 'DeadRight needs the camera for your profile photo.' }),
               ),
+          },
+          {
+            label: 'Pick a character',
+            onPress: () => setPeepOpen(true),
           },
           {
             label: 'Choose from library',
@@ -260,6 +278,13 @@ export function ProfileEditScreen({ navigation }: any) {
             : []),
         ]}
         onDismiss={() => setPhotoOpen(false)}
+      />
+
+      <PeepPicker
+        visible={peepOpen}
+        current={profile?.avatar_url}
+        onPick={setCharacter}
+        onDismiss={() => setPeepOpen(false)}
       />
     </ScreenBackground>
   );

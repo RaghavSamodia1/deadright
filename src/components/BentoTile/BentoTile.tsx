@@ -4,7 +4,7 @@ import Animated from 'react-native-reanimated';
 import { usePressScale, AnimatedPressable } from '../Motion/usePressScale';
 import { CountUp } from '../Motion/CountUp';
 import * as Haptics from 'expo-haptics';
-import { colors, radius, spacing } from '../../tokens';
+import { colors, radius, spacing, elevation } from '../../tokens';
 import { Icon, type IconName } from '../Icon/Icon';
 
 export type TileSize =
@@ -197,8 +197,13 @@ export function BentoTile({
       }
     : undefined;
 
+  // Dark ink on the fill is what makes a tone "bright" — the same test the
+  // palette already uses to decide its text colour.
+  const isBright = t.text === colors.text.inverse;
+
   const tileStyle: (ViewStyle | undefined)[] = [
     styles.tile,
+    isBright ? elevation.bright : elevation.card,
     {
       width: dims.w,
       height: dims.h,

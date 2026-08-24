@@ -79,20 +79,50 @@ function hash(seed: string): number {
  */
 const FACE_MIN = 32;
 
+/**
+ * A face somebody picked on purpose, stored in profiles.avatar_url as
+ * "peep:7".
+ *
+ * The column is a text url and every Avatar in the app already reads it, so a
+ * deliberate choice rides the same field a photo does and needs no new column,
+ * no migration, and no change to a single caller. A real photo is any value
+ * that is not one of these.
+ */
+const PEEP_PREFIX = 'peep:';
+
+/** The value to store for the nth drawn face. */
+export function peepUri(index: number): string {
+  return `${PEEP_PREFIX}${index}`;
+}
+
+/** How many faces there are to choose from. */
+export const PEEP_COUNT = PEEPS.length;
+
+/** Which one a stored value names, or null when it is a photo. */
+export function peepIndexOf(uri?: string | null): number | null {
+  if (!uri || !uri.startsWith(PEEP_PREFIX)) return null;
+  const n = Number(uri.slice(PEEP_PREFIX.length));
+  return Number.isFinite(n) ? ((n % PEEPS.length) + PEEPS.length) % PEEPS.length : null;
+}
+
 export function Avatar({ size = 'sm', initials, uri, tint = 'auto', seed, isMe = false, style }: AvatarProps) {
   const dim = SIZE_MAP[size];
   const fontSize = FONT_SIZE_MAP[size];
   const auto = tint === 'auto';
   const h = hash(seed ?? initials ?? '?');
   const bg = auto ? IDENTITY[h % IDENTITY.length] : TINT_MAP[tint];
-  // One hash decides both, so a person's colour and their face always agree.
-  const face = dim >= FACE_MIN ? PEEPS[h % PEEPS.length] : null;
+  // A chosen face beats the one their handle happens to hash to.
+  const picked = peepIndexOf(uri);
+  const photo = uri && picked === null ? uri : null;
+  // One hash decides colour and face together, so a person's two halves agree.
+  const face =
+    dim >= FACE_MIN ? (picked !== null ? PEEPS[picked] : PEEPS[h % PEEPS.length]) : null;
 
   return (
     <View style={[styles.wrapper, { width: dim, height: dim, borderRadius: dim / 2 }, style]}>
       <View style={[styles.circle, { width: dim, height: dim, borderRadius: dim / 2, backgroundColor: bg }]}>
-        {uri ? (
-          <Image source={{ uri }} style={{ width: dim, height: dim, borderRadius: dim / 2 }} />
+        {photo ? (
+          <Image source={{ uri: photo }} style={{ width: dim, height: dim, borderRadius: dim / 2 }} />
         ) : face ? (
           <Image source={face} style={{ width: dim, height: dim }} resizeMode="contain" />
         ) : (

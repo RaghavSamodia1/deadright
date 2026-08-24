@@ -9,8 +9,10 @@ import {
   Button,
   SettingsRow,
   ActionSheet,
+  PeepPicker,
 } from '../components';
 import { claimHandle } from '../api/auth';
+import { updateProfile } from '../api/profile';
 import { updateSettings } from '../api/settings';
 import { CURRENCY_CODES, currencyLabel, deviceCurrency } from '../lib/money';
 import { useAction } from '../hooks/useQuery';
@@ -25,6 +27,10 @@ export function ProfileSetupScreen({ navigation }: any) {
   // so an account never told the app what it counts in.
   const [currency, setCurrency] = useState(deviceCurrency);
   const [currencyOpen, setCurrencyOpen] = useState(false);
+  // Held locally rather than written now: there is no profile row to attach it
+  // to until claimHandle below creates one.
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const [peepOpen, setPeepOpen] = useState(false);
   const ready = name.trim().length > 1 && handle.trim().length > 2;
   const { run: claim, loading, error } = useAction(claimHandle);
   const { refreshProfile } = useAuth();
@@ -40,6 +46,14 @@ export function ProfileSetupScreen({ navigation }: any) {
         await updateSettings({ currency });
       } catch {
         // Non-fatal: they keep the default and can change it in Settings.
+      }
+      if (avatar) {
+        try {
+          await updateProfile({ avatar_url: avatar } as any);
+        } catch {
+          // Same reasoning: a picture is not worth blocking signup over, and
+          // it can be set from the profile afterwards.
+        }
       }
       refreshProfile(); // clears needsProfile so this screen isn't the entry point again
       navigation.replace('Root');
@@ -58,12 +72,23 @@ export function ProfileSetupScreen({ navigation }: any) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.body}>
-          <Pressable style={styles.avatarWrap} accessibilityLabel="Add photo">
-            <Avatar size="xl" initials={handle.slice(0, 2).toUpperCase() || '??'} seed={handle} />
+          <Pressable
+            style={styles.avatarWrap}
+            onPress={() => setPeepOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Pick a character"
+          >
+            <Avatar
+              size="xl"
+              initials={handle.slice(0, 2).toUpperCase() || '??'}
+              uri={avatar ?? undefined}
+              seed={handle}
+            />
             <View style={styles.badge}>
               <Text style={styles.badgeIcon}>＋</Text>
             </View>
           </Pressable>
+          <Text style={styles.pickHint}>Pick a character</Text>
 
           <TextInput label="Display name" placeholder="Your name" value={name} onChangeText={setName} />
           <TextInput
@@ -107,6 +132,12 @@ export function ProfileSetupScreen({ navigation }: any) {
         }))}
         onDismiss={() => setCurrencyOpen(false)}
       />
+      <PeepPicker
+        visible={peepOpen}
+        current={avatar}
+        onPick={setAvatar}
+        onDismiss={() => setPeepOpen(false)}
+      />
     </ScreenBackground>
   );
 }
@@ -119,7 +150,15 @@ const styles = StyleSheet.create({
     padding: spacing.screenGutter,
   },
   body: { gap: spacing[4], paddingTop: spacing[5] },
-  avatarWrap: { alignSelf: 'center', marginBottom: spacing[4] },
+  avatarWrap: { alignSelf: 'center' },
+  pickHint: {
+    fontFamily: 'Barlow-SemiBold',
+    fontSize: 13,
+    color: colors.text.link,
+    alignSelf: 'center',
+    marginTop: spacing[2],
+    marginBottom: spacing[4],
+  },
   badge: {
     position: 'absolute',
     right: -2,

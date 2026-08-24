@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
-import { colors, radius, spacing } from '../../tokens';
+import { colors, radius, spacing, elevation } from '../../tokens';
 
 export type StatCardTone = 'navy' | 'amber' | 'mint' | 'coral' ;
 
@@ -66,6 +66,7 @@ export function StatCard({ value, label, caption, tone = 'navy', size = 'lg', st
 
 const styles = StyleSheet.create({
   card: {
+    ...elevation.card,
     gap: 4,
     alignSelf: 'flex-start',
   },

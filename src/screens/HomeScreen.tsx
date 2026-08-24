@@ -134,6 +134,8 @@ export function HomeScreen({ navigation }: any) {
         variant="home"
         showAvatar
         avatarInitials={(profile.display_name ?? 'You').slice(0, 2).toUpperCase()}
+        avatarUri={profile.avatar_url ?? undefined}
+        avatarSeed={profile.handle || undefined}
         onAvatarPress={() => navigation.navigate('Profile')}
         rightActions={[
           {

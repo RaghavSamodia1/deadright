@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, radius, spacing } from '../../tokens';
+import { colors, radius, spacing, elevation } from '../../tokens';
 import { StyleSheet as RNStyleSheet } from 'react-native';
 import { Icon } from '../Icon/Icon';
 import { AvatarStack } from '../AvatarStack/AvatarStack';
@@ -83,6 +83,7 @@ export function GroupCard({
 
 const styles = StyleSheet.create({
   card: {
+    ...elevation.card,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],

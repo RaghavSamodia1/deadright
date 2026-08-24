@@ -27,6 +27,16 @@ interface NavHeaderProps {
   // Home variant
   showAvatar?: boolean;
   avatarInitials?: string;
+  /**
+   * What the drawn face is derived from, and the photo when there is one.
+   *
+   * Without these the header seeded the Avatar on the *initials*, so it drew a
+   * different face from every other Avatar for the same person — including
+   * their own profile — and an uploaded photo never appeared in the header at
+   * all.
+   */
+  avatarUri?: string;
+  avatarSeed?: string;
   onAvatarPress?: () => void;
   style?: ViewStyle;
 }
@@ -38,6 +48,8 @@ export function NavHeader({
   rightActions = [],
   showAvatar = false,
   avatarInitials,
+  avatarUri,
+  avatarSeed,
   onAvatarPress,
   style,
 }: NavHeaderProps) {
@@ -103,7 +115,12 @@ export function NavHeader({
           ))}
           {showAvatar && (
             <Pressable onPress={onAvatarPress} accessibilityRole="button" accessibilityLabel="Open profile">
-              <Avatar size="sm" initials={avatarInitials} seed={avatarInitials} />
+              <Avatar
+                size="sm"
+                initials={avatarInitials}
+                uri={avatarUri}
+                seed={avatarSeed ?? avatarInitials}
+              />
             </Pressable>
           )}
         </View>

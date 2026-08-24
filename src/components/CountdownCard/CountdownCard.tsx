@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
-import { colors, radius, spacing } from '../../tokens';
+import { colors, radius, spacing, elevation } from '../../tokens';
 import { Timer } from '../Timer/Timer';
 
 interface CountdownCardProps {
@@ -34,6 +34,7 @@ export function CountdownCard({ deadline, caption, title, onExpire, style }: Cou
 
 const styles = StyleSheet.create({
   card: {
+    ...elevation.card,
     backgroundColor: colors.bg.surface1,
     borderWidth: 1,
     borderColor: colors.border.default,

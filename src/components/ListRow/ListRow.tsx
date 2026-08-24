@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
-import { colors, radius, spacing } from '../../tokens';
+import { colors, radius, spacing, elevation } from '../../tokens';
 
 interface ListRowProps {
   title: string;
@@ -69,6 +69,7 @@ export function ListRow({
 
 const styles = StyleSheet.create({
   row: {
+    ...elevation.row,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],

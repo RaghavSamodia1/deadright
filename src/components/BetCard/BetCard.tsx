@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, radius, spacing } from '../../tokens';
+import { colors, radius, spacing, elevation } from '../../tokens';
 import { Avatar } from '../Avatar/Avatar';
 import { StatusChip, BetStatus } from '../StatusChip/StatusChip';
 import { SideBar } from '../SideBar/SideBar';
@@ -178,6 +178,7 @@ export function BetCard({ bet, onPress, compact = false, style }: BetCardProps) 
 
 const styles = StyleSheet.create({
   card: {
+    ...elevation.card,
     borderRadius: radius.md,
     padding: spacing[4],
     // No uniform gap: the rhythm is what carries the hierarchy. Author sits

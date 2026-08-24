@@ -1,5 +1,6 @@
 // ── Primitives ───────────────────────────────────────────────────────────────
-export { Avatar } from './Avatar/Avatar';
+export { Avatar, peepUri, peepIndexOf, PEEP_COUNT } from './Avatar/Avatar';
+export { PeepPicker } from './PeepPicker/PeepPicker';
 export type { AvatarSize } from './Avatar/Avatar';
 
 export { AvatarStack } from './AvatarStack/AvatarStack';

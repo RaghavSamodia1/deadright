@@ -36,28 +36,28 @@ const shadow = (height: number, radius: number, opacity: number, android: number
 export const elevation = {
   /** Dark surfaces: cards, rows, navy tiles. */
   card: {
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.07)',
-    borderTopColor: 'rgba(255,255,255,0.20)',
-    borderBottomColor: 'rgba(0,0,0,0.70)',
-    ...shadow(9, 18, 0.7, 10),
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.09)',
+    borderTopColor: 'rgba(255,255,255,0.28)',
+    borderBottomColor: 'rgba(0,0,0,0.88)',
+    ...shadow(14, 26, 0.85, 16),
   } as ViewStyle,
 
   /** Saturated fills, where both edges have something to catch. */
   bright: {
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.26)',
-    borderTopColor: 'rgba(255,255,255,0.62)',
-    borderBottomColor: 'rgba(0,0,0,0.28)',
-    ...shadow(10, 20, 0.75, 12),
+    borderWidth: 2.5,
+    borderColor: 'rgba(255,255,255,0.34)',
+    borderTopColor: 'rgba(255,255,255,0.78)',
+    borderBottomColor: 'rgba(0,0,0,0.38)',
+    ...shadow(16, 30, 0.9, 20),
   } as ViewStyle,
 
   /** List rows: the same light, turned down. */
   row: {
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.05)',
-    borderTopColor: 'rgba(255,255,255,0.15)',
-    borderBottomColor: 'rgba(0,0,0,0.62)',
-    ...shadow(6, 12, 0.6, 6),
+    borderColor: 'rgba(255,255,255,0.07)',
+    borderTopColor: 'rgba(255,255,255,0.20)',
+    borderBottomColor: 'rgba(0,0,0,0.78)',
+    ...shadow(10, 20, 0.75, 11),
   } as ViewStyle,
 };

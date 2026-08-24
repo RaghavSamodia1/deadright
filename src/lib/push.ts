@@ -19,6 +19,12 @@ import { supabase } from './supabase';
 
 // Foreground behaviour. Without this a push that lands while the app is open is
 // swallowed, which reads as the notification not working at all.
+//
+// Guarded because this runs at import, which is app start. A build whose native
+// module is missing — an iOS binary compiled before `pod install` picked the
+// library up, say — throws here and takes the whole app down before it renders.
+// Push not existing is not a reason for nothing to exist.
+try {
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     // shouldShowAlert is the field this SDK requires; the banner/list pair is
@@ -30,6 +36,9 @@ Notifications.setNotificationHandler({
     shouldSetBadge: true,
   }),
 });
+} catch {
+  // No native notifications in this build. registerForPush will decline too.
+}
 
 /**
  * Expo mints tokens per project, so without a project id there is no token to

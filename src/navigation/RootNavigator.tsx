@@ -76,12 +76,18 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function useNotificationTaps() {
   const navigation = useNavigation<any>();
   useEffect(() => {
-    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      const target = targetFrom(response);
-      if (target.betId) navigation.navigate('BetDetail', { id: target.betId });
-      else navigation.navigate('Alerts');
-    });
-    return () => sub.remove();
+    // Same guard as the handler in lib/push: a build without the native module
+    // must still run, it just cannot be tapped into.
+    try {
+      const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+        const target = targetFrom(response);
+        if (target.betId) navigation.navigate('BetDetail', { id: target.betId });
+        else navigation.navigate('Alerts');
+      });
+      return () => sub.remove();
+    } catch {
+      return;
+    }
   }, [navigation]);
 }
 

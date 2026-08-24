@@ -1,14 +1,28 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
-import { ScreenBackground, NavHeader, FormRing, StatsRow, Button, ActionSheet, type Stat } from '../components';
-import { searchProfiles } from '../api/profile';
+import {
+  ScreenBackground,
+  NavHeader,
+  FormRing,
+  StatsRow,
+  Button,
+  Avatar,
+  ActionSheet,
+  type Stat,
+} from '../components';
+import { searchProfiles, getHeadToHead } from '../api/profile';
+import { getMyGroups } from '../api/groups';
+import { getLedgerWith, type PersonEntry } from '../api/ledger';
 import { blockUser } from '../api/settings';
 import { useQuery, useAction } from '../hooks/useQuery';
+import { formatMoney, totalsByCurrency } from '../lib/money';
+import { plural } from '../lib/plural';
+import { uidOrNull } from '../lib/supabase';
 
-// Friend profile — their Form + your head-to-head record.
+/** Someone else's profile: who they are, your record, and your ledger. */
 export function FriendProfileScreen({ navigation, route }: any) {
-  const handle = route?.params?.handle ?? 'Marcus';
+  const handle = route?.params?.handle ?? '';
   const [sheetOpen, setSheetOpen] = React.useState(false);
 
   // Look the person up by handle so we can act on them (block, head-to-head).
@@ -22,7 +36,38 @@ export function FriendProfileScreen({ navigation, route }: any) {
     [handle],
   );
 
-  const { run: block, loading: blocking } = useAction(blockUser);
+  const personId: string | undefined = person?.id;
+
+  const { data: h2h } = useQuery(
+    async () => (personId ? getHeadToHead(personId) : { played: 0, mine: 0, theirs: 0 }),
+    { played: 0, mine: 0, theirs: 0 },
+    [personId],
+  );
+
+  // The ledger between the two of you, from the same query the person page uses.
+  const { data: entries } = useQuery<PersonEntry[]>(
+    async () => (personId ? getLedgerWith(personId) : []),
+    [],
+    [personId],
+  );
+
+  // Groups you actually share. Recording against somebody needs one — the
+  // database refuses otherwise (shares_group_with) — so the button only appears
+  // when it would work.
+  const { data: shared } = useQuery(
+    async () => {
+      if (!personId) return 0;
+      const [groups, uid] = await Promise.all([getMyGroups(), uidOrNull()]);
+      if (!uid) return 0;
+      return (groups ?? []).filter((g: any) =>
+        (g.members ?? []).some((m: any) => m.user_id === personId),
+      ).length;
+    },
+    0,
+    [personId],
+  );
+
+  const { run: block } = useAction(blockUser);
 
   // A withheld Form is not a Form of 500. `private_profile` makes the search
   // function return null rather than the number (00034), so the ring shows
@@ -31,22 +76,44 @@ export function FriendProfileScreen({ navigation, route }: any) {
   const form: number | null = person?.form_score ?? null;
   const hidden: boolean = person?.is_private === true;
 
-  // These were hardcoded to 812 / 64% / 3 and a 7-4 head-to-head, so every
-  // profile showed the same invented record about a real person — the one kind
-  // of wrong that looks completely convincing. Form is real; the rest needs
-  // per-person aggregates the API does not expose yet, so it says so instead of
-  // making a number up.
+  const open = entries.filter((e) => e.status === 'pending');
+  const awaitingMe = entries.filter((e) => e.awaitingMe);
+  const netByCurrency = totalsByCurrency(
+    open.map((e) => ({ currency: e.currency, cents: e.amountCents })),
+  ).filter((t) => t.cents !== 0);
+
+  // Their overall win rate cannot be counted honestly from here (see
+  // getHeadToHead), so the middle column is the number that can: yours against
+  // them. Groups is how many you are both in.
   const stats: Stat[] = [
     { value: form != null ? String(form) : '—', label: 'Form', highlight: true },
-    { value: '—', label: 'Win rate' },
-    { value: '—', label: 'Groups' },
+    {
+      value: h2h.played > 0 ? `${h2h.mine}–${h2h.theirs}` : '—',
+      label: 'Against you',
+    },
+    { value: shared > 0 ? String(shared) : '—', label: shared === 1 ? 'Group' : 'Groups' },
   ];
+
+  const name = person?.display_name || person?.handle || handle;
+  const theirHandle = person?.handle ?? String(handle).replace('@', '');
+  const initials = String(name)
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w: string) => w[0]?.toUpperCase() ?? '')
+    .join('');
+
+  const openLedger = () =>
+    navigation.navigate('PersonLedger', {
+      userId: personId,
+      handle: theirHandle,
+      displayName: name,
+    });
 
   return (
     <ScreenBackground tone="base">
       <NavHeader
         variant="back"
-        title={handle}
+        title={theirHandle}
         onBack={() => navigation.goBack()}
         rightActions={[
           {
@@ -56,20 +123,30 @@ export function FriendProfileScreen({ navigation, route }: any) {
           },
         ]}
       />
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* The ring, the name and the tagline were all hardcoded: every profile
-            opened as "Marcus C" on 812 with a 78% ring, whoever you tapped. */}
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
+          {/* Their face, inside their Form. The ring used to hold the number
+              alone and the profile had no photo on it at all. */}
           <FormRing
-            percent={form != null ? Math.max(0, Math.min(100, Math.round(((form - 250) / 500) * 100))) : 0}
-            score={form ?? undefined}
+            percent={
+              form != null ? Math.max(0, Math.min(100, Math.round(((form - 250) / 500) * 100))) : 0
+            }
             size={132}
             strokeWidth={9}
-          />
-          <Text style={styles.name}>
-            {person?.display_name ?? person?.handle ?? handle}
-          </Text>
-          <Text style={styles.sub}>{person?.handle ?? handle}</Text>
+          >
+            <Avatar
+              size="lg"
+              uri={person?.avatar_url ?? undefined}
+              initials={initials || '?'}
+              seed={theirHandle}
+            />
+          </FormRing>
+
+          <Text style={styles.name}>{name}</Text>
+          {/* Display name defaults to the handle, and printing both made every
+              such profile say the same word twice. */}
+          {name !== theirHandle && <Text style={styles.sub}>@{theirHandle}</Text>}
+
           {hidden && (
             <Text style={styles.private}>
               Private profile — their Form isn&rsquo;t shown outside their groups.
@@ -79,20 +156,77 @@ export function FriendProfileScreen({ navigation, route }: any) {
 
         <StatsRow stats={stats} />
 
-        <Button label="Call them out" onPress={() => navigation.navigate('CreateBet')} fullWidth style={styles.cta} />
+        {/* What's between you. */}
+        <Pressable
+          onPress={personId ? openLedger : undefined}
+          style={({ pressed }) => [
+            styles.ledger,
+            { backgroundColor: pressed ? colors.bg.surface2 : colors.bg.surface1 },
+          ]}
+        >
+          <Text style={styles.ledgerLabel}>YOUR LEDGER</Text>
+          {netByCurrency.length > 0 ? (
+            netByCurrency.map((t) => (
+              <Text key={t.currency} style={styles.ledgerLine}>
+                <Text
+                  style={[
+                    styles.ledgerAmount,
+                    { color: t.cents > 0 ? colors.semantic.win : colors.semantic.disputed },
+                  ]}
+                >
+                  {formatMoney(Math.abs(t.cents), t.currency)}
+                </Text>
+                {t.cents > 0 ? ` — ${name} owes you` : ` — you owe ${name}`}
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.ledgerLine}>
+              {entries.length ? 'All square' : 'Nothing on the books yet'}
+            </Text>
+          )}
+          {open.length > 0 && (
+            <Text style={styles.ledgerMeta}>{plural(open.length, 'open item')}</Text>
+          )}
+          {awaitingMe.length > 0 && (
+            <Text style={styles.waiting}>
+              {plural(awaitingMe.length, 'entry', 'entries')} waiting on your answer
+            </Text>
+          )}
+        </Pressable>
+
+        {shared > 0 && (
+          <Button
+            label="Record something"
+            variant="secondary"
+            fullWidth
+            onPress={() =>
+              navigation.navigate('RecordEntry', {
+                userId: personId,
+                handle: theirHandle,
+                displayName: name,
+              })
+            }
+          />
+        )}
+
+        <Button
+          label="Call them out"
+          onPress={() => navigation.navigate('CreateBet')}
+          fullWidth
+        />
       </ScrollView>
 
       <ActionSheet
         visible={sheetOpen}
         onDismiss={() => setSheetOpen(false)}
-        title={handle}
+        title={theirHandle}
         options={[
           {
-            label: ` Block ${handle}`,
+            label: `Block ${theirHandle}`,
             destructive: true,
             onPress: async () => {
-              if (!person?.id) return;
-              await block(person.id);
+              if (!personId) return;
+              await block(personId);
               navigation.goBack();
             },
           },
@@ -106,7 +240,7 @@ const styles = StyleSheet.create({
   content: { padding: spacing.screenGutter, gap: spacing[4], paddingBottom: spacing[8] },
   icon: { fontSize: 22, color: colors.text.secondary },
   hero: { alignItems: 'center', gap: spacing[2], paddingVertical: spacing[3] },
-  name: { fontFamily: 'Barlow-Bold', fontSize: 20, color: colors.text.primary },
+  name: { fontFamily: 'Barlow-Bold', fontSize: 20, color: colors.text.primary, marginTop: spacing[2] },
   sub: { fontFamily: 'Inter-Regular', fontSize: 12, color: colors.text.tertiary },
   private: {
     fontFamily: 'Inter-Regular',
@@ -117,11 +251,30 @@ const styles = StyleSheet.create({
     maxWidth: 260,
     marginTop: 2,
   },
-  q: { fontFamily: 'Barlow-SemiBold', fontSize: 11, letterSpacing: 2, color: colors.semantic.awaiting },
-  h2h: { flexDirection: 'row', height: 14, borderRadius: 999, overflow: 'hidden', gap: 2 },
-  h2hBar: { borderRadius: 999 },
-  h2hLabels: { flexDirection: 'row', justifyContent: 'space-between' },
-  h2hNum: { fontFamily: 'Barlow-SemiBold', fontSize: 12 },
-  h2hTotal: { fontFamily: 'Inter-Regular', fontSize: 11, color: colors.text.tertiary },
-  cta: { marginTop: spacing[3] },
+  ledger: {
+    borderRadius: radius.md,
+    padding: spacing[4],
+    gap: spacing[1],
+  },
+  ledgerLabel: {
+    fontFamily: 'Barlow-SemiBold',
+    fontSize: 11,
+    letterSpacing: 2,
+    color: colors.semantic.awaiting,
+    marginBottom: 2,
+  },
+  ledgerLine: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.text.secondary,
+  },
+  ledgerAmount: { fontFamily: 'Barlow-Bold', fontSize: 18 },
+  ledgerMeta: { fontFamily: 'Inter-Regular', fontSize: 12, color: colors.text.tertiary },
+  waiting: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 12,
+    color: colors.semantic.awaiting,
+    marginTop: 2,
+  },
 });

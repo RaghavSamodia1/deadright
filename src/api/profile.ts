@@ -172,3 +172,47 @@ export async function isHandleAvailable(handle: string): Promise<boolean> {
   if (error) throw error;
   return data === true;
 }
+
+/**
+ * Your record against one person, over the bets you were both in.
+ *
+ * Their overall win rate cannot honestly be shown on a friend's profile:
+ * bet_participants is RLS-scoped, so counting it from here would only see the
+ * bets *you* can see and would quietly understate them. A head-to-head has no
+ * such problem — you were in every bet it counts, by definition — and it is the
+ * more interesting number on somebody else's page anyway.
+ *
+ * This screen used to show a hardcoded 7-4 against whoever you opened.
+ */
+export async function getHeadToHead(otherUserId: string) {
+  const uid = (await supabase.auth.getSession()).data.session?.user.id;
+  if (!uid) return { played: 0, mine: 0, theirs: 0 };
+
+  const { data, error } = await supabase
+    .from('bet_participants')
+    .select('bet_id, user_id, side, is_winner, bet:bets!inner(status, winning_side, call_kind)')
+    .in('user_id', [uid, otherUserId])
+    .eq('bet.status', 'resolved');
+  if (error) throw error;
+
+  const byBet = new Map<string, any[]>();
+  for (const r of (data ?? []) as any[]) {
+    byBet.set(r.bet_id, [...(byBet.get(r.bet_id) ?? []), r]);
+  }
+
+  // A closest-call bet has no winning_side — everyone is stored on side a and
+  // the result lives in is_winner (00036).
+  const won = (row: any) =>
+    row.bet?.call_kind != null ? row.is_winner === true : row.side === row.bet?.winning_side;
+
+  let played = 0, mine = 0, theirs = 0;
+  for (const rows of byBet.values()) {
+    const me = rows.find((r) => r.user_id === uid);
+    const them = rows.find((r) => r.user_id === otherUserId);
+    if (!me || !them) continue; // only one of us was in it
+    played += 1;
+    if (won(me)) mine += 1;
+    if (won(them)) theirs += 1;
+  }
+  return { played, mine, theirs };
+}

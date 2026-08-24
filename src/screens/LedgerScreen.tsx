@@ -33,6 +33,8 @@ type Txn = {
   when: string;
   /** epoch ms, for the weekly chart */
   at?: number;
+  /** A claim the other side has not agreed to is not money yet. */
+  status: 'proposed' | 'pending' | 'settled';
 };
 
 export function LedgerScreen({ navigation }: any) {
@@ -69,6 +71,9 @@ export function LedgerScreen({ navigation }: any) {
     const WEEK = 604_800_000;
     const buckets = Array.from({ length: 7 }, () => 0);
     for (const t of txns) {
+      // A proposal is not money. Counting it turned a week that was £5 down
+      // into a green bar, disagreeing with the hero directly above it.
+      if (t.status === 'proposed') continue;
       // Clamped at zero. created_at comes from the database's clock, which can
       // sit a moment ahead of the device's; a negative age floored to -1, put
       // the entry in bucket 7 and dropped it from the chart altogether. A
@@ -260,9 +265,19 @@ export function LedgerScreen({ navigation }: any) {
           <ListRow
             key={t.id}
             title={t.title}
-            subtitle={`${t.group} · ${t.when}`}
+            subtitle={
+              t.status === 'proposed'
+                ? `${t.group} · waiting to be agreed`
+                : `${t.group} · ${t.when}`
+            }
             value={money(t.amountCents, t.currency)}
-            valueColor={t.amountCents >= 0 ? colors.semantic.win : colors.semantic.loss}
+            valueColor={
+              t.status === 'proposed'
+                ? colors.text.tertiary
+                : t.amountCents >= 0
+                  ? colors.semantic.win
+                  : colors.semantic.loss
+            }
             onPress={() => navigation.navigate('TransactionDetail', { id: t.id })}
           />
         ))}
@@ -292,6 +307,7 @@ function toTxn(e: any, uid: string | null): Txn {
       : (e.bet?.title ?? (e.status === 'pending' ? 'Pending' : 'Settled')),
     amountCents: incoming ? e.amount_cents : -e.amount_cents,
     currency: (e.currency ?? 'GBP').toUpperCase(),
+    status: e.status,
     when: relativeTime(e.created_at),
     at: new Date(e.created_at).getTime(),
   };

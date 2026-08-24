@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { CURRENCY_CODES, currencyLabel } from '../lib/money';
 import { resetMyLedger } from '../api/ledger';
 import { plural } from '../lib/plural';
-import { Text, ScrollView, StyleSheet, Linking, Alert } from 'react-native';
+import { Text, ScrollView, StyleSheet, Linking, Alert, Share } from 'react-native';
 import { colors, spacing } from '../tokens';
 import { ActionSheet, ScreenBackground, NavHeader, SettingsRow, SettingsSection } from '../components';
 import { useAuth } from '../lib/AuthContext';
@@ -12,6 +12,7 @@ import { getSettings, updateSettings } from '../api/settings';
 import { useQuery } from '../hooks/useQuery';
 import { isBackendConfigured } from '../lib/supabase';
 import { links } from '../lib/links';
+import Constants from 'expo-constants';
 
 
 /**
@@ -70,7 +71,7 @@ export function SettingsScreen({ navigation }: any) {
       ],
     );
   };
-  const { signOut, demoMode } = useAuth();
+  const { signOut, demoMode, session } = useAuth();
   const { data: settings, refetch } = useQuery(getSettings, {
     auto_settle: false,
     currency: 'GBP',
@@ -99,6 +100,16 @@ export function SettingsScreen({ navigation }: any) {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <SettingsSection title="Account">
+          {/* Which account this actually is. Nothing in the app said, so the
+              only way to find out was to sign out and look at the login. */}
+          {!!session?.user?.email && (
+            <SettingsRow
+              icon="person"
+              label="Email"
+              value={session.user.email}
+              showChevron={false}
+            />
+          )}
           <SettingsRow icon="person" label="Profile" onPress={() => navigation.navigate('ProfileEdit')} />
           <SettingsRow icon="bell" label="Notifications" onPress={() => navigation.navigate('NotificationPrefs')} />
           <SettingsRow icon="lock" label="Privacy" onPress={() => navigation.navigate('Privacy')} />
@@ -142,8 +153,20 @@ export function SettingsScreen({ navigation }: any) {
         </SettingsSection>
 
         <SettingsSection title="About">
-          <SettingsRow icon="heart" label="Rate DeadRight" onPress={() => {}} />
-          <SettingsRow icon="share" label="Share the app" onPress={() => {}} />
+          {/* "Rate DeadRight" used to sit here with an empty onPress. There is
+              no store listing to rate against, so the row was promising
+              something that does not exist twice over — it did nothing, and
+              there was nowhere for it to go. It comes back when there is a
+              listing. */}
+          <SettingsRow
+            icon="share"
+            label="Share the app"
+            onPress={() =>
+              Share.share({
+                message: `DeadRight — call it now, settle it later. ${links.site}`,
+              })
+            }
+          />
           {/* Both were no-ops. The App Store and Play both require a reachable
               privacy policy, and a dead row is worse than no row. */}
           <SettingsRow
@@ -156,7 +179,14 @@ export function SettingsScreen({ navigation }: any) {
             label="Terms of Service"
             onPress={() => Linking.openURL(links.terms)}
           />
-          <SettingsRow icon="info" label="Version" value="1.0.0" showChevron={false} />
+          {/* Read from the manifest rather than typed in, which is how a
+              hardcoded version ends up lying after the first release. */}
+          <SettingsRow
+            icon="info"
+            label="Version"
+            value={Constants.expoConfig?.version ?? '—'}
+            showChevron={false}
+          />
         </SettingsSection>
 
         <SettingsSection title="Danger Zone">

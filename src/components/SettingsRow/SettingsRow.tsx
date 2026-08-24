@@ -52,7 +52,11 @@ export function SettingsRow({
         {label}
       </Text>
 
-      {value && <Text style={styles.value}>{value}</Text>}
+      {value && (
+        <Text style={styles.value} numberOfLines={1}>
+          {value}
+        </Text>
+      )}
       {toggle && onToggle && <Toggle value={toggleValue} onChange={onToggle} />}
       {!toggle && showChevron && !destructive && <Text style={styles.chevron}>›</Text>}
     </Wrapper>
@@ -96,6 +100,9 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
   },
   value: {
+    // Only the label had flex, so a long value (an email address) squeezed the
+    // label until it wrapped onto two lines. Let the value give way instead.
+    flexShrink: 1,
     fontFamily: 'Inter-Regular',
     fontSize: 13,
     color: colors.text.tertiary,

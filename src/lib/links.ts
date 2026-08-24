@@ -7,6 +7,8 @@
 const SITE = 'https://raghavsamodia1.github.io/deadright';
 
 export const links = {
+  /** The showcase page, which is also where the Android build is offered. */
+  site: SITE,
   privacy: `${SITE}/legal/privacy/`,
   terms: `${SITE}/legal/terms/`,
   /**

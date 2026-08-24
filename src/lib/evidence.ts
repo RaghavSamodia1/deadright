@@ -10,36 +10,45 @@ export interface PickedPhoto {
   mimeType?: string;
 }
 
+export interface PickOptions {
+  /** Offer a square crop before returning — what an avatar wants. */
+  square?: boolean;
+  /** What the permission prompt says this is for. */
+  reason?: string;
+}
+
 /**
- * Camera + library capture for bet evidence.
+ * Camera + library capture, for bet evidence and profile photos.
  *
  * Permission handling is deliberate: iOS only shows the system prompt once, so
  * on a hard denial we send the user to Settings rather than silently failing.
  */
-export async function takePhoto(): Promise<PickedPhoto | null> {
+export async function takePhoto(opts: PickOptions = {}): Promise<PickedPhoto | null> {
   const perm = await ImagePicker.requestCameraPermissionsAsync();
   if (!perm.granted) {
-    promptForSettings('Camera access', 'DeadRight needs the camera to snap evidence.');
+    promptForSettings('Camera access', opts.reason ?? 'DeadRight needs the camera to snap evidence.');
     return null;
   }
   const result = await ImagePicker.launchCameraAsync({
     mediaTypes: ['images'],
     quality: 0.7, // evidence, not art — keeps uploads small
     exif: false,  // strip location metadata before it leaves the device
+    ...(opts.square ? { allowsEditing: true, aspect: [1, 1] as [number, number] } : {}),
   });
   return firstAsset(result);
 }
 
-export async function pickFromLibrary(): Promise<PickedPhoto | null> {
+export async function pickFromLibrary(opts: PickOptions = {}): Promise<PickedPhoto | null> {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) {
-    promptForSettings('Photo access', 'DeadRight needs your photos to attach evidence.');
+    promptForSettings('Photo access', opts.reason ?? 'DeadRight needs your photos to attach evidence.');
     return null;
   }
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ['images'],
     quality: 0.7,
     exif: false,
+    ...(opts.square ? { allowsEditing: true, aspect: [1, 1] as [number, number] } : {}),
   });
   return firstAsset(result);
 }

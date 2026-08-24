@@ -1,3 +1,5 @@
+import * as FileSystem from 'expo-file-system';
+import { decode } from 'base64-arraybuffer';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/database';
 
@@ -90,4 +92,83 @@ export async function searchBets(query: string) {
   const { data, error } = await supabase.rpc('search_bets', { p_query: q });
   if (error) throw error;
   return data ?? [];
+}
+
+// ── Avatar ───────────────────────────────────────────────────────────────────
+
+/**
+ * Upload a profile photo and point the profile at it.
+ *
+ * Same shape as evidence upload, including the reason it reads the file as
+ * base64 first: `fetch(uri).blob()` is unreliable in React Native and uploads a
+ * 0-byte file often enough to be untrustworthy.
+ *
+ * The old file is removed after the new one is live, not before — a failed
+ * upload should leave you with the photo you already had rather than none.
+ */
+export async function uploadAvatar(fileUri: string): Promise<string> {
+  const uid = (await supabase.auth.getSession()).data.session?.user.id;
+  if (!uid) throw new Error('not_authenticated');
+
+  const ext = (fileUri.split('.').pop() ?? 'jpg').toLowerCase().split('?')[0];
+  const path = `${uid}/${Date.now()}.${ext}`;
+  const base64 = await FileSystem.readAsStringAsync(fileUri, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+
+  const { error: upError } = await supabase.storage
+    .from('avatars')
+    .upload(path, decode(base64), {
+      contentType:
+        ext === 'png' ? 'image/png' : ext === 'heic' ? 'image/heic' : ext === 'webp' ? 'image/webp' : 'image/jpeg',
+      upsert: false,
+    });
+  if (upError) throw upError;
+
+  const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+  const url = data.publicUrl;
+
+  const previous = (await getMyProfile()).avatar_url;
+  await updateProfile({ avatar_url: url });
+  await removeStoredAvatar(previous);
+  return url;
+}
+
+/** Drop the photo and go back to the drawn face. */
+export async function removeAvatar(): Promise<void> {
+  const previous = (await getMyProfile()).avatar_url;
+  await updateProfile({ avatar_url: null });
+  await removeStoredAvatar(previous);
+}
+
+/**
+ * Best-effort cleanup of the file behind an old avatar URL. A leftover object
+ * costs a few KB and nothing else, so a failure here is not worth surfacing to
+ * somebody who has already successfully changed their photo.
+ */
+async function removeStoredAvatar(url: string | null | undefined): Promise<void> {
+  if (!url) return;
+  const marker = '/avatars/';
+  const at = url.indexOf(marker);
+  if (at === -1) return;
+  const path = url.slice(at + marker.length).split('?')[0];
+  if (!path) return;
+  try {
+    await supabase.storage.from('avatars').remove([path]);
+  } catch {
+    // Orphaned file; harmless.
+  }
+}
+
+/**
+ * Is this handle free?
+ *
+ * handle_available() has existed since 00034 and nothing called it, so the edit
+ * screen let you type a taken handle and find out from a unique-constraint
+ * violation on save.
+ */
+export async function isHandleAvailable(handle: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('handle_available', { p_handle: handle });
+  if (error) throw error;
+  return data === true;
 }

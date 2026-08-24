@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { colors, spacing } from '../tokens';
+import { colors, radius, spacing } from '../tokens';
 import { ScreenBackground, NavHeader, BentoTile, ListRow, SkeletonBlock } from '../components';
 import {
   getLedger,
@@ -10,11 +10,11 @@ import {
   type Balance,
 } from '../api/ledger';
 import { getMyGroups } from '../api/groups';
-import { getJar } from '../api/jar';
+import { getJarSummary } from '../api/jar';
 import { useQuery } from '../hooks/useQuery';
 import { plural } from '../lib/plural';
 import { useCurrency } from '../hooks/useCurrency';
-import { formatMoney, formatTotals, totalsByCurrency } from '../lib/money';
+import { formatMoney, totalsByCurrency, currencyLabel, currencySymbol } from '../lib/money';
 import { uidOrNull } from '../lib/supabase';
 
 // V2-03 Ledger (design-v2.md §5) — balance hero + stat column + month chart + txns.
@@ -65,42 +65,19 @@ export function LedgerScreen({ navigation }: any) {
 
   const { data: awaitingMe } = useQuery(countProposalsForMe, 0);
 
-  // Bucket the real entries into the last 7 weeks so the chart reflects
-  // actual activity rather than a decorative pattern.
-  const weekly = React.useMemo(() => {
-    const WEEK = 604_800_000;
-    const buckets = Array.from({ length: 7 }, () => 0);
-    for (const t of txns) {
-      // A proposal is not money. Counting it turned a week that was £5 down
-      // into a green bar, disagreeing with the hero directly above it.
-      if (t.status === 'proposed') continue;
-      // Clamped at zero. created_at comes from the database's clock, which can
-      // sit a moment ahead of the device's; a negative age floored to -1, put
-      // the entry in bucket 7 and dropped it from the chart altogether. A
-      // just-created entry belongs to this week.
-      const age = Math.max(0, Date.now() - (t.at ?? 0));
-      const idx = 6 - Math.floor(age / WEEK);
-      if (idx >= 0 && idx < 7) buckets[idx] += t.amountCents;
-    }
-    const peak = Math.max(...buckets.map((b) => Math.abs(b)), 1);
-    return buckets.map((net) => ({ net, pct: 12 + (Math.abs(net) / peak) * 88 }));
-  }, [txns]);
-
   // Only people something is still owed to or by. Everyone else — including
   // anyone already squared up with — is on the Balances screen.
   const { data: balances } = useQuery<Balance[]>(getBalances, []);
 
-  // The jar is group-scoped, so it is read in that group's currency — carry it
-  // out of the query rather than formatting with the viewer's default.
-  const { data: jar } = useQuery(
-    async () => {
-      const groups = await getMyGroups();
-      if (!groups.length) return { totalCents: 0, currency: null as string | null };
-      const { totalCents } = await getJar(groups[0].id);
-      return { totalCents, currency: (groups[0] as any).currency ?? null };
-    },
-    { totalCents: 0, currency: null as string | null },
-  );
+  // Every group's pot, not just the first one's. This read getJar(groups[0])
+  // and showed that single group's total, so with five groups the tile said ₹0
+  // while Pending right beside it counted ₹2 of jar entries from the others.
+  const { data: jar } = useQuery(getJarSummary, {
+    totalCents: 0,
+    byCurrency: [] as { currency: string; cents: number }[],
+    violationCount: 0,
+    weekCount: 0,
+  });
 
   // The hero counted settled entries only, so it read +0.00 while the balances
   // below said someone owed you a thousand. Settled is history; what you are up
@@ -119,6 +96,40 @@ export function LedgerScreen({ navigation }: any) {
   const netMixed = netTotals.length > 1;
   const netCents = netTotals[0]?.cents ?? 0;
   const netCurrency = netTotals[0]?.currency ?? currency;
+
+  // The chart speaks for one unit — whichever the net is in.
+  const chartCurrency = netCurrency;
+
+  // Bucket the real entries into the last 7 weeks so the chart reflects
+  // actual activity rather than a decorative pattern.
+  const weekly = React.useMemo(() => {
+    const WEEK = 604_800_000;
+    const buckets = Array.from({ length: 7 }, () => 0);
+    for (const t of txns) {
+      // A proposal is not money. Counting it turned a week that was £5 down
+      // into a green bar, disagreeing with the hero directly above it.
+      if (t.status === 'proposed') continue;
+      // Nor are two currencies one number. The chart was labelled "all
+      // currencies" and added ₹ to £ to get a bar height, which is the exact
+      // arithmetic 00026 exists to stop the rest of this screen doing.
+      if (t.currency !== chartCurrency) continue;
+      // Clamped at zero. created_at comes from the database's clock, which can
+      // sit a moment ahead of the device's; a negative age floored to -1, put
+      // the entry in bucket 7 and dropped it from the chart altogether. A
+      // just-created entry belongs to this week.
+      const age = Math.max(0, Date.now() - (t.at ?? 0));
+      const idx = 6 - Math.floor(age / WEEK);
+      if (idx >= 0 && idx < 7) buckets[idx] += t.amountCents;
+    }
+    const peak = Math.max(...buckets.map((b) => Math.abs(b)), 1);
+    return buckets.map((net) => ({ net, pct: 12 + (Math.abs(net) / peak) * 88 }));
+  }, [txns, chartCurrency]);
+
+
+  const jarTotals = jar.byCurrency ?? [];
+  const jarMixed = jarTotals.length > 1;
+  const jarCents = jarTotals[0]?.cents ?? 0;
+  const jarCurrency = jarTotals[0]?.currency ?? currency;
 
   const pendingTotals = summary.pendingByCurrency;
   const pendingMixed = pendingTotals.length > 1;
@@ -150,26 +161,40 @@ export function LedgerScreen({ navigation }: any) {
             <BentoTile
               size="stat"
               tone="amber"
-              value={formatMoney(jar.totalCents, jar.currency ?? currency)}
-              label="Cookie Jar →"
+              value={formatMoney(jarCents, jarCurrency)}
+              label={jarMixed ? `Cookie Jar · ${jarCurrency} →` : 'Cookie Jar →'}
               onPress={() => navigation.navigate('CookieJar')}
             />
           </View>
         </View>
 
-        {/* The hero can only speak for one unit; say what the others come to
-            rather than letting them vanish. */}
+        {/* The hero speaks for one unit. The others used to be a grey line of
+            11pt text reading "Also open: ₹-5", which is a strange way to
+            mention money somebody is owed. They get their own rows. */}
         {netMixed && (
-          <Text style={styles.mixedNote}>
-            Also open: {formatTotals(netTotals.slice(1))}
-          </Text>
+          <View style={styles.also}>
+            <Text style={styles.alsoLabel}>ALSO ON THE BOOKS</Text>
+            {netTotals.slice(1).map((t) => (
+              <View key={t.currency} style={styles.alsoRow}>
+                <Text style={styles.alsoName}>{currencyLabel(t.currency)}</Text>
+                <Text
+                  style={[
+                    styles.alsoAmount,
+                    { color: t.cents >= 0 ? colors.semantic.win : colors.semantic.disputed },
+                  ]}
+                >
+                  {money(t.cents, t.currency)}
+                </Text>
+              </View>
+            ))}
+          </View>
         )}
 
         {/* Row 2 — month chart */}
         <BentoTile
           size="chart"
           tone="navy"
-          label={netMixed ? `Last 7 weeks · all currencies` : 'Last 7 weeks'}
+          label={netMixed ? `Last 7 weeks · ${currencySymbol(chartCurrency).trim()}` : 'Last 7 weeks'}
         >
           <View style={styles.chart}>
             {weekly.map((w, i) => (
@@ -328,6 +353,23 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.text.tertiary,
   },
+  also: {
+    backgroundColor: colors.bg.surface1,
+    borderRadius: radius.md,
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[4],
+    gap: spacing[1],
+  },
+  alsoLabel: {
+    fontFamily: 'Barlow-SemiBold',
+    fontSize: 10,
+    letterSpacing: 1.6,
+    color: colors.text.tertiary,
+    marginBottom: 2,
+  },
+  alsoRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  alsoName: { fontFamily: 'Inter-Regular', fontSize: 13, color: colors.text.secondary },
+  alsoAmount: { fontFamily: 'Barlow-Bold', fontSize: 17 },
   content: {
     padding: spacing.screenGutter,
     gap: spacing[3],

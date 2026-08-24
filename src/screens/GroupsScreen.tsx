@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../tokens';
-import { ScreenBackground, NavHeader, ListRow, EmptyState, Button } from '../components';
+import { ScreenBackground, NavHeader, ListRow, EmptyState, Button, Avatar } from '../components';
 import { getMyGroups } from '../api/groups';
 import { getMyProfile } from '../api/profile';
 import { useQuery } from '../hooks/useQuery';
@@ -16,6 +16,17 @@ import { humanError } from '../lib/errors';
  * for anyone who already had groups. Groups get their own screen now, and the
  * create/join actions live inside it where you'd look for them.
  */
+/** Two letters for someone with no photo — the Avatar draws a face behind them. */
+function initialsOf(name: string): string {
+  return (
+    name
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() ?? '')
+      .join('') || '?'
+  );
+}
+
 export function GroupsScreen({ navigation }: any) {
   const { data: groups, loading, error } = useQuery(getMyGroups, [] as any[]);
   const { data: me } = useQuery(getMyProfile, null as any);
@@ -23,7 +34,7 @@ export function GroupsScreen({ navigation }: any) {
   // There is no friends table — a friend is someone you share a group with, so
   // the roster is derived from group membership and de-duplicated across them.
   const people = React.useMemo(() => {
-    const byId = new Map<string, { id: string; handle: string; name: string }>();
+    const byId = new Map<string, { id: string; handle: string; name: string; avatar: string | null }>();
     (groups as any[]).forEach((g) =>
       (g.members ?? []).forEach((m: any) => {
         if (!m.user_id || m.user_id === me?.id || byId.has(m.user_id)) return;
@@ -31,6 +42,7 @@ export function GroupsScreen({ navigation }: any) {
           id: m.user_id,
           handle: m.profile?.handle ?? '',
           name: m.profile?.display_name ?? m.profile?.handle ?? 'Someone',
+          avatar: m.profile?.avatar_url ?? null,
         });
       }),
     );
@@ -70,8 +82,16 @@ export function GroupsScreen({ navigation }: any) {
             {people.map((p) => (
               <ListRow
                 key={p.id}
+                left={
+                  <Avatar
+                    size="sm"
+                    uri={p.avatar ?? undefined}
+                    initials={initialsOf(p.name)}
+                    seed={p.handle || p.id}
+                  />
+                }
                 title={p.name}
-                subtitle={p.handle ? p.handle : ''}
+                subtitle={p.handle ? `@${p.handle}` : ''}
                 showChevron
                 onPress={() => navigation.navigate('FriendProfile', { handle: p.handle, id: p.id })}
               />

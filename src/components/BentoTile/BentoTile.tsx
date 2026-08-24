@@ -291,6 +291,11 @@ export function BentoTile({
             { color: tone === 'navy' ? colors.text.tertiary : t.sub },
           ]}
           numberOfLines={1}
+          // "Cookie Jar →" does not fit a stat tile at 10pt and was rendering
+          // as "COOKIE JA…". A label that cannot say its own name is no better
+          // than the truncated amounts fixed above it.
+          adjustsFontSizeToFit
+          minimumFontScale={0.75}
         >
           {label}
         </Text>

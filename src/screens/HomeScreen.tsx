@@ -237,7 +237,9 @@ export function HomeScreen({ navigation }: any) {
           <BentoTile
             size="feature" tone="navy" icon="users"
             value={`${groups.length}`}
-            label={groups.length === 1 ? 'Group' : 'Groups'}
+            // The screen behind it has always been "Groups & people"; the tile
+            // only advertised half of what it opens.
+            label="Groups & people"
             caption="Open them"
             onPress={() => navigation.navigate('Groups')}
           />

@@ -13,6 +13,13 @@ import { Platform, ViewStyle } from 'react-native';
  * On amber a white top edge is a bright bevel and a black bottom edge is a
  * shadow inside the shape; on a near-black card the white edge is the only one
  * of the pair that can be seen at all.
+ *
+ * The lip runs the whole way round rather than sitting on the top and bottom
+ * only. Two bands stop dead where the corner starts to turn, so the edge reads
+ * as a pair of flat stripes laid on a flat card; carried through the sides it
+ * follows the curve, and the surface reads as something with a rounded rim that
+ * light is falling across. Left and right take a value between the lit top and
+ * the shaded bottom, which is where a rounded edge would actually sit.
  */
 const shadow = (height: number, radius: number, opacity: number, android: number): ViewStyle =>
   Platform.select({
@@ -29,28 +36,28 @@ const shadow = (height: number, radius: number, opacity: number, android: number
 export const elevation = {
   /** Dark surfaces: cards, rows, navy tiles. */
   card: {
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.10)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.55)',
-    ...shadow(5, 10, 0.5, 5),
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.07)',
+    borderTopColor: 'rgba(255,255,255,0.20)',
+    borderBottomColor: 'rgba(0,0,0,0.70)',
+    ...shadow(9, 18, 0.7, 10),
   } as ViewStyle,
 
   /** Saturated fills, where both edges have something to catch. */
   bright: {
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.42)',
-    borderBottomWidth: 2,
-    borderBottomColor: 'rgba(0,0,0,0.20)',
-    ...shadow(6, 12, 0.55, 7),
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.26)',
+    borderTopColor: 'rgba(255,255,255,0.62)',
+    borderBottomColor: 'rgba(0,0,0,0.28)',
+    ...shadow(10, 20, 0.75, 12),
   } as ViewStyle,
 
   /** List rows: the same light, turned down. */
   row: {
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.07)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.45)',
-    ...shadow(3, 6, 0.4, 3),
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.05)',
+    borderTopColor: 'rgba(255,255,255,0.15)',
+    borderBottomColor: 'rgba(0,0,0,0.62)',
+    ...shadow(6, 12, 0.6, 6),
   } as ViewStyle,
 };

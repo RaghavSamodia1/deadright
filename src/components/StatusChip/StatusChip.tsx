@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
-import { colors, radius } from '../../tokens';
+import { colors, radius, relief } from '../../tokens';
 
 export type BetStatus =
   | 'active'
@@ -113,6 +113,7 @@ export function StatusChip({ status, isCreator = false, ink, style }: StatusChip
 
 const styles = StyleSheet.create({
   chip: {
+    ...relief,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,

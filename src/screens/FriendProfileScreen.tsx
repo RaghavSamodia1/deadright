@@ -196,7 +196,7 @@ export function FriendProfileScreen({ navigation, route }: any) {
 
         {shared > 0 && (
           <Button
-            label="Record something"
+            label="Add a transaction"
             variant="secondary"
             fullWidth
             onPress={() =>

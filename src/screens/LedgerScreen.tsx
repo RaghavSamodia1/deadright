@@ -126,6 +126,15 @@ export function LedgerScreen({ navigation }: any) {
   }, [txns, chartCurrency]);
 
 
+  // What the hero number is made of, in its own unit. Settled history plus
+  // what is still open is exactly the sum shown above them, so the two rows
+  // explain the number rather than decorating it.
+  const settledPrimary =
+    summary.lifetimeByCurrency.find((t) => t.currency === netCurrency)?.cents ?? 0;
+  const openPrimary = balances
+    .filter((b) => b.currency === netCurrency)
+    .reduce((n, b) => n + b.netCents, 0);
+
   const jarTotals = jar.byCurrency ?? [];
   const jarMixed = jarTotals.length > 1;
   const jarCents = jarTotals[0]?.cents ?? 0;
@@ -146,11 +155,39 @@ export function LedgerScreen({ navigation }: any) {
           <BentoTile
             size="hero"
             tone={netCents >= 0 ? 'mint' : 'coral'}
-            icon="coin"
             value={money(netCents, netCurrency)}
             label={netMixed ? `Net · ${netCurrency}` : 'Net this season'}
-            caption="All bookkeeping — no real money"
-          />
+            caption="Bookkeeping only"
+          >
+            {/* Every other unit, in the same tile as the first. They used to
+                sit in a card of their own below, which split one answer across
+                two places, and left the middle of this tile empty. */}
+            <View style={styles.heroRest}>
+              {netMixed ? (
+                netTotals.slice(1).map((t) => (
+                  <View key={t.currency} style={styles.heroRow}>
+                    <Text style={styles.heroRowName}>{currencyLabel(t.currency)}</Text>
+                    <Text style={styles.heroRowAmount}>{money(t.cents, t.currency)}</Text>
+                  </View>
+                ))
+              ) : (
+                <>
+                  <View style={styles.heroRow}>
+                    <Text style={styles.heroRowName}>Settled</Text>
+                    <Text style={styles.heroRowAmount}>
+                      {money(settledPrimary, netCurrency)}
+                    </Text>
+                  </View>
+                  <View style={styles.heroRow}>
+                    <Text style={styles.heroRowName}>Still open</Text>
+                    <Text style={styles.heroRowAmount}>
+                      {money(openPrimary, netCurrency)}
+                    </Text>
+                  </View>
+                </>
+              )}
+            </View>
+          </BentoTile>
           <View style={styles.col}>
             <BentoTile
               size="stat" tone="amber-tint"
@@ -167,28 +204,6 @@ export function LedgerScreen({ navigation }: any) {
             />
           </View>
         </View>
-
-        {/* The hero speaks for one unit. The others used to be a grey line of
-            11pt text reading "Also open: ₹-5", which is a strange way to
-            mention money somebody is owed. They get their own rows. */}
-        {netMixed && (
-          <View style={styles.also}>
-            <Text style={styles.alsoLabel}>ALSO ON THE BOOKS</Text>
-            {netTotals.slice(1).map((t) => (
-              <View key={t.currency} style={styles.alsoRow}>
-                <Text style={styles.alsoName}>{currencyLabel(t.currency)}</Text>
-                <Text
-                  style={[
-                    styles.alsoAmount,
-                    { color: t.cents >= 0 ? colors.semantic.win : colors.semantic.disputed },
-                  ]}
-                >
-                  {money(t.cents, t.currency)}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
 
         {/* Row 2 — month chart */}
         <BentoTile
@@ -266,7 +281,7 @@ export function LedgerScreen({ navigation }: any) {
           onPress={() => navigation.navigate('Balances')}
         />
         <ListRow
-          title="Record something"
+          title="Add a transaction"
           subtitle="A round, a taxi, a tenner — anything that wasn't a bet"
           showChevron
           onPress={() => navigation.navigate('RecordEntry')}
@@ -352,6 +367,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 11,
     color: colors.text.tertiary,
+  },
+  // No flex. It had flex:1 to absorb the spare height, which fought the
+  // caption's own marginTop:'auto' for the same space inside a fixed-height
+  // tile — both won, and the rows printed straight through the caption. Natural
+  // height, and the caption pushes itself to the bottom of whatever is left.
+  heroRest: { gap: 6, marginTop: spacing[3] },
+  heroRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  heroRowName: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 11,
+    color: 'rgba(10,10,11,0.62)',
+  },
+  heroRowAmount: {
+    fontFamily: 'Barlow-Bold',
+    fontSize: 15,
+    color: colors.text.inverse,
   },
   also: {
     backgroundColor: colors.bg.surface1,

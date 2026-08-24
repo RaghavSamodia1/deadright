@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { View, Text, Pressable, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-import { colors, spacing } from '../tokens';
+import { colors, spacing, relief } from '../tokens';
 import {
   ScreenBackground,
   NavHeader,
@@ -428,6 +428,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   capFill: {
+    ...relief,
     height: 8,
     borderRadius: 999,
     backgroundColor: colors.text.inverse,

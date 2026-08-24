@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, radius, spacing } from '../../tokens';
+import { colors, radius, spacing, relief } from '../../tokens';
 
 interface ChoiceChipProps {
   label: string;
@@ -75,6 +75,7 @@ export function ChoiceChipGroup<T extends string>({
 
 const styles = StyleSheet.create({
   chip: {
+    ...relief,
     paddingHorizontal: spacing[4],
     paddingVertical: spacing[3],
     borderRadius: radius.sm,

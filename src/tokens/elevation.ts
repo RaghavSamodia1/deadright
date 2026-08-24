@@ -61,3 +61,47 @@ export const elevation = {
     ...shadow(10, 20, 0.75, 11),
   } as ViewStyle,
 };
+
+/**
+ * Depth for the things sitting *on* a surface, rather than the surface itself.
+ *
+ * Same light source: above. On a saturated fill the ink is dark, so a pale
+ * shadow dropped just beneath it reads as type standing proud of the tile; on a
+ * dark fill the ink is pale and wants a black one. Offsets stay at a pixel or
+ * two — this is meant to catch the eye as relief, not as a drop shadow on a
+ * word.
+ */
+export const emboss = {
+  /** Dark ink on amber, mint, coral, flame. */
+  onBright: {
+    textShadowColor: 'rgba(255,255,255,0.55)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 0,
+  },
+  /** Pale ink on a dark surface. */
+  onDark: {
+    textShadowColor: 'rgba(0,0,0,0.85)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+} as const;
+
+/**
+ * The small solid shapes inside a card — progress fills, chart bars, chips,
+ * the two halves of a side bar. Too small for the full rim treatment, so they
+ * take a lit top edge and a shadow and leave it there.
+ */
+export const relief = {
+  borderTopWidth: 1,
+  borderTopColor: 'rgba(255,255,255,0.35)',
+  ...(Platform.select({
+    ios: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.5,
+      shadowRadius: 3,
+    },
+    android: { elevation: 3 },
+    default: {},
+  }) as ViewStyle),
+} as ViewStyle;

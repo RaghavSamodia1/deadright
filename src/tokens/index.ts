@@ -3,4 +3,4 @@ export { spacing, S } from './spacing';
 export { radius, R } from './radius';
 export { typography, fonts, T } from './typography';
 export { duration, spring, reducedMotion } from './motion';
-export { elevation } from './elevation';
+export { elevation, emboss, relief } from './elevation';

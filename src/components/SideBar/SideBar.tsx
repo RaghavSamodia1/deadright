@@ -5,7 +5,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
-import { colors, spring } from '../../tokens';
+import { colors, spring, relief } from '../../tokens';
 
 interface SideBarProps {
   sideAPercent: number; // 0–100
@@ -99,8 +99,10 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   // Ink on both is the dark card ink: 12.5:1 on amber, 7.0:1 on teal.
-  halfA: { backgroundColor: colors.side.a, justifyContent: 'flex-start', borderTopLeftRadius: 999, borderBottomLeftRadius: 999 },
-  halfB: { backgroundColor: colors.side.b, justifyContent: 'flex-end', borderTopRightRadius: 999, borderBottomRightRadius: 999 },
+  halfA: {
+    ...relief, backgroundColor: colors.side.a, justifyContent: 'flex-start', borderTopLeftRadius: 999, borderBottomLeftRadius: 999 },
+  halfB: {
+    ...relief, backgroundColor: colors.side.b, justifyContent: 'flex-end', borderTopRightRadius: 999, borderBottomRightRadius: 999 },
   label: {
     fontFamily: 'Barlow-Black',
     fontSize: 12,

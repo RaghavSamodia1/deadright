@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, radius } from '../../tokens';
+import { colors, radius, elevation } from '../../tokens';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'ghost';
 export type ButtonSize = 'lg' | 'md' | 'sm';
@@ -72,6 +72,21 @@ export function Button({
   haptic = true,
 }: ButtonProps) {
   const v = VARIANT_STYLES[variant];
+
+  /**
+   * A button is the most obviously pressable thing on a screen and gains the
+   * most from looking like it sticks out — but only where there is a surface to
+   * light. `bright` is tuned for a saturated fill and its pale rim would read as
+   * an outline on the dark secondary; ghost has no fill at all, and a shadow
+   * under nothing is just a smudge. Disabled stays flat, because a control that
+   * cannot be pressed should not look raised.
+   */
+  const depth =
+    disabled || variant === 'ghost'
+      ? null
+      : variant === 'secondary'
+        ? elevation.card
+        : elevation.bright;
   const s = SIZE_STYLES[size];
   const handlePress = () => {
     if (haptic && !disabled) {
@@ -94,13 +109,14 @@ export function Button({
           height: s.height,
           paddingHorizontal: s.px,
           borderRadius: s.borderRadius,
+          // Spread rather than layered, so the rim from `depth` is not undone
+          // by a borderWidth set further down the same object.
+          ...(depth ?? { borderWidth: v.border ? 1 : 0, borderColor: v.border ?? 'transparent' }),
           backgroundColor: disabled
             ? colors.interactive.disabled
             : pressed
               ? v.pressedBg
               : v.bg,
-          borderWidth: v.border ? 1 : 0,
-          borderColor: v.border ?? 'transparent',
           alignSelf: fullWidth ? 'stretch' : 'flex-start',
           opacity: loading ? 0.7 : 1,
         },

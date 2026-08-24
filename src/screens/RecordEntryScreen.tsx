@@ -112,7 +112,7 @@ export function RecordEntryScreen({ navigation, route }: any) {
     <ScreenBackground tone="base">
       <NavHeader
         variant="back"
-        title="Record something"
+        title="Add a transaction"
         onBack={() => navigation.goBack()}
       />
 

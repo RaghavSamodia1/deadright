@@ -4,7 +4,7 @@ import Animated from 'react-native-reanimated';
 import { usePressScale, AnimatedPressable } from '../Motion/usePressScale';
 import { CountUp } from '../Motion/CountUp';
 import * as Haptics from 'expo-haptics';
-import { colors, radius, spacing, elevation } from '../../tokens';
+import { colors, radius, spacing, elevation, emboss } from '../../tokens';
 import { Icon, type IconName } from '../Icon/Icon';
 
 export type TileSize =
@@ -232,6 +232,8 @@ export function BentoTile({
 
   const valueStyle = [
     styles.value,
+    // Relief on the number itself, lit from the same direction as the tile.
+    isBright ? emboss.onBright : emboss.onDark,
     {
       color: t.text,
       fontSize: valueSize,
@@ -293,6 +295,7 @@ export function BentoTile({
             // Only `caption` used to push to the bottom, so a tile without one
             // bunched its content against the top with the lower third empty.
             !caption && styles.labelToBottom,
+            isBright ? emboss.onBright : emboss.onDark,
             { color: tone === 'navy' ? colors.text.tertiary : t.sub },
           ]}
           numberOfLines={1}

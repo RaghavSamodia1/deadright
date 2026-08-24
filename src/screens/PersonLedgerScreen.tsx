@@ -279,7 +279,7 @@ export function PersonLedgerScreen({ navigation, route }: any) {
         ))}
 
         <Button
-          label="Record something"
+          label="Add a transaction"
           variant="secondary"
           fullWidth
           onPress={() =>
@@ -351,7 +351,7 @@ export function PersonLedgerScreen({ navigation, route }: any) {
           <EmptyState
             icon="scales"
             title="No ledger with them yet"
-            body="Settle a money bet between the two of you, or record something that wasn't a bet."
+            body="Settle a money bet between the two of you, or add a transaction for anything that wasn't one."
           />
         )}
       </ScrollView>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, Text, StyleSheet, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, radius } from '../../tokens';
+import { colors, radius, relief } from '../../tokens';
 
 interface FilterChipProps {
   label: string;
@@ -42,6 +42,7 @@ export function FilterChip({ label, active = false, onPress, style }: FilterChip
 
 const styles = StyleSheet.create({
   chip: {
+    ...relief,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: radius.full,

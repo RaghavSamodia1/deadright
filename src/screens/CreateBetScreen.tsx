@@ -150,12 +150,13 @@ export function CreateBetScreen({ navigation, route }: any) {
     .slice(0, 2)
     .toUpperCase();
 
-  const MOCK_GROUPS = [
-    { id: 'g1', emoji: '⚽', name: 'Sunday League', memberCount: 8, members: [{ initials: 'MC' }, { initials: 'PR' }, { initials: 'DJ' }] },
-    { id: 'g2', emoji: '🏠', name: 'Flatmates', memberCount: 5, members: [{ initials: 'AB' }, { initials: 'JK' }] },
-  ];
-
-  const { data: groups, isMock: groupsAreMock } = useQuery(
+  // The fallback is empty on purpose. It used to be two invented groups —
+  // Sunday League and Flatmates, with made-up members — and the picker showed
+  // them as real, tappable choices. Worse, their ids were 'g1' and 'g2': the
+  // auto-select below latched onto one before the real groups landed, and every
+  // bet insert failed with `invalid input syntax for type uuid: "g1"`. Nothing
+  // can be selected out of an empty list.
+  const { data: groups, loading: groupsLoading } = useQuery(
     async () =>
       (await getMyGroups()).map((g: any) => ({
         id: g.id,
@@ -168,7 +169,7 @@ export function CreateBetScreen({ navigation, route }: any) {
             .toUpperCase(),
         })),
       })),
-    MOCK_GROUPS,
+    [] as { id: string; emoji: string; name: string; memberCount: number; members: { initials: string }[] }[],
   );
 
   const { run: publish, loading: publishing, error: publishError } = useAction(createBet);
@@ -262,9 +263,8 @@ export function CreateBetScreen({ navigation, route }: any) {
     // auto-selecting without this check latched onto the mock id "g1" on the
     // first render and never corrected once the real groups arrived — the
     // insert then failed with `invalid input syntax for type uuid: "g1"`.
-    if (groupsAreMock) return;
     if (!group && groups.length > 0) setGroup(groups[0].id);
-  }, [groups, group, groupsAreMock]);
+  }, [groups, group]);
 
   // Debounced: the user is still typing, and sharpen is a network call.
   useEffect(() => {
@@ -456,7 +456,9 @@ export function CreateBetScreen({ navigation, route }: any) {
         {at('Group') && (
           <>
             <Text style={styles.q}>Who’s in?</Text>
-            {groups.length === 0 ? (
+            {groupsLoading && groups.length === 0 ? (
+              <Text style={styles.hint}>Finding your groups…</Text>
+            ) : groups.length === 0 ? (
               <>
                 <Text style={styles.hint}>
                   A call needs someone to argue with. Make a group or join one with a

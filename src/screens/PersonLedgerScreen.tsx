@@ -16,6 +16,9 @@ import {
   settleUpWith,
   markSettled,
   deleteEntry,
+  acceptEntry,
+  declineEntry,
+  unsettleEntry,
   type PersonEntry,
 } from '../api/ledger';
 import { useQuery } from '../hooks/useQuery';
@@ -25,18 +28,12 @@ import { humanError } from '../lib/errors';
 
 /**
  * Everything between you and one other person: what it comes to, what is still
- * open, and what has already been closed off.
+ * open, what one of you has claimed and the other has not answered, and what
+ * has already been closed off.
  *
- * The ledger could say "you owe Priya £14" but never why. Answering that meant
- * reading the whole transaction list and picking out the rows with her name on
- * — the exact arithmetic the balances were added to save people from. Tapping
- * her name used to go straight to a confirm dialog that settled all fourteen
- * pounds at once, which is a strange thing to ask someone to agree to before
- * showing them what they are agreeing about.
- *
- * So: the standing at the top, the open items underneath it individually, and
- * the history below that. Settling is available per item or all at once, and
- * both say plainly that no money moves.
+ * The ledger could say "you owe Test Mate £14" but never why. Answering that
+ * meant reading the whole transaction list and picking out the rows with their
+ * name on — the exact arithmetic the balances were added to save people from.
  */
 export function PersonLedgerScreen({ navigation, route }: any) {
   const userId: string | undefined = route?.params?.userId;
@@ -49,7 +46,7 @@ export function PersonLedgerScreen({ navigation, route }: any) {
     [userId],
   );
 
-  /** Which row is mid-settle — an entry id, or `all:GBP`. */
+  /** Which row is mid-write — an entry id, or `all:GBP`. */
   const [busy, setBusy] = React.useState<string | null>(null);
   const [sheetFor, setSheetFor] = React.useState<PersonEntry | null>(null);
 
@@ -70,6 +67,8 @@ export function PersonLedgerScreen({ navigation, route }: any) {
     }
   };
 
+  const askedOfMe = entries.filter((e) => e.awaitingMe);
+  const askedOfThem = entries.filter((e) => e.status === 'proposed' && !e.awaitingMe);
   const open = entries.filter((e) => e.status === 'pending');
   const settled = entries.filter((e) => e.status === 'settled');
 
@@ -80,6 +79,11 @@ export function PersonLedgerScreen({ navigation, route }: any) {
   const netByCurrency = totalsByCurrency(
     open.map((e) => ({ currency: e.currency, cents: e.amountCents })),
   );
+
+  /** A bet lends its title; a hand-recorded entry carries its own note. */
+  const label = (e: PersonEntry) => e.betTitle ?? e.note ?? 'Ledger entry';
+  const money = (e: PersonEntry) =>
+    `${e.amountCents >= 0 ? '+' : '−'}${formatMoney(Math.abs(e.amountCents), e.currency)}`;
 
   const confirmSettleAll = (code: string) => {
     const items = open.filter((e) => e.currency === code);
@@ -104,24 +108,6 @@ export function PersonLedgerScreen({ navigation, route }: any) {
     );
   };
 
-  const sheetOptions = (e: PersonEntry): ActionSheetOption[] => [
-    {
-      label: 'Mark settled',
-      primary: true,
-      onPress: () => run(e.id, () => markSettled(e.id), 'Couldn’t settle that item'),
-    },
-    {
-      label: 'Open transaction',
-      onPress: () => navigation.navigate('TransactionDetail', { id: e.id }),
-    },
-    ...(e.isManual
-      ? [{ label: 'Delete', destructive: true, onPress: () => confirmDelete(e) }]
-      : []),
-  ];
-
-  /** A bet lends its title; a hand-recorded entry carries its own note. */
-  const label = (e: PersonEntry) => e.betTitle ?? e.note ?? 'Ledger entry';
-
   const confirmDelete = (e: PersonEntry) =>
     Alert.alert(
       'Delete this entry?',
@@ -135,6 +121,55 @@ export function PersonLedgerScreen({ navigation, route }: any) {
         },
       ],
     );
+
+  const confirmDecline = (e: PersonEntry) =>
+    Alert.alert(
+      `Turn down "${label(e)}"?`,
+      `${displayName} is told you didn't agree, and the entry goes. Nothing is recorded either way.`,
+      [
+        { text: 'Back', style: 'cancel' },
+        {
+          text: "Didn't happen",
+          style: 'destructive',
+          onPress: () => run(e.id, () => declineEntry(e.id), 'Couldn’t turn that down'),
+        },
+      ],
+    );
+
+  const sheetOptions = (e: PersonEntry): ActionSheetOption[] => {
+    if (e.status === 'settled') {
+      return [
+        {
+          label: 'Reopen it',
+          onPress: () => run(e.id, () => unsettleEntry(e.id), 'Couldn’t reopen that'),
+        },
+        {
+          label: 'Open transaction',
+          onPress: () => navigation.navigate('TransactionDetail', { id: e.id }),
+        },
+      ];
+    }
+    if (e.status === 'proposed') {
+      // Yours to withdraw, not to agree with.
+      return [
+        { label: 'Withdraw it', destructive: true, onPress: () => confirmDelete(e) },
+      ];
+    }
+    return [
+      {
+        label: 'Mark settled',
+        primary: true,
+        onPress: () => run(e.id, () => markSettled(e.id), 'Couldn’t settle that item'),
+      },
+      {
+        label: 'Open transaction',
+        onPress: () => navigation.navigate('TransactionDetail', { id: e.id }),
+      },
+      ...(e.isManual
+        ? [{ label: 'Delete', destructive: true, onPress: () => confirmDelete(e) }]
+        : []),
+    ];
+  };
 
   const initials = displayName
     .split(/\s+/)
@@ -190,6 +225,48 @@ export function PersonLedgerScreen({ navigation, route }: any) {
           <Text style={styles.note}>Bookkeeping only. No money changes hands.</Text>
         </View>
 
+        {/* Asked of you. A decision, so both answers are on screen rather than
+            hidden behind a tap. */}
+        {askedOfMe.length > 0 && (
+          <>
+            <Text style={styles.section}>WAITING ON YOU</Text>
+            {askedOfMe.map((e) => (
+              <View key={e.id} style={styles.proposal}>
+                <Text style={styles.proposalTitle}>{label(e)}</Text>
+                <Text style={styles.proposalLine}>
+                  {displayName} says{' '}
+                  {e.amountCents >= 0 ? 'they owe you' : 'you owe them'}{' '}
+                  <Text style={styles.proposalAmount}>
+                    {formatMoney(Math.abs(e.amountCents), e.currency)}
+                  </Text>
+                  {' · '}
+                  {relativeTime(e.createdAt)}
+                </Text>
+                <View style={styles.proposalActions}>
+                  <Button
+                    label="That's right"
+                    variant="primary"
+                    size="sm"
+                    loading={busy === e.id}
+                    onPress={() => run(e.id, () => acceptEntry(e.id), 'Couldn’t accept that')}
+                    style={styles.grow}
+                  />
+                  <Button
+                    label="It isn't"
+                    variant="secondary"
+                    size="sm"
+                    onPress={() => confirmDecline(e)}
+                    style={styles.grow}
+                  />
+                </View>
+              </View>
+            ))}
+            <Text style={styles.hint}>
+              Nothing counts towards your balance until you agree with it.
+            </Text>
+          </>
+        )}
+
         {openCurrencies.map((code) => (
           <Button
             key={code}
@@ -222,13 +299,30 @@ export function PersonLedgerScreen({ navigation, route }: any) {
                   subtitle={`${owed ? 'Owes you' : 'You owe'}${
                     e.isManual ? ' · recorded' : ''
                   } · ${relativeTime(e.createdAt)}`}
-                  value={`${owed ? '+' : '−'}${formatMoney(Math.abs(e.amountCents), e.currency)}`}
+                  value={money(e)}
                   valueColor={owed ? colors.semantic.win : colors.semantic.disputed}
                   onPress={() => setSheetFor(e)}
                 />
               );
             })}
             <Text style={styles.hint}>Tap an item to settle it on its own.</Text>
+          </>
+        )}
+
+        {/* Yours, still unanswered. Greyed, because it is not money yet. */}
+        {askedOfThem.length > 0 && (
+          <>
+            <Text style={styles.section}>WAITING ON {displayName.toUpperCase()}</Text>
+            {askedOfThem.map((e) => (
+              <ListRow
+                key={e.id}
+                title={label(e)}
+                subtitle={`Not agreed yet · ${relativeTime(e.createdAt)}`}
+                value={money(e)}
+                valueColor={colors.text.tertiary}
+                onPress={() => setSheetFor(e)}
+              />
+            ))}
           </>
         )}
 
@@ -244,9 +338,9 @@ export function PersonLedgerScreen({ navigation, route }: any) {
                   subtitle={`${
                     e.isManual ? (won ? 'Owed you' : 'You owed') : won ? 'You won' : 'You lost'
                   } · settled · ${relativeTime(e.createdAt)}`}
-                  value={`${won ? '+' : '−'}${formatMoney(Math.abs(e.amountCents), e.currency)}`}
+                  value={money(e)}
                   valueColor={won ? colors.semantic.win : colors.semantic.loss}
-                  onPress={() => navigation.navigate('TransactionDetail', { id: e.id })}
+                  onPress={() => setSheetFor(e)}
                 />
               );
             })}
@@ -303,10 +397,7 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     marginTop: spacing[3],
   },
-  standing: {
-    alignItems: 'center',
-    marginTop: spacing[3],
-  },
+  standing: { alignItems: 'center', marginTop: spacing[3] },
   standingLabel: {
     fontFamily: 'Barlow-SemiBold',
     fontSize: 11,
@@ -326,6 +417,35 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,
     marginTop: spacing[3],
   },
+  proposal: {
+    backgroundColor: colors.bg.surface1,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.semantic.awaiting,
+    padding: spacing[4],
+    gap: spacing[2],
+  },
+  proposalTitle: {
+    fontFamily: 'Barlow-Bold',
+    fontSize: 16,
+    color: colors.text.primary,
+  },
+  proposalLine: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.text.secondary,
+  },
+  proposalAmount: {
+    fontFamily: 'Inter-Medium',
+    color: colors.text.primary,
+  },
+  proposalActions: {
+    flexDirection: 'row',
+    gap: spacing[2],
+    marginTop: spacing[1],
+  },
+  grow: { flex: 1 },
   section: {
     fontFamily: 'Barlow-SemiBold',
     fontSize: 11,

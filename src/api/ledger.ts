@@ -48,9 +48,11 @@ export async function getLedgerSummary() {
     if (e.status === 'settled') {
       lifetime.push({ currency, cents: signed });
       if (new Date(e.created_at) >= monthStart) thisMonth.push({ currency, cents: signed });
-    } else {
+    } else if (e.status === 'pending') {
       pending.push({ currency, cents: Math.abs(signed) });
     }
+    // 'proposed' is neither: nobody owes anything until the other person
+    // agrees, so it belongs in no total on this screen.
   }
 
   const sum = (rows: { cents: number }[]) => rows.reduce((t, r) => t + r.cents, 0);
@@ -200,7 +202,12 @@ export interface PersonEntry {
   /** Signed from your side: positive when they owe you. */
   amountCents: number;
   currency: string;
-  status: 'pending' | 'settled';
+  /** 'proposed' is a claim the other person has not agreed to yet. */
+  status: 'proposed' | 'pending' | 'settled';
+  /** Who recorded it, on entries still waiting to be accepted. */
+  proposedBy: string | null;
+  /** Waiting on you, rather than on them. */
+  awaitingMe: boolean;
   /** The bet it came from, where the bet still exists. */
   betTitle: string | null;
   betId: string | null;
@@ -227,7 +234,7 @@ export async function getLedgerWith(otherUserId: string): Promise<PersonEntry[]>
   const { data, error } = await supabase
     .from('ledger_entries')
     .select(
-      'id, from_user, to_user, amount_cents, status, currency, created_at, note, bet_id, violation_id, bet:bets(id, title)',
+      'id, from_user, to_user, amount_cents, status, currency, created_at, note, bet_id, violation_id, proposed_by, bet:bets(id, title)',
     )
     .or(
       `and(from_user.eq.${uid},to_user.eq.${otherUserId}),` +
@@ -240,11 +247,13 @@ export async function getLedgerWith(otherUserId: string): Promise<PersonEntry[]>
     id: e.id,
     amountCents: e.to_user === uid ? e.amount_cents : -e.amount_cents,
     currency: (e.currency ?? 'GBP').toUpperCase(),
-    status: e.status === 'settled' ? 'settled' : 'pending',
+    status: e.status,
     betTitle: e.bet?.title ?? null,
     betId: e.bet?.id ?? null,
     note: e.note ?? null,
     isManual: !e.bet_id && !e.violation_id,
+    proposedBy: e.proposed_by ?? null,
+    awaitingMe: e.status === 'proposed' && e.proposed_by !== uid,
     createdAt: e.created_at,
     at: new Date(e.created_at).getTime(),
   }));
@@ -334,4 +343,44 @@ export async function recordEntry(args: {
 export async function deleteEntry(entryId: string): Promise<void> {
   const { error } = await supabase.rpc('delete_entry', { p_entry: entryId });
   if (error) throw error;
+}
+
+/**
+ * Agree that a recorded entry is real. Only the person who was asked can — the
+ * proposer accepting their own claim is the behaviour acceptance replaces.
+ */
+export async function acceptEntry(entryId: string): Promise<void> {
+  const { error } = await supabase.rpc('accept_entry', { p_entry: entryId });
+  if (error) throw error;
+}
+
+/** Say it isn't. The row goes; the proposer is told. */
+export async function declineEntry(entryId: string): Promise<void> {
+  const { error } = await supabase.rpc('decline_entry', { p_entry: entryId });
+  if (error) throw error;
+}
+
+/**
+ * Put a settled entry back to open.
+ *
+ * Settling was one tap that either party could make with no way back, which is
+ * a strange amount of finality for a record that says a debt was cleared.
+ */
+export async function unsettleEntry(entryId: string): Promise<void> {
+  const { error } = await supabase.rpc('unsettle_entry', { p_entry: entryId });
+  if (error) throw error;
+}
+
+/** How many recorded entries are waiting on your answer. */
+export async function countProposalsForMe(): Promise<number> {
+  const uid = (await supabase.auth.getSession()).data.session?.user.id;
+  if (!uid) return 0;
+  const { count, error } = await supabase
+    .from('ledger_entries')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'proposed')
+    .neq('proposed_by', uid)
+    .or(`from_user.eq.${uid},to_user.eq.${uid}`);
+  if (error) throw error;
+  return count ?? 0;
 }

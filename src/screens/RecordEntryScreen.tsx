@@ -172,7 +172,7 @@ export function RecordEntryScreen({ navigation, route }: any) {
         />
 
         {/* The direction is the one thing easy to get backwards, so say it back
-            as a sentence before it is written down. */}
+            as a sentence before it goes anywhere. */}
         {ready && cents !== null && (
           <Text style={styles.summary}>
             {iOwe
@@ -182,7 +182,7 @@ export function RecordEntryScreen({ navigation, route }: any) {
         )}
 
         <Button
-          label="Record it"
+          label="Send it over"
           variant="primary"
           fullWidth
           disabled={!ready}
@@ -191,8 +191,10 @@ export function RecordEntryScreen({ navigation, route }: any) {
         />
 
         <Text style={styles.note}>
-          Bookkeeping only. No money changes hands. {them === 'they' ? 'They' : them} will
-          be told you recorded this, and either of you can settle or delete it.
+          Bookkeeping only. No money changes hands.{' '}
+          {them === 'they' ? 'They' : them} has to agree before this counts towards
+          either of your balances — until then it sits on their page waiting for an
+          answer, and you can withdraw it.
         </Text>
       </ScrollView>
 

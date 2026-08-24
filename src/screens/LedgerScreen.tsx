@@ -1,8 +1,14 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors, spacing } from '../tokens';
-import { ScreenBackground, NavHeader, BentoTile, ListRow } from '../components';
-import { getLedger, getLedgerSummary, getBalances, type Balance } from '../api/ledger';
+import { ScreenBackground, NavHeader, BentoTile, ListRow, SkeletonBlock } from '../components';
+import {
+  getLedger,
+  getLedgerSummary,
+  getBalances,
+  countProposalsForMe,
+  type Balance,
+} from '../api/ledger';
 import { getMyGroups } from '../api/groups';
 import { getJar } from '../api/jar';
 import { useQuery } from '../hooks/useQuery';
@@ -31,13 +37,6 @@ type Txn = {
 
 export function LedgerScreen({ navigation }: any) {
   const currency = useCurrency();
-  const MOCK_TXNS: Txn[] = [
-    { id: '1', title: 'Won vs Marcus', group: 'Sunday League', amountCents: 2000, currency, when: '2h ago' },
-    { id: '2', title: 'Lost vs Priya', group: 'Flatmates', amountCents: -1000, currency, when: 'Yesterday' },
-    { id: '3', title: 'Cookie Jar — swearing', group: 'Flatmates', amountCents: -100, currency, when: '2d ago' },
-    { id: '4', title: 'Won vs Deej', group: 'Sunday League', amountCents: 1500, currency, when: '3d ago' },
-  ];
-
   const { data: summary } = useQuery(
     getLedgerSummary,
     {
@@ -49,13 +48,20 @@ export function LedgerScreen({ navigation }: any) {
       pendingByCurrency: [],
     },
   );
-  const { data: txns } = useQuery<Txn[]>(
+  // No invented rows here. This used to fall back to four made-up
+  // transactions — "Won vs Marcus · Sunday League · +£20" — which showed on
+  // every cold open and stayed put if the query failed, so a network error
+  // looked like somebody else's betting history. An empty list and a skeleton
+  // are both true; a fabricated one is not.
+  const { data: txns, loading: txnsLoading } = useQuery<Txn[]>(
     async () => {
       const uid = await uidOrNull();
       return (await getLedger()).map((e: any) => toTxn(e, uid));
     },
-    MOCK_TXNS,
+    [],
   );
+
+  const { data: awaitingMe } = useQuery(countProposalsForMe, 0);
 
   // Bucket the real entries into the last 7 weeks so the chart reflects
   // actual activity rather than a decorative pattern.
@@ -184,6 +190,16 @@ export function LedgerScreen({ navigation }: any) {
           </View>
         </BentoTile>
 
+        {awaitingMe > 0 && (
+          <ListRow
+            title={`${plural(awaitingMe, 'entry', 'entries')} waiting on you`}
+            subtitle="Somebody recorded something. Nothing counts until you agree."
+            showChevron
+            elevated
+            onPress={() => navigation.navigate('Balances')}
+          />
+        )}
+
         {/* Who is up, who is down. Tapping a name opens what it is made of —
             the balance alone cannot say why it is what it is. */}
         <Text style={styles.section}>WHERE YOU STAND</Text>
@@ -228,6 +244,18 @@ export function LedgerScreen({ navigation }: any) {
 
         {/* Transactions */}
         <Text style={styles.section}>RECENT</Text>
+        {txnsLoading && txns.length === 0 && (
+          <>
+            <SkeletonBlock width="100%" height={64} />
+            <SkeletonBlock width="100%" height={64} />
+            <SkeletonBlock width="100%" height={64} />
+          </>
+        )}
+        {!txnsLoading && txns.length === 0 && (
+          <Text style={styles.mixedNote}>
+            Nothing on the books yet. Settled money bets and anything you record land here.
+          </Text>
+        )}
         {txns.map((t) => (
           <ListRow
             key={t.id}

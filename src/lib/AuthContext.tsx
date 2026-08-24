@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import type { Session } from '@supabase/supabase-js';
 import { isBackendConfigured, supabase } from './supabase';
 import { getSession, onAuthChange, signOut as apiSignOut } from '../api/auth';
+import { registerForPush, unregisterPush } from './push';
 
 interface AuthState {
   session: Session | null;
@@ -74,6 +75,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [session, profileTick]);
 
+  // A push token is only worth having once we know whose it is. registerForPush
+  // never throws and never blocks: it returns null for a simulator, an
+  // unconfigured project or a refused permission, and sign-in carries on.
+  useEffect(() => {
+    if (!isBackendConfigured || !session) return;
+    registerForPush();
+  }, [session]);
+
   const value = useMemo<AuthState>(
     () => ({
       session,
@@ -87,7 +96,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       needsProfile,
       refreshProfile: () => setProfileTick((t) => t + 1),
       signOut: async () => {
-        if (isBackendConfigured) await apiSignOut();
+        // Before the session goes, so the delete is still authorised. Otherwise
+        // the next notification for this account lands on a handset somebody
+        // else is now signed in on.
+        if (isBackendConfigured) {
+          await unregisterPush();
+          await apiSignOut();
+        }
         setSession(null);
       },
     }),

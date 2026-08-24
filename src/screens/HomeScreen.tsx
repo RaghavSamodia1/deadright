@@ -57,11 +57,14 @@ export function HomeScreen({ navigation }: any) {
   const jarTotal = (jarTotals[0]?.cents ?? 0) / 100;
 
   const { data: profile } = useQuery(getMyProfile, {
-    handle: 'you',
-    display_name: 'You',
-    form_score: 847,
-    current_streak: 5,
-    best_streak: 8,
+    handle: '',
+    display_name: '',
+    // Not 847 with a five-bet streak, which is what stood here until the real
+    // profile landed — a stranger's record on your own home screen. 500 is the
+    // Form baseline every account actually starts at.
+    form_score: 500,
+    current_streak: 0,
+    best_streak: 0,
   } as any);
 
   const { data: summary } = useQuery(getLedgerSummary, {
@@ -240,7 +243,13 @@ export function HomeScreen({ navigation }: any) {
           />
           <View style={styles.col}>
             <BentoTile
-              size="nav" tone="mint-tint" value={money(ledgerCents, ledgerCurrency)} label="Ledger" icon="ledger"
+              size="nav"
+              // Was always mint-tint with a rising arrow, so being £5 down was
+              // drawn as being up. The tile follows the number.
+              tone={ledgerCents >= 0 ? 'mint-tint' : 'coral-tint'}
+              value={money(ledgerCents, ledgerCurrency)}
+              label="Ledger"
+              icon="ledger"
               onPress={() => navigation.navigate('Ledger')}
             />
             <BentoTile

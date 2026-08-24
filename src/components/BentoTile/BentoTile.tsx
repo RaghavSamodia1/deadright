@@ -21,7 +21,7 @@ export type TileSize =
   | 'nav';
 export type TileTone =
   | 'amber' | 'mint' | 'coral' | 'flame' | 'navy'
-  | 'amber-tint' | 'mint-tint' | 'violet-tint' | 'teal-tint' | 'flame-tint';
+  | 'amber-tint' | 'mint-tint' | 'coral-tint' | 'violet-tint' | 'teal-tint' | 'flame-tint';
 
 interface BentoTileProps {
   size?: TileSize;
@@ -144,6 +144,8 @@ const TONES: Record<TileTone, { bg: string; border?: string; text: string; sub: 
   // lifted to a brighter violet that keeps the hue and clears 5.40:1.
   'amber-tint': { bg: 'rgba(247,200,70,0.18)', border: 'rgba(247,200,70,0.4)', text: colors.semantic.awaiting, sub: colors.text.onTint },
   'mint-tint': { bg: 'rgba(99,185,114,0.18)', border: 'rgba(99,185,114,0.45)', text: colors.semantic.win, sub: colors.text.onTint },
+  // The counterpart to mint-tint, for a nav tile whose number can be negative.
+  'coral-tint': { bg: 'rgba(252,87,78,0.18)', border: 'rgba(252,87,78,0.45)', text: colors.semantic.disputed, sub: colors.text.onTint },
   // Navigation, not status. The rule that colour means one thing is about the
   // cards that carry a verdict — a tile that takes you somewhere is free to
   // wear the colour of the thing it opens, and a grid of nine identical greys

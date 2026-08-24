@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import * as Notifications from 'expo-notifications';
+import { targetFrom } from '../lib/push';
 import { useAuth } from '../lib/AuthContext';
 import { colors } from '../tokens';
 import {
@@ -62,8 +65,29 @@ export type RootStackParamList = Record<string, object | undefined>;
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+/**
+ * A tapped notification should land on the thing it is about.
+ *
+ * Without this the app merely opens on whatever screen it was last showing,
+ * which makes a push feel like an interruption rather than a shortcut. Bets go
+ * to the bet; everything else goes to the alerts list, which is where the row
+ * itself lives.
+ */
+function useNotificationTaps() {
+  const navigation = useNavigation<any>();
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const target = targetFrom(response);
+      if (target.betId) navigation.navigate('BetDetail', { id: target.betId });
+      else navigation.navigate('Alerts');
+    });
+    return () => sub.remove();
+  }, [navigation]);
+}
+
 export function RootNavigator() {
   const { isAuthed, loading, needsProfile } = useAuth();
+  useNotificationTaps();
 
   // Hold on the navy base while the stored session is read — avoids a flash of
   // the auth stack for users who are already signed in.

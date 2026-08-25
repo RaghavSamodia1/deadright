@@ -8,7 +8,6 @@ import { colors, radius, spacing, elevation, emboss } from '../../tokens';
 import { Icon, type IconName } from '../Icon/Icon';
 
 export type TileSize =
-  | 'full'
   | 'hero'
   | 'feature'
   | 'wide'
@@ -69,7 +68,7 @@ const BASE_CONTENT = 390 - spacing.screenGutter * 2;
 // band/half are derived too — they reuse the stat and nav heights so a short
 // wide tile always lines up with the small tile sharing its row.
 const BASE_HEIGHTS: Record<
-  Exclude<TileSize, 'full' | 'hero' | 'feature' | 'band' | 'half'>,
+  Exclude<TileSize, 'hero' | 'feature' | 'band' | 'half'>,
   number
 > = {
   wide: 150,
@@ -110,10 +109,6 @@ export function tileSizesFor(windowWidth: number): Record<TileSize, TileDims> {
     feature: { w: large, h: navH * 2 + GAP, r: radius.lg },
     wide: { w: large, h: Math.round(BASE_HEIGHTS.wide * scale), r: radius.lg },
     chart: { w: large, h: Math.round(BASE_HEIGHTS.chart * scale), r: radius.md },
-    // The whole row. Every other size is a fraction meant to sit beside
-    // another tile; a primary action with nothing to pair with was leaving a
-    // small tile's worth of hole to its right.
-    full: { w: content, h: statH, r: radius.md },
     // Short tiles that pair with a small one: same heights, so rows stay flush.
     band: { w: large, h: statH, r: radius.md },
     half: { w: half, h: navH, r: radius.md },
@@ -162,7 +157,7 @@ const TONES: Record<TileTone, { bg: string; border?: string; text: string; sub: 
 };
 
 const VALUE_SIZE: Record<TileSize, number> = {
-  full: 26, hero: 52, feature: 26, wide: 48, chart: 0,
+  hero: 52, feature: 26, wide: 48, chart: 0,
   band: 26, half: 22,
   stat: 28, nav: 22,
 };

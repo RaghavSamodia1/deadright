@@ -10,7 +10,6 @@ import {
   Rise,
   Swap,
   SoundBoard,
-  ActionSheet,
   BetCard,
   Icon,
   type BetCardData,
@@ -40,7 +39,6 @@ export function HomeScreen({ navigation }: any) {
   // is recorded by it — it exists because an app about calling your friends out
   // should be able to play a sad trombone at them.
   const [board, setBoard] = React.useState(false);
-  const [moreOpen, setMoreOpen] = React.useState(false);
 
   // Was a hardcoded 23.5 with a hardcoded "4 violations this week" — it showed
   // $23.50 to an account whose only jar was empty.
@@ -139,6 +137,13 @@ export function HomeScreen({ navigation }: any) {
         avatarUri={profile.avatar_url ?? undefined}
         avatarSeed={profile.handle || undefined}
         onAvatarPress={() => navigation.navigate('Profile')}
+        // The soundboard is an easter egg and now lives like one: held down on
+        // the wordmark. It had a tile, then a row in an overflow menu, and
+        // neither is what a joke button is worth.
+        onBrandLongPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          setBoard(true);
+        }}
         rightActions={[
           {
             // Search belongs in the header. It was one of eleven tiles, which
@@ -162,13 +167,6 @@ export function HomeScreen({ navigation }: any) {
             onPress: () => navigation.navigate('Alerts'),
             accessibilityLabel:
               unread > 0 ? `Alerts, ${unread} unread` : 'Alerts',
-          },
-          {
-            // The overflow menu: conventional, and the place for everything
-            // that does not earn a tile.
-            icon: <Icon name="more" size={21} color={colors.text.secondary} strokeWidth={1.9} />,
-            onPress: () => setMoreOpen(true),
-            accessibilityLabel: 'More',
           },
         ]}
       />
@@ -291,11 +289,21 @@ export function HomeScreen({ navigation }: any) {
             overflow menu, which is where a familiar app keeps the things you
             reach for occasionally. */}
         <Rise index={2}>
-        <BentoTile
-          size="full" tone="amber" label="New bet" icon="plus"
-          caption="Call it now"
-          onPress={() => navigation.navigate('CreateBet')}
-        />
+        <View style={styles.row}>
+          {/* The primary action takes two thirds and Pools the last third, so
+              the row is whole. New bet was briefly full-width, which left the
+              label and icon huddled against the left of a very wide tile —
+              expanded, but not filled. */}
+          <BentoTile
+            size="band" tone="amber" label="New bet" icon="plus"
+            caption="Call it now"
+            onPress={() => navigation.navigate('CreateBet')}
+          />
+          <BentoTile
+            size="stat" tone="violet-tint" label="Pools" icon="party"
+            onPress={() => navigation.navigate('Pools')}
+          />
+        </View>
         </Rise>
         </View>
           }
@@ -361,26 +369,6 @@ export function HomeScreen({ navigation }: any) {
           </>
         ))}
       </ScrollView>
-      {/* Everything that does not earn a tile. A grid where the soundboard sits
-          at the same weight as the ledger is a launcher; an overflow menu is
-          where a familiar app keeps what you reach for occasionally. */}
-      <ActionSheet
-        visible={moreOpen}
-        title="More"
-        options={[
-          { label: 'Pools', onPress: () => navigation.navigate('Pools') },
-          { label: 'Join with a code', onPress: () => navigation.navigate('JoinGroup') },
-          {
-            label: 'Soundboard',
-            onPress: () => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              setBoard(true);
-            },
-          },
-          { label: 'Settings', onPress: () => navigation.navigate('Settings') },
-        ]}
-        onDismiss={() => setMoreOpen(false)}
-      />
 
     </ScreenBackground>
   );

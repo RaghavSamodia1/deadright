@@ -29,13 +29,13 @@ import { useSoundBoard } from './useSoundBoard';
  */
 
 const LABEL_SIZE: Record<TileSize, number> = {
-  full: 20, hero: 34, feature: 24, wide: 24, chart: 20,
+  hero: 34, feature: 24, wide: 24, chart: 20,
   band: 20, half: 18, stat: 14, nav: 13,
 };
 
 // Big enough to carry the pad, small enough to leave the word the headline.
 const ICON_SIZE: Record<TileSize, number> = {
-  full: 22, hero: 30, feature: 26, wide: 26, chart: 22,
+  hero: 30, feature: 26, wide: 26, chart: 22,
   band: 22, half: 20, stat: 18, nav: 18,
 };
 

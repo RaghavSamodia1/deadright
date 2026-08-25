@@ -37,6 +37,8 @@ interface NavHeaderProps {
    */
   avatarUri?: string;
   avatarSeed?: string;
+  /** Held down on the wordmark. Where the soundboard lives. */
+  onBrandLongPress?: () => void;
   onAvatarPress?: () => void;
   style?: ViewStyle;
 }
@@ -50,6 +52,7 @@ export function NavHeader({
   avatarInitials,
   avatarUri,
   avatarSeed,
+  onBrandLongPress,
   onAvatarPress,
   style,
 }: NavHeaderProps) {
@@ -88,7 +91,14 @@ export function NavHeader({
             </Pressable>
           )}
           {variant === 'home' && (
-            <Text style={styles.brandName}>DeadRight</Text>
+            <Pressable
+              onLongPress={onBrandLongPress}
+              delayLongPress={600}
+              accessibilityRole={onBrandLongPress ? 'button' : undefined}
+              accessibilityLabel={onBrandLongPress ? 'DeadRight. Hold for the soundboard.' : undefined}
+            >
+              <Text style={styles.brandName}>DeadRight</Text>
+            </Pressable>
           )}
         </View>
 

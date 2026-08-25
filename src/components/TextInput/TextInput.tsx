@@ -62,6 +62,21 @@ export function TextInput({
           placeholderTextColor={colors.text.secondary /* placeholder on surface-3: tertiary is only 3.93:1 */}
           maxLength={maxChars}
           multiline={multiline}
+          /**
+           * Return has to do something.
+           *
+           * Left at the platform default it inserted a newline — including in
+           * the multiline fields, which are one-sentence prose (a bet, a note,
+           * what a payment was for) where a second line is never what was
+           * wanted. Two of these existed in the whole app with a returnKeyType
+           * set; the rest just grew taller when you pressed it.
+           *
+           * blurOnSubmit is what makes Return submit rather than insert, and it
+           * is off by default on multiline. Callers that genuinely want
+           * paragraphs pass blurOnSubmit={false} and get the newline back.
+           */
+          returnKeyType={rest.returnKeyType ?? (rest.onSubmitEditing ? 'next' : 'done')}
+          blurOnSubmit={rest.blurOnSubmit ?? true}
           style={[styles.input, multiline && styles.multiline]}
           {...rest}
         />

@@ -211,7 +211,16 @@ export function FriendProfileScreen({ navigation, route }: any) {
 
         <Button
           label="Call them out"
-          onPress={() => navigation.navigate('CreateBet')}
+          // Went through with no params at all, so the person you had just
+          // looked up was dropped on the way and Create-a-bet opened as if you
+          // had tapped New bet on the home screen.
+          onPress={() =>
+            navigation.navigate('CreateBet', {
+              withUserId: personId,
+              withHandle: theirHandle,
+              withName: name,
+            })
+          }
           fullWidth
         />
       </ScrollView>

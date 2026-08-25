@@ -73,6 +73,10 @@ export function CreateBetScreen({ navigation, route }: any) {
   // a step that can only be got wrong. The param was already being passed —
   // this screen simply never read it.
   const fromGroup: string | undefined = route?.params?.groupId;
+  // Set when you arrived from somebody's profile, so the group step can lead
+  // with the groups you actually share with them.
+  const withUserId: string | undefined = route?.params?.withUserId;
+  const withName: string = route?.params?.withName ?? 'them';
   const STEPS = fromGroup ? ALL_STEPS.filter((x) => x !== 'Group') : ALL_STEPS;
 
   const [step, setStep] = useState(0);
@@ -168,8 +172,15 @@ export function CreateBetScreen({ navigation, route }: any) {
             .slice(0, 2)
             .toUpperCase(),
         })),
+        shared: withUserId
+          ? (g.members ?? []).some((m: any) => m.user_id === withUserId)
+          : true,
       })),
-    [] as { id: string; emoji: string; name: string; memberCount: number; members: { initials: string }[] }[],
+    [] as {
+      id: string; emoji: string; name: string; memberCount: number;
+      members: { initials: string }[]; shared: boolean;
+    }[],
+    [withUserId],
   );
 
   const { run: publish, loading: publishing, error: publishError } = useAction(createBet);
@@ -263,7 +274,11 @@ export function CreateBetScreen({ navigation, route }: any) {
     // auto-selecting without this check latched onto the mock id "g1" on the
     // first render and never corrected once the real groups arrived — the
     // insert then failed with `invalid input syntax for type uuid: "g1"`.
-    if (!group && groups.length > 0) setGroup(groups[0].id);
+    if (group) return;
+    // Lead with a group you are both already in — a bet in one they cannot see
+    // is a bet they can never join.
+    const first = groups.find((g) => g.shared) ?? groups[0];
+    if (first) setGroup(first.id);
   }, [groups, group]);
 
   // Debounced: the user is still typing, and sharpen is a network call.
@@ -308,6 +323,7 @@ export function CreateBetScreen({ navigation, route }: any) {
               value={statement}
               onChangeText={(t) => { setStatement(t); setSharpened(null); setRejected(false); }}
               multiline
+              onSubmitEditing={() => canNext && next()}
               maxChars={140}
               showCounter
               autoFocus
@@ -459,28 +475,53 @@ export function CreateBetScreen({ navigation, route }: any) {
             {groupsLoading && groups.length === 0 ? (
               <Text style={styles.hint}>Finding your groups…</Text>
             ) : groups.length === 0 ? (
-              <>
-                <Text style={styles.hint}>
-                  A call needs someone to argue with. Make a group or join one with a
-                  code, then come back to this.
-                </Text>
-                <Button
-                  label="Create a group"
-                  onPress={() => navigation.navigate('CreateGroup')}
-                  fullWidth
-                />
-                <Button
-                  label="I have an invite code"
-                  onPress={() => navigation.navigate('JoinGroup')}
-                  variant="secondary"
-                  fullWidth
-                />
-              </>
+              <Text style={styles.hint}>
+                A call needs someone to argue with. Make a group below, or join one
+                with a code.
+              </Text>
             ) : (
-              groups.map((g) => (
-                <GroupCard key={g.id} {...g} selected={group === g.id} onPress={() => setGroup(g.id)} />
-              ))
+              <>
+                {/* Nobody can be added to a group by somebody else — membership
+                    is joined with a code, by design — so the honest thing to
+                    show is which groups you already share, and to say plainly
+                    when you share none. */}
+                {withUserId && !groups.some((g) => g.shared) && (
+                  <Text style={styles.hint}>
+                    You and {withName} aren't in a group together yet. Make one below
+                    and send them the code — they have to join it themselves.
+                  </Text>
+                )}
+                {groups.map((g) => (
+                  <GroupCard
+                    key={g.id}
+                    {...g}
+                    selected={group === g.id}
+                    onPress={() => setGroup(g.id)}
+                  />
+                ))}
+                {withUserId && group && !groups.find((g) => g.id === group)?.shared && (
+                  <Text style={styles.hint}>
+                    {withName} isn't in this one, so they won't see the bet. Send them
+                    the group's invite code and they can join.
+                  </Text>
+                )}
+              </>
             )}
+
+            {/* Always offered, not only when you have none. Needing a new group
+                for this particular bet is not the same as having no groups. */}
+            <Button
+              label="Create a group"
+              onPress={() => navigation.navigate('CreateGroup')}
+              variant={groups.length === 0 ? 'primary' : 'secondary'}
+              fullWidth
+            />
+            <Button
+              label="I have an invite code"
+              onPress={() => navigation.navigate('JoinGroup')}
+              variant="secondary"
+              fullWidth
+            />
           </>
         )}
 

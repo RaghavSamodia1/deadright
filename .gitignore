@@ -34,7 +34,11 @@ supabase/.temp/
 *.jks
 !android/app/debug.keystore
 
-# Iteration screenshots. Kept out of the repo on purpose: docs/ is the GitHub
-# Pages source and this repository is public, while these frames show real
-# people's names, handles and groups.
-screenshots/
+# Iteration screenshots.
+#
+# Emulator frames are committed: they run on the demo account, so there is
+# nothing in them but Test Mate and QRTest. Frames captured from a real phone
+# are not — this repository is public and docs/ is its GitHub Pages source, so
+# committing those would publish real people's names, handles and groups.
+# Put device captures in a folder ending -phone and they stay out.
+screenshots/*-phone/

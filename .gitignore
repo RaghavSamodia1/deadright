@@ -33,3 +33,8 @@ supabase/.temp/
 *.keystore
 *.jks
 !android/app/debug.keystore
+
+# Iteration screenshots. Kept out of the repo on purpose: docs/ is the GitHub
+# Pages source and this repository is public, while these frames show real
+# people's names, handles and groups.
+screenshots/

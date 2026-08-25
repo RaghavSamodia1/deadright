@@ -10,6 +10,7 @@ import {
   Rise,
   Swap,
   SoundBoard,
+  ActionSheet,
   BetCard,
   Icon,
   type BetCardData,
@@ -39,6 +40,7 @@ export function HomeScreen({ navigation }: any) {
   // is recorded by it — it exists because an app about calling your friends out
   // should be able to play a sad trombone at them.
   const [board, setBoard] = React.useState(false);
+  const [moreOpen, setMoreOpen] = React.useState(false);
 
   // Was a hardcoded 23.5 with a hardcoded "4 violations this week" — it showed
   // $23.50 to an account whose only jar was empty.
@@ -139,6 +141,14 @@ export function HomeScreen({ navigation }: any) {
         onAvatarPress={() => navigation.navigate('Profile')}
         rightActions={[
           {
+            // Search belongs in the header. It was one of eleven tiles, which
+            // made finding a person something you could only start from this
+            // screen — and only after picking it out of a grid.
+            icon: <Icon name="search" size={21} color={colors.text.secondary} strokeWidth={1.9} />,
+            onPress: () => navigation.navigate('Search'),
+            accessibilityLabel: 'Search',
+          },
+          {
             icon: (
               <View>
                 <Icon name="bell" size={21} color={colors.text.secondary} strokeWidth={1.9} />
@@ -152,6 +162,13 @@ export function HomeScreen({ navigation }: any) {
             onPress: () => navigation.navigate('Alerts'),
             accessibilityLabel:
               unread > 0 ? `Alerts, ${unread} unread` : 'Alerts',
+          },
+          {
+            // The overflow menu: conventional, and the place for everything
+            // that does not earn a tile.
+            icon: <Icon name="more" size={21} color={colors.text.secondary} strokeWidth={1.9} />,
+            onPress: () => setMoreOpen(true),
+            accessibilityLabel: 'More',
           },
         ]}
       />
@@ -233,7 +250,8 @@ export function HomeScreen({ navigation }: any) {
         </Rise>
 
         {/* Row 2 — Groups takes the large tile: everything in the app lives
-            inside one, so it earns more than a third of a strip. */}
+            inside one, so it earns more than a third of a strip. Search left
+            the grid for the header, where people look for it. */}
         <Rise index={1}>
         <View style={styles.row}>
           <BentoTile
@@ -257,61 +275,27 @@ export function HomeScreen({ navigation }: any) {
               onPress={() => navigation.navigate('Ledger')}
             />
             <BentoTile
-              size="nav" tone="teal-tint" label="Search" icon="search"
-              onPress={() => navigation.navigate('Search')}
+              size="nav" tone="teal-tint" label="Settle it" icon="dice"
+              onPress={() => navigation.navigate('Settle')}
             />
           </View>
         </View>
 
         </Rise>
 
-        {/* Row 3 — the action strip, as two unequal pairs rather than rows of
-            three: identical tiles in a line read as a toolbar, not a bento.
-            Each row splits differently (1/3+2/3, then 1/2+1/2) and the large
-            side flips, breaking the large-on-the-left run of rows 1 and 2.
-            Held to two rows on purpose — a third pushed the bento past the fold
-            on a 852pt screen, so the grid needed scrolling to take in.
-            The "All bets" and "Alerts" tiles are gone: both duplicated targets
-            already on this screen (the "See all" action in the feed below, and
-            the header bell, which carries the unread badge too). */}
+        {/* Row 3 — the primary action, on its own.
+            This strip used to carry five more tiles: Pools, Join code, Sounds
+            and Search alongside these. A grid where an easter egg sits at the
+            same weight as the ledger is a launcher, not a dashboard, and the
+            eye had eleven things to rank. The rest moved to the header's
+            overflow menu, which is where a familiar app keeps the things you
+            reach for occasionally. */}
         <Rise index={2}>
-        <View style={styles.strip}>
-          <View style={styles.row}>
-            <BentoTile
-              size="stat" tone="violet-tint" label="Pools" icon="party"
-              onPress={() => navigation.navigate('Pools')}
-            />
-            {/* The primary action gets the widest tile on the strip. */}
-            <BentoTile
-              size="band" tone="amber" label="New bet" icon="plus"
-              caption="Call it now"
-              onPress={() => navigation.navigate('CreateBet')}
-            />
-          </View>
-          {/* Three small tiles rather than two halves. A line of identical
-              tiles reads more like a toolbar than a bento, which is why this
-              row was a 1/2+1/2 before — but the soundboard belongs in the grid
-              rather than hiding behind a header button, and the smallest tile
-              is the honest size for it. The row above stays unequal, so the
-              strip as a whole still has a shape. */}
-          <View style={styles.row}>
-            <BentoTile
-              size="nav" tone="teal-tint" label="Settle it" icon="dice"
-              onPress={() => navigation.navigate('Settle')}
-            />
-            <BentoTile
-              size="nav" tone="navy" label="Join code" icon="link"
-              onPress={() => navigation.navigate('JoinGroup')}
-            />
-            <BentoTile
-              size="nav" tone="flame-tint" label="Sounds" icon="waveform"
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                setBoard(true);
-              }}
-            />
-          </View>
-        </View>
+        <BentoTile
+          size="full" tone="amber" label="New bet" icon="plus"
+          caption="Call it now"
+          onPress={() => navigation.navigate('CreateBet')}
+        />
         </Rise>
         </View>
           }
@@ -377,6 +361,27 @@ export function HomeScreen({ navigation }: any) {
           </>
         ))}
       </ScrollView>
+      {/* Everything that does not earn a tile. A grid where the soundboard sits
+          at the same weight as the ledger is a launcher; an overflow menu is
+          where a familiar app keeps what you reach for occasionally. */}
+      <ActionSheet
+        visible={moreOpen}
+        title="More"
+        options={[
+          { label: 'Pools', onPress: () => navigation.navigate('Pools') },
+          { label: 'Join with a code', onPress: () => navigation.navigate('JoinGroup') },
+          {
+            label: 'Soundboard',
+            onPress: () => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              setBoard(true);
+            },
+          },
+          { label: 'Settings', onPress: () => navigation.navigate('Settings') },
+        ]}
+        onDismiss={() => setMoreOpen(false)}
+      />
+
     </ScreenBackground>
   );
 }

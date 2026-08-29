@@ -13,6 +13,7 @@ import {
   OTPScreen,
   ProfileSetupScreen,
   HomeScreen,
+  PaperHomeScreen,
   LedgerScreen,
   BalancesScreen,
   PersonLedgerScreen,
@@ -126,7 +127,7 @@ export function RootNavigator() {
       <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
 
       {/* Hub + spokes */}
-      <Stack.Screen name="Root" component={HomeScreen} />
+      <Stack.Screen name="Root" component={PaperHomeScreen} />
       <Stack.Screen name="Ledger" component={LedgerScreen} />
       <Stack.Screen name="Balances" component={BalancesScreen} />
       <Stack.Screen name="PersonLedger" component={PersonLedgerScreen} />

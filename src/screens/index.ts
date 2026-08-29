@@ -7,6 +7,8 @@ export { ProfileSetupScreen } from './ProfileSetupScreen';
 
 // ── v2 hub-and-spoke (design-v2.md §2, §5) ───────────────────────────────────
 export { HomeScreen } from './HomeScreen';           // V2-01 bento hub (route: Root)
+export { FunHomeScreen } from './FunHomeScreen';       // V2-01 fork: fun & colorful bento hub
+export { PaperHomeScreen } from './PaperHomeScreen';
 export { LedgerScreen } from './LedgerScreen';        // V2-03
 export { BalancesScreen } from './BalancesScreen';
 export { PersonLedgerScreen } from './PersonLedgerScreen';

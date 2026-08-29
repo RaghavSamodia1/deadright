@@ -1,4 +1,5 @@
 export { colors, C } from './colors';
+export { paper, P } from './paper';
 export { spacing, S } from './spacing';
 export { radius, R } from './radius';
 export { typography, fonts, T } from './typography';
